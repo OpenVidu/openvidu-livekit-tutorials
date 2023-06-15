@@ -1,87 +1,91 @@
-var OV;
-var session;
+// docker run --rm -p 7880:7880 -p 7881:7881 -p 7882:7882/udp -e LIVEKIT_KEYS="devkey: secret" livekit/livekit-server:latest
 
-function joinSession() {
+var LivekitClient = window.LivekitClient;
+var livekitUrl = 'ws://localhost:7880/';
+var room;
 
-	var mySessionId = document.getElementById("sessionId").value;
+function joinRoom() {
 
-	OV = new OpenVidu();
-	session = OV.initSession();
+	var roomName = document.getElementById("roomName").value;
+	var participantName = document.getElementById("participantName").value;
 
-	session.on("streamCreated", function (event) {
-		session.subscribe(event.stream, "subscriber");
+	room = new LivekitClient.Room();
+
+	room.on(LivekitClient.RoomEvent.TrackSubscribed, (track) => {
+		const element = track.attach();
+		element.classList.add('remote-video');
+		element.id = track.sid;
+		document.getElementById('subscriber').appendChild(element);
 	});
 
-	getToken(mySessionId).then(token => {
+	room.on(LivekitClient.RoomEvent.TrackUnsubscribed, (track) => {
+		track.detach();
+		document.getElementById(track.sid)?.remove();
+	});
 
-		session.connect(token)
+	createToken(roomName, participantName).then(token => {
+
+		room.connect(livekitUrl, token)
 			.then(() => {
-				document.getElementById("session-header").innerText = mySessionId;
+				document.getElementById("room-header").innerText = roomName;
 				document.getElementById("join").style.display = "none";
-				document.getElementById("session").style.display = "block";
-
-				var publisher = OV.initPublisher("publisher");
-				session.publish(publisher);
+				document.getElementById("room").style.display = "block";
+				room.localParticipant.setMicrophoneEnabled(true);
+				room.localParticipant.setCameraEnabled(true).then(publication => {
+					const element = publication.track.attach();
+					element.classList.add('local-video');
+					document.getElementById('publisher').appendChild(element);
+				});
 			})
 			.catch(error => {
-				console.log("There was an error connecting to the session:", error.code, error.message);
+				console.log("There was an error connecting to the room:", error.code, error.message);
 			});
 	});
 
 }
 
-function leaveSession() {
-	session.disconnect();
+function leaveRoom() {
+	room.disconnect();
+	document.getElementsByClassName('local-video')[0].remove();
+	Array.from(document.getElementsByClassName('remote-video')).forEach(el => el.remove());
 	document.getElementById("join").style.display = "block";
-	document.getElementById("session").style.display = "none";
+	document.getElementById("room").style.display = "none";
 }
 
 window.onbeforeunload = function () {
-	if (session) session.disconnect();
+	if (room) room.disconnect();
 };
 
+window.onload = function () {
+	document.getElementById("participantName").value = "Participant-" + (Math.random() + 1).toString(36).substring(7);
+}
 
 /**
  * --------------------------------------------
  * GETTING A TOKEN FROM YOUR APPLICATION SERVER
  * --------------------------------------------
- * The methods below request the creation of a Session and a Token to
- * your application server. This keeps your OpenVidu deployment secure.
+ * The methods below request the creation of an AccessToken to
+ * your application server. This keeps your LiveKit deployment secure.
  * 
  * In this sample code, there is no user control at all. Anybody could
  * access your application server endpoints! In a real production
  * environment, your application server must identify the user to allow
  * access to the endpoints.
  * 
- * Visit https://docs.openvidu.io/en/stable/application-server to learn
- * more about the integration of OpenVidu in your application server.
  */
 
 var APPLICATION_SERVER_URL = "http://localhost:5000/";
 
-function getToken(mySessionId) {
-	return createSession(mySessionId).then(sessionId => createToken(sessionId));
-}
-
-function createSession(sessionId) {
-	return new Promise((resolve, reject) => {
-		$.ajax({
-			type: "POST",
-			url: APPLICATION_SERVER_URL + "api/sessions",
-			data: JSON.stringify({ customSessionId: sessionId }),
-			headers: { "Content-Type": "application/json" },
-			success: response => resolve(response), // The sessionId
-			error: (error) => reject(error)
-		});
-	});
-}
-
-function createToken(sessionId) {
+function createToken(roomName, participantName) {
 	return new Promise((resolve, reject) => {
 		$.ajax({
 			type: 'POST',
-			url: APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections',
-			data: JSON.stringify({}),
+			url: APPLICATION_SERVER_URL + 'getToken',
+			data: JSON.stringify({
+				roomName,
+				participantName,
+				permissions: {}
+			}),
 			headers: { "Content-Type": "application/json" },
 			success: (response) => resolve(response), // The token
 			error: (error) => reject(error)
