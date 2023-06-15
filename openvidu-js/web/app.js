@@ -1,117 +1,93 @@
-var OV;
-var session;
+// docker run --rm -p 7880:7880 -p 7881:7881 -p 7882:7882/udp -e LIVEKIT_KEYS="devkey: secret" livekit/livekit-server:latest
+
+var LivekitClient = window.LivekitClient;
+var livekitUrl = 'ws://localhost:7880/';
+var room;
 
 
 /* OPENVIDU METHODS */
 
-function joinSession() {
+function joinRoom() {
 
-	var mySessionId = document.getElementById("sessionId").value;
+	var myRoomName = document.getElementById("roomName").value;
 	var myUserName = document.getElementById("userName").value;
 
-	// --- 1) Get an OpenVidu object ---
+	// --- 1) Get an Room object ---
 
-	OV = new OpenVidu();
+	room = new LivekitClient.Room();
 
-	// --- 2) Init a session ---
+	// --- 2) Specify the actions when events take place in the room ---
 
-	session = OV.initSession();
-
-	// --- 3) Specify the actions when events take place in the session ---
-
-	// On every new Stream received...
-	session.on('streamCreated', event => {
-
-		// Subscribe to the Stream to receive it. HTML video will be appended to element with 'video-container' id
-		var subscriber = session.subscribe(event.stream, 'video-container');
-
-		// When the HTML video has been appended to DOM...
-		subscriber.on('videoElementCreated', event => {
-
-			// Add a new <p> element for the user's nickname just below its video
-			appendUserData(event.element, subscriber.stream.connection);
-		});
+	// On every new Track received...
+	room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, publication, participant) => {
+		const element = track.attach();
+		element.id = track.sid;
+		element.className = 'removable';
+		document.getElementById('video-container').appendChild(element);
+		if (track.kind === 'video') {
+			appendUserData(element, participant.identity);
+		}
 	});
 
-	// On every Stream destroyed...
-	session.on('streamDestroyed', event => {
-
-		// Delete the HTML element with the user's nickname. HTML videos are automatically removed from DOM
-		removeUserData(event.stream.connection);
+	// On every new Track destroyed...
+	room.on(LivekitClient.RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+		track.detach();
+		document.getElementById(track.sid)?.remove();
+		if (track.kind === 'video') {
+			removeUserData(participant);
+		}
 	});
 
-	// On every asynchronous exception...
-	session.on('exception', (exception) => {
-		console.warn(exception);
-	});
+	// --- 3) Connect to the room with a valid access token ---
 
+	// Get a token from the application backend
+	getToken(myRoomName, myUserName).then(token => {
 
-	// --- 4) Connect to the session with a valid user token ---
-
-	// Get a token from the OpenVidu deployment
-	getToken(mySessionId).then(token => {
-
-		// First param is the token got from the OpenVidu deployment. Second param can be retrieved by every user on event
-		// 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
-		session.connect(token, { clientData: myUserName })
+		// First param is the LiveKit server URL. Second param is the access token
+		room.connect(livekitUrl, token)
 			.then(() => {
 
-				// --- 5) Set page layout for active call ---
+				// --- 4) Set page layout for active call ---
 
-				document.getElementById('session-title').innerText = mySessionId;
+				document.getElementById('room-title').innerText = myRoomName;
 				document.getElementById('join').style.display = 'none';
-				document.getElementById('session').style.display = 'block';
+				document.getElementById('room').style.display = 'block';
 
-				// --- 6) Get your own camera stream with the desired properties ---
+				// --- 5) Publish your local tracks ---
 
-				var publisher = OV.initPublisher('video-container', {
-					audioSource: undefined, // The source of audio. If undefined default microphone
-					videoSource: undefined, // The source of video. If undefined default webcam
-					publishAudio: true,  	// Whether you want to start publishing with your audio unmuted or not
-					publishVideo: true,  	// Whether you want to start publishing with your video enabled or not
-					resolution: '640x480',  // The resolution of your video
-					frameRate: 30,			// The frame rate of your video
-					insertMode: 'APPEND',	// How the video is inserted in the target element 'video-container'
-					mirror: false       	// Whether to mirror your local video or not
+				room.localParticipant.setMicrophoneEnabled(true);
+				room.localParticipant.setCameraEnabled(true).then(publication => {
+					const element = publication.track.attach();
+					document.getElementById('video-container').appendChild(element);
+					initMainVideo(element, myUserName);
+					appendUserData(element, myUserName);
+					element.className = 'removable';
 				});
-
-				// --- 7) Specify the actions when events take place in our publisher ---
-
-				// When our HTML video has been added to DOM...
-				publisher.on('videoElementCreated', function (event) {
-					initMainVideo(event.element, myUserName);
-					appendUserData(event.element, myUserName);
-					event.element['muted'] = true;
-				});
-
-				// --- 8) Publish your stream ---
-
-				session.publish(publisher);
 
 			})
 			.catch(error => {
-				console.log('There was an error connecting to the session:', error.code, error.message);
+				console.log('There was an error connecting to the room:', error.code, error.message);
 			});
 	});
 }
 
-function leaveSession() {
+function leaveRoom() {
 
-	// --- 9) Leave the session by calling 'disconnect' method over the Session object ---
+	// --- 9) Leave the room by calling 'disconnect' method over the Room object ---
 
-	session.disconnect();
+	room.disconnect();
 
 	// Removing all HTML elements with user's nicknames.
-	// HTML videos are automatically removed when leaving a Session
+	// HTML videos are automatically removed when leaving a Room
 	removeAllUserData();
 
-	// Back to 'Join session' page
+	// Back to 'Join room' page
 	document.getElementById('join').style.display = 'block';
-	document.getElementById('session').style.display = 'none';
+	document.getElementById('room').style.display = 'none';
 }
 
 window.onbeforeunload = function () {
-	if (session) session.disconnect();
+	if (room) room.disconnect();
 };
 
 
@@ -122,37 +98,28 @@ window.addEventListener('load', function () {
 });
 
 function generateParticipantInfo() {
-	document.getElementById("sessionId").value = "SessionA";
+	document.getElementById("roomName").value = "RoomA";
 	document.getElementById("userName").value = "Participant" + Math.floor(Math.random() * 100);
 }
 
-function appendUserData(videoElement, connection) {
-	var userData;
-	var nodeId;
-	if (typeof connection === "string") {
-		userData = connection;
-		nodeId = connection;
-	} else {
-		userData = JSON.parse(connection.data).clientData;
-		nodeId = connection.connectionId;
-	}
+function appendUserData(videoElement, participantIdentity) {
 	var dataNode = document.createElement('div');
-	dataNode.className = "data-node";
-	dataNode.id = "data-" + nodeId;
-	dataNode.innerHTML = "<p>" + userData + "</p>";
+	dataNode.className = "removable";
+	dataNode.id = "data-" + participantIdentity;
+	dataNode.innerHTML = "<p>" + participantIdentity + "</p>";
 	videoElement.parentNode.insertBefore(dataNode, videoElement.nextSibling);
-	addClickListener(videoElement, userData);
+	addClickListener(videoElement, participantIdentity);
 }
 
-function removeUserData(connection) {
-	var dataNode = document.getElementById("data-" + connection.connectionId);
-	dataNode.parentNode.removeChild(dataNode);
+function removeUserData(participant) {
+	var dataNode = document.getElementById("data-" + participant.identity);
+	dataNode?.parentNode.removeChild(dataNode);
 }
 
 function removeAllUserData() {
-	var nicknameElements = document.getElementsByClassName('data-node');
-	while (nicknameElements[0]) {
-		nicknameElements[0].parentNode.removeChild(nicknameElements[0]);
+	var elementsToRemove = document.getElementsByClassName('removable');
+	while (elementsToRemove[0]) {
+		elementsToRemove[0].parentNode.removeChild(elementsToRemove[0]);
 	}
 }
 
@@ -180,7 +147,7 @@ function initMainVideo(videoElement, userData) {
  * --------------------------------------------
  * GETTING A TOKEN FROM YOUR APPLICATION SERVER
  * --------------------------------------------
- * The methods below request the creation of a Session and a Token to
+ * The methods below request the creation of a Room and a Token to
  * your application server. This keeps your OpenVidu deployment secure.
  *
  * In this sample code, there is no user control at all. Anybody could
@@ -194,29 +161,16 @@ function initMainVideo(videoElement, userData) {
 
 var APPLICATION_SERVER_URL = "http://localhost:5000/";
 
-function getToken(mySessionId) {
-	return createSession(mySessionId).then(sessionId => createToken(sessionId));
-}
-
-function createSession(sessionId) {
-	return new Promise((resolve, reject) => {
-		$.ajax({
-			type: "POST",
-			url: APPLICATION_SERVER_URL + "api/sessions",
-			data: JSON.stringify({ customSessionId: sessionId }),
-			headers: { "Content-Type": "application/json" },
-			success: response => resolve(response), // The sessionId
-			error: (error) => reject(error)
-		});
-	});
-}
-
-function createToken(sessionId) {
+function getToken(roomName, participantName) {
 	return new Promise((resolve, reject) => {
 		$.ajax({
 			type: 'POST',
-			url: APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections',
-			data: JSON.stringify({}),
+			url: APPLICATION_SERVER_URL + 'getToken',
+			data: JSON.stringify({
+				roomName,
+				participantName,
+				permissions: {}
+			}),
 			headers: { "Content-Type": "application/json" },
 			success: (response) => resolve(response), // The token
 			error: (error) => reject(error)

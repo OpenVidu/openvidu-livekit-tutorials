@@ -14,7 +14,7 @@
 	<!-- Bootstrap -->
 
 	<link rel="stylesheet" href="style.css" type="text/css" media="screen">
-	<script src="openvidu-browser-2.27.0.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/livekit-client@1.10.0/dist/livekit-client.umd.min.js"></script>
 	<script src="app.js"></script>
 </head>
 
@@ -34,15 +34,15 @@
 		<div id="join">
 			<div id="img-div"><img src="resources/images/openvidu_grey_bg_transp_cropped.png" /></div>
 			<div id="join-dialog" class="jumbotron vertical-center">
-				<h1>Join a video session</h1>
-				<form class="form-group" onsubmit="joinSession(); return false">
+				<h1>Join a video room</h1>
+				<form class="form-group" onsubmit="joinRoom(); return false">
 					<p>
 						<label>Participant</label>
 						<input class="form-control" type="text" id="userName" required>
 					</p>
 					<p>
-						<label>Session</label>
-						<input class="form-control" type="text" id="sessionId" required>
+						<label>Room</label>
+						<input class="form-control" type="text" id="roomName" required>
 					</p>
 					<p class="text-center">
 						<input class="btn btn-lg btn-success" type="submit" name="commit" value="Join!">
@@ -51,10 +51,10 @@
 			</div>
 		</div>
 
-		<div id="session" style="display: none;">
-			<div id="session-header">
-				<h1 id="session-title"></h1>
-				<input class="btn btn-large btn-danger" type="button" id="buttonLeaveSession" onmouseup="leaveSession()" value="Leave session">
+		<div id="room" style="display: none;">
+			<div id="room-header">
+				<h1 id="room-title"></h1>
+				<input class="btn btn-large btn-danger" type="button" id="buttonLeaveRoom" onmouseup="leaveRoom()" value="Leave room">
 			</div>
 			<div id="main-video" class="col-md-6"><p></p><video autoplay playsinline="true"></video></div>
 			<div id="video-container" class="col-md-6"></div>

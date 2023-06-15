@@ -158,15 +158,15 @@ a:hover .demo-logo {
 	margin-top: 15px;
 }
 
-#session-header {
+#room-header {
 	margin-bottom: 20px;
 }
 
-#session-title {
+#room-title {
 	display: inline-block;
 }
 
-#buttonLeaveSession {
+#buttonLeaveRoom {
 	float: right;
 	margin-top: 20px;
 }
@@ -212,7 +212,7 @@ video {
 	border-bottom-right-radius: 4px;
 }
 
-#session img {
+#room img {
 	width: 100%;
 	height: auto;
 	display: inline-block;
@@ -220,7 +220,7 @@ video {
 	vertical-align: baseline;
 }
 
-#session #video-container img {
+#room #video-container img {
 	position: relative;
 	float: left;
 	width: 50%;
