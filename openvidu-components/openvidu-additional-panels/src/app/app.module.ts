@@ -7,6 +7,7 @@ import { OpenViduAngularConfig, OpenViduAngularModule } from 'openvidu-angular';
 import { environment } from 'src/environments/environment';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { HttpClientModule } from '@angular/common/http';
 
 const config: OpenViduAngularConfig = {
   production: environment.production
@@ -21,6 +22,7 @@ const config: OpenViduAngularConfig = {
     BrowserAnimationsModule,
     MatButtonModule,
     MatIconModule,
+    HttpClientModule,
     OpenViduAngularModule.forRoot(config)
   ],
   providers: [],

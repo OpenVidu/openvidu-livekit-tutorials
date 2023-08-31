@@ -1,0 +1,11 @@
+#my-panel {
+	background: #faff7f;
+	height: 100%;
+	overflow: hidden;
+}
+#my-panel > #local {
+	background: #a184ff;
+}
+#my-panel > #remote {
+	background: #7fb8ff;
+}

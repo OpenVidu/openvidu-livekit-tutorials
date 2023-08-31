@@ -1,4 +1,4 @@
-<ov-videoconference (onSessionCreated)="onSessionCreated($event)" [tokens]="tokens" [prejoin]="true">
+<ov-videoconference (onRoomCreated)="handleRemoteHand($event)" [prejoin]="true" [token]="token" (onTokenRequested)="onTokenRequested($event)">
 
 	<div *ovToolbarAdditionalButtons>
 		<button toolbar-btn mat-icon-button (click)="handleLocalHand()" [class.active-btn]="hasHandRaised">
@@ -6,17 +6,13 @@
 		</button>
 	</div>
 
-	<div *ovStream="let stream" style="height: 100%">
-		<ov-stream [stream]="stream"></ov-stream>
-		<button mat-icon-button @inOutHandAnimation id="hand-notification" *ngIf="stream.participant.hasHandRaised">
-			<mat-icon>front_hand</mat-icon>
-		</button>
+	<div *ovStream="let track" style="height: 100%">
+		<ov-stream [track]="track"></ov-stream>
+		<mat-icon @inOutHandAnimation *ngIf="track.participant.hasHandRaised" id="hand-notification">front_hand</mat-icon>
 	</div>
 
 	<div *ovParticipantPanelItemElements="let participant">
-		<button mat-icon-button *ngIf="participant.hasHandRaised">
-			<mat-icon>front_hand</mat-icon>
-		</button>
+		<mat-icon *ngIf="participant.hasHandRaised">front_hand</mat-icon>
 	</div>
 
 </ov-videoconference>

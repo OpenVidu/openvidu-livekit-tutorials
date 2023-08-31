@@ -1,14 +1,14 @@
 import { HttpClient } from "@angular/common/http";
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
-import { OpenViduService, TokenModel } from "openvidu-angular";
+import { ParticipantService } from "openvidu-angular";
 import { environment } from 'src/environments/environment';
 
 @Component({
 	selector: 'app-root',
 	template: `
-		<ov-videoconference [tokens]="tokens">
+		<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)">
 			<div *ovToolbar style="text-align: center;">
 				<button (click)="toggleVideo()">Toggle Video</button>
 				<button (click)="toggleAudio()">Toggle Audio</button>
@@ -16,69 +16,46 @@ import { environment } from 'src/environments/environment';
 		</ov-videoconference>
 	`
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
 
+	// The URL of the application server.
 	APPLICATION_SERVER_URL = environment.applicationServerUrl;
 
-	sessionId = 'toolbar-directive-example';
-	tokens!: TokenModel;
+	// The name of the room.
+	roomName = 'custom-toolbar';
 
-	publishVideo = true;
-	publishAudio = true;
+	// The token used to connect to the videoconference.
+	token!: string;
 
-	constructor(private httpClient: HttpClient, private openviduService: OpenViduService) { }
+	constructor(private httpClient: HttpClient, private participantService: ParticipantService) { }
 
-	async ngOnInit() {
-		this.tokens = {
-			webcam: await this.getToken(),
-			screen: await this.getToken()
-		};
+	// Called when a token is requested for a participant.
+	async onTokenRequested(participantName: string) {
+		const { token } = await this.getToken(this.roomName, participantName);
+		this.token = token;
 	}
 
-	toggleVideo() {
-		this.publishVideo = !this.publishVideo;
-		this.openviduService.publishVideo(this.publishVideo);
+	// Toggles the camera on and off.
+	async toggleVideo() {
+		const isCameraEnabled = this.participantService.isMyCameraEnabled();
+		await this.participantService.setCameraEnabled(!isCameraEnabled);
 	}
 
-	toggleAudio() {
-		this.publishAudio = !this.publishAudio;
-		this.openviduService.publishAudio(this.publishAudio);
+	// Toggles the microphone on and off.
+	async toggleAudio() {
+		const isMicrophoneEnabled = this.participantService.isMyMicrophoneEnabled();
+		await this.participantService.setMicrophoneEnabled(!isMicrophoneEnabled);
 	}
 
-	/**
-	 * --------------------------------------------
-	 * GETTING A TOKEN FROM YOUR APPLICATION SERVER
-	 * --------------------------------------------
-	 * The methods below request the creation of a Session and a Token to
-	 * your application server. This keeps your OpenVidu deployment secure.
-	 *
-	 * In this sample code, there is no user control at all. Anybody could
-	 * access your application server endpoints! In a real production
-	 * environment, your application server must identify the user to allow
-	 * access to the endpoints.
-	 *
-	 * Visit https://docs.openvidu.io/en/stable/application-server to learn
-	 * more about the integration of OpenVidu in your application server.
-	 */
-
-	async getToken(): Promise<string> {
-		const sessionId = await this.createSession(this.sessionId);
-		return await this.createToken(sessionId);
-	}
-
-	createSession(sessionId: string): Promise<string> {
-		return lastValueFrom(this.httpClient.post(
-			this.APPLICATION_SERVER_URL + 'api/sessions',
-			{ customSessionId: sessionId },
-			{ headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
-		));
-	}
-
-	createToken(sessionId: string): Promise<string> {
-		return lastValueFrom(this.httpClient.post(
-			this.APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections',
-			{},
-			{ headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
-		));
+	// Gets a token for a participant.
+	getToken(roomName: string, participantName: string): Promise<any> {
+		try {
+			return lastValueFrom(this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'api/sessions', { roomName, participantName }));
+		} catch (error: any) {
+			if (error.status === 404) {
+				throw { status: error.status, message: 'Cannot connect with backend. ' + error.url + ' not found' };
+			}
+			throw error;
+		}
 	}
 }

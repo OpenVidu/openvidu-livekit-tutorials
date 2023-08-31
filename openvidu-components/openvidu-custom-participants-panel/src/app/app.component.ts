@@ -1,107 +1,94 @@
 import { HttpClient } from "@angular/common/http";
-import { Component, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { lastValueFrom, Subscription } from "rxjs";
 
-import { ParticipantAbstractModel, ParticipantService, TokenModel } from "openvidu-angular";
+import { ParticipantModel, ParticipantService } from "openvidu-angular";
 import { environment } from 'src/environments/environment';
 
 @Component({
 	selector: 'app-root',
 	template: `
-		<ov-videoconference [tokens]="tokens" [toolbarDisplaySessionName]="false" (onSessionCreated)="subscribeToParticipants()">
+		<!-- OpenVidu Video Conference Component -->
+		<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)">
+
+			<!-- Custom Participants Panel -->
 			<div *ovParticipantsPanel id="my-panel">
 				<ul id="local">
-					<li>{{localParticipant.nickname}}</li>
+					<li>{{localParticipant.name}}</li>
 				</ul>
 				<ul id="remote">
-					<li *ngFor="let p of remoteParticipants">{{p.nickname}}</li>
+					<li *ngFor="let p of remoteParticipants">{{p.name}}</li>
 				</ul>
 			</div>
+
 		</ov-videoconference>
   `,
-	styles: [`
-			#my-panel {
-				background: #faff7f;
-				height: 100%;
-				overflow: hidden;
-			}
-			#my-panel > #local {
-				background: #a184ff;
-			}
-			#my-panel > #remote {
-				background: #7fb8ff;
-			}
-		`]
+	styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnInit {
-
+export class AppComponent implements OnInit, OnDestroy {
+	// Define the URL of the application server
 	APPLICATION_SERVER_URL = environment.applicationServerUrl;
+	// Define the name of the room and initialize the token variable
+	roomName = 'custom-participants-panel';
+	token!: string;
 
-	sessionId = 'participants-panel-directive-example';
-	tokens!: TokenModel;
-
-	localParticipant!: ParticipantAbstractModel;
-	remoteParticipants!: ParticipantAbstractModel[];
+	// Participant-related properties
+	localParticipant!: ParticipantModel;
+	remoteParticipants!: ParticipantModel[];
 	localParticipantSubs!: Subscription;
 	remoteParticipantsSubs!: Subscription;
 
 	constructor(private httpClient: HttpClient, private participantService: ParticipantService) { }
 
-	async ngOnInit() {
-		this.tokens = {
-			webcam: await this.getToken(),
-			screen: await this.getToken()
-		};
+	// Subscribes to updates for local and remote participants.
+	ngOnInit() {
+		this.subscribeToParticipants();
 	}
 
+	// Unsubscribes from updates for local and remote participants to prevent memory leaks.
 	ngOnDestroy() {
 		this.localParticipantSubs.unsubscribe();
 		this.remoteParticipantsSubs.unsubscribe();
 	}
 
+	// Function called when a participant requests a token to join the room.
+	async onTokenRequested(participantName: string) {
+		const { token } = await this.getToken(this.roomName, participantName);
+		this.token = token;
+	}
+
+	// Subscribes to updates for local and remote participants.
 	subscribeToParticipants() {
 		this.localParticipantSubs = this.participantService.localParticipantObs.subscribe((p) => {
-			this.localParticipant = p;
+			if (p) this.localParticipant = p;
 		});
-		this.remoteParticipantsSubs = this.participantService.remoteParticipantsObs.subscribe((participants) => {
-			this.remoteParticipants = participants;
-		});
+
+		this.remoteParticipantsSubs = this.participantService.remoteParticipantsObs.subscribe(
+			(participants) => {
+				this.remoteParticipants = participants;
+			}
+		);
 	}
 
-	/**
-	 * --------------------------------------------
-	 * GETTING A TOKEN FROM YOUR APPLICATION SERVER
-	 * --------------------------------------------
-	 * The methods below request the creation of a Session and a Token to
-	 * your application server. This keeps your OpenVidu deployment secure.
-	 *
-	 * In this sample code, there is no user control at all. Anybody could
-	 * access your application server endpoints! In a real production
-	 * environment, your application server must identify the user to allow
-	 * access to the endpoints.
-	 *
-	 * Visit https://docs.openvidu.io/en/stable/application-server to learn
-	 * more about the integration of OpenVidu in your application server.
-	 */
-
-	async getToken(): Promise<string> {
-		const sessionId = await this.createSession(this.sessionId);
-		return await this.createToken(sessionId);
-	}
-
-	createSession(sessionId: string): Promise<string> {
-		return lastValueFrom(this.httpClient.post(
-			this.APPLICATION_SERVER_URL + 'api/sessions',
-			{ customSessionId: sessionId },
-			{ headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
-		));
-	}
-
-	createToken(sessionId: string): Promise<string> {
-		return lastValueFrom(this.httpClient.post(
-			this.APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections',
-			{},
-			{ headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
-		));
+	// Sends a request to the server to obtain a token for a participant.
+	async getToken(roomName: string, participantName: string): Promise<any> {
+		try {
+			// Send a POST request to the server to obtain a token
+			return lastValueFrom(
+				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'api/sessions', {
+					roomName,
+					participantName,
+				})
+			);
+		} catch (error: any) {
+			// Handle errors, e.g., if the server is not reachable
+			if (error.status === 404) {
+				throw {
+					status: error.status,
+					message: 'Cannot connect with the backend. ' + error.url + ' not found',
+				};
+			}
+			throw error;
+		}
 	}
 }

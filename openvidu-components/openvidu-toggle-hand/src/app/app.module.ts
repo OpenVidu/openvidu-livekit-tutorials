@@ -6,13 +6,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppComponent } from './app.component';
-import { OpenViduAngularConfig, OpenViduAngularModule, ParticipantProperties, StreamModel } from 'openvidu-angular';
+import { OpenViduAngularConfig, OpenViduAngularModule, ParticipantProperties } from 'openvidu-angular';
 import { environment } from 'src/environments/environment';
 import { ParticipantAppModel } from './models/participant-app.model';
 
 const config: OpenViduAngularConfig = {
 	production: environment.production,
-	participantFactory: (props: ParticipantProperties, streamModel: StreamModel) => new ParticipantAppModel(props, streamModel)
+	participantFactory: (props: ParticipantProperties) => new ParticipantAppModel(props)
 };
 
 @NgModule({
@@ -21,4 +21,4 @@ const config: OpenViduAngularConfig = {
 	providers: [],
 	bootstrap: [AppComponent]
 })
-export class AppModule {}
+export class AppModule { }

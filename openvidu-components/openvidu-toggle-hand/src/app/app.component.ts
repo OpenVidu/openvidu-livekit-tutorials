@@ -1,15 +1,14 @@
 import { animate, style, transition, trigger } from "@angular/animations";
 import { HttpClient } from "@angular/common/http";
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
-import { OpenViduService, ParticipantService } from "openvidu-angular";
+import { DataPacket_Kind, DataPublishOptions, ParticipantService, RemoteParticipant, Room, RoomEvent } from "openvidu-angular";
 import { ParticipantAppModel } from "./models/participant-app.model";
 
-import { Session, SignalOptions } from "openvidu-browser";
 import { environment } from 'src/environments/environment';
 
-enum SignalApp {
+enum DataTopicApp {
 	HAND_TOGGLE = 'handToggle'
 }
 
@@ -30,41 +29,44 @@ enum SignalApp {
 		])
 	]
 })
-export class AppComponent implements OnInit {
+export class AppComponent {
 
+	// The URL of the application server.
 	APPLICATION_SERVER_URL = environment.applicationServerUrl;
 
-	tokens: { webcam: string; screen: string };
+	// The token used to connect to the OpenVidu session.
+	token!: string;
+
+	// Whether the local participant has raised their hand.
 	hasHandRaised: boolean = false;
-	session: Session;
-	private sessionId = 'openvidu-toggle-hand';
 
-	constructor(private httpClient: HttpClient, private openviduService: OpenViduService, private participantService: ParticipantService) { }
-	async ngOnInit() {
-		this.tokens = {
-			webcam: await this.getToken(),
-			screen: await this.getToken()
-		};
+	// The name of the OpenVidu room.
+	private roomName = 'openvidu-toggle-hand';
+
+	constructor(private httpClient: HttpClient, private participantService: ParticipantService) { }
+
+	// Requests a token from the application server for the given participant name.
+	async onTokenRequested(participantName: string) {
+		const { token } = await this.getToken(this.roomName, participantName);
+		this.token = token;
 	}
 
-	onSessionCreated(session: Session) {
-		this.session = session;
-		this.handleRemoteHand();
-	}
-
-	handleRemoteHand() {
+	// Handles the reception of a remote hand-raising event.
+	handleRemoteHand(room: Room) {
 		// Subscribe to hand toggling events from other participants
-		this.session.on(`signal:${SignalApp.HAND_TOGGLE}`, (event: any) => {
-			const connectionId = event.from.connectionId;
-			const participant = <ParticipantAppModel>this.participantService.getRemoteParticipantByConnectionId(connectionId);
-			if (participant) {
-				participant.toggleHandRaised();
+		room.on(RoomEvent.DataReceived, (payload: Uint8Array, participant?: RemoteParticipant, _?: DataPacket_Kind, topic?: string) => {
+			if (topic === DataTopicApp.HAND_TOGGLE) {
+				const p = this.participantService.getRemoteParticipantBySid(participant.sid);
+				if (p) {
+					(<ParticipantAppModel>p).toggleHandRaised();
+				}
 				this.participantService.updateRemoteParticipants();
 			}
 		});
 	}
 
-	handleLocalHand() {
+	// Handles the local hand-raising event.
+	async handleLocalHand() {
 		// Get local participant with ParticipantService
 		const participant = <ParticipantAppModel>this.participantService.getLocalParticipant();
 
@@ -75,51 +77,22 @@ export class AppComponent implements OnInit {
 		this.participantService.updateLocalParticipant();
 
 		// Send a signal with the new value to others participant using the openvidu-browser signal
-		const remoteConnections = this.openviduService.getRemoteConnections();
-		if (remoteConnections.length > 0) {
-			//Sending hand toggle signal to others
-			const signalOptions: SignalOptions = {
-				type: SignalApp.HAND_TOGGLE,
-				to: remoteConnections
-			};
-			this.session.signal(signalOptions);
+		const strData = JSON.stringify({});
+		const data: Uint8Array = new TextEncoder().encode(strData);
+		const options: DataPublishOptions = { topic: DataTopicApp.HAND_TOGGLE };
+
+		await this.participantService.publishData(data, options);
+	}
+
+	// Requests a token from the application server for the given room and participant names.
+	getToken(roomName: string, participantName: string): Promise<any> {
+		try {
+			return lastValueFrom(this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'api/sessions', { roomName, participantName }));
+		} catch (error: any) {
+			if (error.status === 404) {
+				throw { status: error.status, message: 'Cannot connect with backend. ' + error.url + ' not found' };
+			}
+			throw error;
 		}
-	}
-
-	/**
-	 * --------------------------------------------
-	 * GETTING A TOKEN FROM YOUR APPLICATION SERVER
-	 * --------------------------------------------
-	 * The methods below request the creation of a Session and a Token to
-	 * your application server. This keeps your OpenVidu deployment secure.
-	 *
-	 * In this sample code, there is no user control at all. Anybody could
-	 * access your application server endpoints! In a real production
-	 * environment, your application server must identify the user to allow
-	 * access to the endpoints.
-	 *
-	 * Visit https://docs.openvidu.io/en/stable/application-server to learn
-	 * more about the integration of OpenVidu in your application server.
-	 */
-
-	async getToken(): Promise<string> {
-		const sessionId = await this.createSession(this.sessionId);
-		return await this.createToken(sessionId);
-	}
-
-	createSession(sessionId: string): Promise<string> {
-		return lastValueFrom(this.httpClient.post(
-			this.APPLICATION_SERVER_URL + 'api/sessions',
-			{ customSessionId: sessionId },
-			{ headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
-		));
-	}
-
-	createToken(sessionId: string): Promise<string> {
-		return lastValueFrom(this.httpClient.post(
-			this.APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections',
-			{},
-			{ headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
-		));
 	}
 }

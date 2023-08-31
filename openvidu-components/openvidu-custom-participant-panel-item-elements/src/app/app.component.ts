@@ -1,84 +1,78 @@
 import { HttpClient } from "@angular/common/http";
-import { Component, OnInit } from "@angular/core";
+import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
-import { OpenViduService, TokenModel } from "openvidu-angular";
+import { OpenViduService } from "openvidu-angular";
 import { environment } from 'src/environments/environment';
 
 @Component({
 	selector: "app-root",
 	template: `
+		<!-- OpenVidu Video Conference Component -->
 		<ov-videoconference
 			*ngIf="connected"
-			[tokens]="tokens"
-			[toolbarDisplaySessionName]="false">
+			[token]="token"
+			[toolbarDisplaySessionName]="false"
+			(onTokenRequested)="onTokenRequested($event)"
+		>
+			<!-- Participant Panel Item Elements -->
 			<div *ovParticipantPanelItemElements="let participant">
-				<button *ngIf="participant.local" (click)="leaveSession()">
+				<!-- Leave Button for Local Participant -->
+				<button *ngIf="participant.isLocal" (click)="leaveSession()">
 					Leave
 				</button>
 			</div>
 		</ov-videoconference>
+
+		<!-- Session Disconnected Message -->
 		<div *ngIf="!connected" style="text-align: center;">Session disconnected</div>
 	`,
 	styles: []
 })
-export class AppComponent implements OnInit {
-
+export class AppComponent {
+	// Define the URL of the application server
 	APPLICATION_SERVER_URL = environment.applicationServerUrl;
 
-	sessionId = "participants-panel-directive-example";
-	tokens!: TokenModel;
+	// Define the name of the room and initialize the token variable
+	roomName = 'participant-panel-item-elements';
+	token!: string;
 
+	// Flag to indicate session connection status
 	connected = true;
 
 	constructor(private httpClient: HttpClient, private openviduService: OpenViduService) { }
 
-	async ngOnInit() {
-		this.tokens = {
-			webcam: await this.getToken(),
-			screen: await this.getToken(),
-		};
+	// Function to request a token when a participant joins the room
+	async onTokenRequested(participantName: string) {
+		const { token } = await this.getToken(this.roomName, participantName);
+		this.token = token;
 	}
 
-	leaveSession() {
-		this.openviduService.disconnect();
+	// Function to leave the session
+	async leaveSession() {
+		await this.openviduService.disconnectRoom();
 		this.connected = false;
 	}
 
-	/**
-	 * --------------------------------------------
-	 * GETTING A TOKEN FROM YOUR APPLICATION SERVER
-	 * --------------------------------------------
-	 * The methods below request the creation of a Session and a Token to
-	 * your application server. This keeps your OpenVidu deployment secure.
-	 *
-	 * In this sample code, there is no user control at all. Anybody could
-	 * access your application server endpoints! In a real production
-	 * environment, your application server must identify the user to allow
-	 * access to the endpoints.
-	 *
-	 * Visit https://docs.openvidu.io/en/stable/application-server to learn
-	 * more about the integration of OpenVidu in your application server.
-	 */
-
-	async getToken(): Promise<string> {
-		const sessionId = await this.createSession(this.sessionId);
-		return await this.createToken(sessionId);
-	}
-
-	createSession(sessionId: string): Promise<string> {
-		return lastValueFrom(this.httpClient.post(
-			this.APPLICATION_SERVER_URL + 'api/sessions',
-			{ customSessionId: sessionId },
-			{ headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
-		));
-	}
-
-	createToken(sessionId: string): Promise<string> {
-		return lastValueFrom(this.httpClient.post(
-			this.APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections',
-			{},
-			{ headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
-		));
+	// Function to get a token from the server
+	getToken(roomName: string, participantName: string): Promise<any> {
+		try {
+			// Send a POST request to the server to obtain a token
+			return lastValueFrom(
+				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'api/sessions', {
+					roomName,
+					participantName,
+				})
+			);
+		} catch (error: any) {
+			// Handle errors, e.g., if the server is not reachable
+			if (error.status === 404) {
+				throw {
+					status: error.status,
+					message: 'Cannot connect with the backend. ' + error.url + ' not found',
+				};
+			}
+			throw error;
+		}
 	}
 }
