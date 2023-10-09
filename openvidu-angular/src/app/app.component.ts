@@ -1,187 +1,194 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, HostListener, OnDestroy } from '@angular/core';
-import { OpenVidu, Publisher, Session, StreamEvent, StreamManager, Subscriber } from 'openvidu-browser';
+import {
+	Room,
+	RoomEvent,
+	RemoteParticipant,
+	RemoteTrackPublication,
+	RemoteTrack,
+	LocalTrackPublication,
+} from 'livekit-client';
 import { environment } from '../environments/environment';
 
-
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
+	selector: 'app-root',
+	templateUrl: './app.component.html',
+	styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnDestroy {
+	APPLICATION_SERVER_URL = environment.applicationServerUrl;
+	livekitUrl = 'ws://localhost:7880/';
 
-  APPLICATION_SERVER_URL = environment.applicationServerUrl;
+	// OpenVidu objects
+	// docker run --rm -p 7880:7880 -p 7881:7881 -p 7882:7882/udp -e LIVEKIT_KEYS="devkey: secret" livekit/livekit-server:latest
 
-  // OpenVidu objects
-  OV: OpenVidu;
-  session: Session;
-  publisher: StreamManager; // Local
-  subscribers: StreamManager[] = []; // Remotes
+	room: Room;
+	localPublication: LocalTrackPublication;
+	remotePublications: RemoteTrackPublication[] = [];
 
-  // Join form
-  mySessionId: string;
-  myUserName: string;
+	// Join form
+	myRoomName: string;
+	myParticipantName: string;
 
-  // Main video of the page, will be 'publisher' or one of the 'subscribers',
-  // updated by click event in UserVideoComponent children
-  mainStreamManager: StreamManager;
+	// Main video of the page, will be 'localPublication' or one of the 'remotePublications',
+	// updated by click event in OpenViduVideoComponent children
+	mainPublication: LocalTrackPublication | RemoteTrackPublication;
 
-  constructor(private httpClient: HttpClient) {
-    this.generateParticipantInfo();
-  }
+	constructor(private httpClient: HttpClient) {
+		this.generateParticipantInfo();
+	}
 
-  @HostListener('window:beforeunload')
-  beforeunloadHandler() {
-    // On window closed leave session
-    this.leaveSession();
-  }
+	@HostListener('window:beforeunload')
+	beforeunloadHandler() {
+		// On window closed leave session
+		this.leaveRoom();
+	}
 
-  ngOnDestroy() {
-    // On component destroyed leave session
-    this.leaveSession();
-  }
+	ngOnDestroy() {
+		// On component destroyed leave session
+		this.leaveRoom();
+	}
 
-  joinSession() {
+	joinRoom() {
+		// --- 1) Get a Room object ---
 
-    // --- 1) Get an OpenVidu object ---
+		this.room = new Room();
 
-    this.OV = new OpenVidu();
+		// --- 2) Specify the actions when events take place in the room ---
 
-    // --- 2) Init a session ---
+		// On every new Track received...
+		this.room.on(
+			RoomEvent.TrackSubscribed,
+			(
+				track: RemoteTrack,
+				publication: RemoteTrackPublication,
+				participant: RemoteParticipant
+			) => {
+				// Store the new publication in remotePublications array
+				this.remotePublications.push(publication);
+			}
+		);
 
-    this.session = this.OV.initSession();
+		// On every track destroyed...
+		this.room.on(
+			RoomEvent.TrackUnsubscribed,
+			(track, publication, participant) => {
+				// Remove the publication from 'remotePublications' array
+				this.deleteRemoteTrackPublication(publication);
+			}
+		);
 
-    // --- 3) Specify the actions when events take place in the session ---
+		// --- 3) Connect to the room with a valid access token ---
 
-    // On every new Stream received...
-    this.session.on('streamCreated', (event: StreamEvent) => {
+		// Get a token from the application backend
+		this.getToken(this.myRoomName, this.myParticipantName).then((token) => {
+			// First param is the LiveKit server URL. Second param is the access token
 
-      // Subscribe to the Stream to receive it. Second parameter is undefined
-      // so OpenVidu doesn't create an HTML video by its own
-      let subscriber: Subscriber = this.session.subscribe(event.stream, undefined);
-      this.subscribers.push(subscriber);
-    });
+			this.room
+				.connect(this.livekitUrl, token)
+				.then(async () => {
+					// --- 4) Publish your local tracks ---
 
-    // On every Stream destroyed...
-    this.session.on('streamDestroyed', (event: StreamEvent) => {
+					await this.room.localParticipant.setMicrophoneEnabled(true);
+					const videoPublication =
+						await this.room.localParticipant.setCameraEnabled(true);
 
-      // Remove the stream from 'subscribers' array
-      this.deleteSubscriber(event.stream.streamManager);
-    });
+					// Set the main video in the page to display our webcam and store our localPublication
 
-    // On every asynchronous exception...
-    this.session.on('exception', (exception) => {
-      console.warn(exception);
-    });
+					this.localPublication = videoPublication;
+					this.mainPublication = videoPublication;
+				})
+				.catch((error) => {
+					console.log(
+						'There was an error connecting to the room:',
+						error.code,
+						error.message
+					);
+				});
+		});
+	}
 
-    // --- 4) Connect to the session with a valid user token ---
+	leaveRoom() {
+		// --- 5) Leave the session by calling 'disconnect' method over the Room object ---
 
-    // Get a token from the OpenVidu deployment
-    this.getToken().then(token => {
+		if (this.room) {
+			this.room.disconnect();
+		}
 
-      // First param is the token got from the OpenVidu deployment. Second param can be retrieved by every user on event
-      // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
-      this.session.connect(token, { clientData: this.myUserName })
-        .then(() => {
+		// Empty all properties...
+		this.remotePublications = [];
+		delete this.localPublication;
+		delete this.room;
 
-          // --- 5) Get your own camera stream ---
+		this.generateParticipantInfo();
+	}
 
-          // Init a publisher passing undefined as targetElement (we don't want OpenVidu to insert a video
-          // element: we will manage it on our own) and with the desired properties
-          let publisher: Publisher = this.OV.initPublisher(undefined, {
-            audioSource: undefined, // The source of audio. If undefined default microphone
-            videoSource: undefined, // The source of video. If undefined default webcam
-            publishAudio: true,     // Whether you want to start publishing with your audio unmuted or not
-            publishVideo: true,     // Whether you want to start publishing with your video enabled or not
-            resolution: '640x480',  // The resolution of your video
-            frameRate: 30,          // The frame rate of your video
-            insertMode: 'APPEND',   // How the video is inserted in the target element 'video-container'
-            mirror: false           // Whether to mirror your local video or not
-          });
+	getParticipantName(trackSid: string) {
+		const isLocalTrack = trackSid === this.localPublication.trackSid;
 
-          // --- 6) Publish your stream ---
+		if (isLocalTrack) {
+			// Return local participant name
+			return this.myParticipantName;
+		}
 
-          this.session.publish(publisher);
+		// Find in remote participants the participant with the track and return his name
+		const remoteParticipant = Array.from(this.room.participants.values()).find(
+			(p) => {
+				return p.getTracks().some((t) => t.trackSid === trackSid);
+			}
+		);
+		return remoteParticipant?.identity;
+	}
 
-          // Set the main video in the page to display our webcam and store our Publisher
-          this.mainStreamManager = publisher;
-          this.publisher = publisher;
-        })
-        .catch(error => {
-          console.log('There was an error connecting to the session:', error.code, error.message);
-        });
-    });
-  }
+	private generateParticipantInfo() {
+		// Random participant and room name
+		this.myRoomName = 'RoomA';
+		this.myParticipantName = 'Participant' + Math.floor(Math.random() * 100);
+	}
 
-  leaveSession() {
+	private deleteRemoteTrackPublication(
+		publication: RemoteTrackPublication
+	): void {
+		let index = this.remotePublications.findIndex(
+			(p) => p.trackSid === publication.trackSid
+		);
+		if (index > -1) {
+			this.remotePublications.splice(index, 1);
+		}
+	}
 
-    // --- 7) Leave the session by calling 'disconnect' method over the Session object ---
+	updateMainStreamManager(
+		publication: LocalTrackPublication | RemoteTrackPublication
+	) {
+		this.mainPublication = publication;
+	}
 
-    if (this.session) { this.session.disconnect(); };
+	/**
+	 * --------------------------------------------
+	 * GETTING A TOKEN FROM YOUR APPLICATION SERVER
+	 * --------------------------------------------
+	 * The methods below request the creation of a Room and a Token to
+	 * your application server. This keeps your OpenVidu deployment secure.
+	 *
+	 * In this sample code, there is no user control at all. Anybody could
+	 * access your application server endpoints! In a real production
+	 * environment, your application server must identify the user to allow
+	 * access to the endpoints.
+	 *
+	 * Visit https://docs.openvidu.io/en/stable/application-server to learn
+	 * more about the integration of OpenVidu in your application server.
+	 */
 
-    // Empty all properties...
-    this.subscribers = [];
-    delete this.publisher;
-    delete this.session;
-    delete this.OV;
-    this.generateParticipantInfo();
-  }
-
-
-  private generateParticipantInfo() {
-    // Random user nickname and sessionId
-    this.mySessionId = 'SessionA';
-    this.myUserName = 'Participant' + Math.floor(Math.random() * 100);
-  }
-
-  private deleteSubscriber(streamManager: StreamManager): void {
-    let index = this.subscribers.indexOf(streamManager, 0);
-    if (index > -1) {
-      this.subscribers.splice(index, 1);
-    }
-  }
-
-  updateMainStreamManager(streamManager: StreamManager) {
-    this.mainStreamManager = streamManager;
-  }
-
-
-  /**
-   * --------------------------------------------
-   * GETTING A TOKEN FROM YOUR APPLICATION SERVER
-   * --------------------------------------------
-   * The methods below request the creation of a Session and a Token to
-   * your application server. This keeps your OpenVidu deployment secure.
-   *
-   * In this sample code, there is no user control at all. Anybody could
-   * access your application server endpoints! In a real production
-   * environment, your application server must identify the user to allow
-   * access to the endpoints.
-   *
-   * Visit https://docs.openvidu.io/en/stable/application-server to learn
-   * more about the integration of OpenVidu in your application server.
-   */
-
-  async getToken(): Promise<string> {
-    const sessionId = await this.createSession(this.mySessionId);
-    return await this.createToken(sessionId);
-  }
-
-  createSession(sessionId) {
-    return this.httpClient.post(
-      this.APPLICATION_SERVER_URL + 'api/sessions',
-      { customSessionId: sessionId },
-      { headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
-    ).toPromise();
-  }
-
-  createToken(sessionId) {
-    return this.httpClient.post(
-      this.APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections',
-      {},
-      { headers: { 'Content-Type': 'application/json' }, responseType: 'text' }
-    ).toPromise();
-  }
-
+	async getToken(roomName: string, participantName: string): Promise<string> {
+		return this.httpClient
+			.post(
+				this.APPLICATION_SERVER_URL + 'token',
+				{ roomName, participantName },
+				{
+					headers: { 'Content-Type': 'application/json' },
+					responseType: 'text',
+				}
+			)
+			.toPromise();
+	}
 }

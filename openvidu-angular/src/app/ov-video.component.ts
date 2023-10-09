@@ -1,26 +1,30 @@
-import { AfterViewInit, Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { StreamManager } from 'openvidu-browser';
+import {
+	AfterViewInit,
+	Component,
+	ElementRef,
+	Input,
+	ViewChild,
+} from '@angular/core';
+import { LocalAudioTrack, RemoteAudioTrack } from 'livekit-client';
 
 @Component({
-    selector: 'ov-video',
-    template: '<video #videoElement></video>'
+	selector: 'ov-video',
+	template: '<video #videoElement></video>',
 })
 export class OpenViduVideoComponent implements AfterViewInit {
+	@ViewChild('videoElement') elementRef: ElementRef;
 
-    @ViewChild('videoElement') elementRef: ElementRef;
+	_track: LocalAudioTrack | RemoteAudioTrack;
 
-    _streamManager: StreamManager;
+	ngAfterViewInit() {
+		this._track.attach(this.elementRef.nativeElement);
+	}
 
-    ngAfterViewInit() {
-        this._streamManager.addVideoElement(this.elementRef.nativeElement);
-    }
-
-    @Input()
-    set streamManager(streamManager: StreamManager) {
-        this._streamManager = streamManager;
-        if (!!this.elementRef) {
-            this._streamManager.addVideoElement(this.elementRef.nativeElement);
-        }
-    }
-
+	@Input()
+	set track(track: LocalAudioTrack | RemoteAudioTrack) {
+		this._track = track;
+		if (!!this.elementRef) {
+			this._track.attach(this.elementRef.nativeElement);
+		}
+	}
 }
