@@ -40,8 +40,16 @@ server.listen(SERVER_PORT, () => {
 app.post('/token', (req, res) => {
 	const roomName = req.body.roomName;
 	const participantName = req.body.participantName;
+
+	if (!roomName || !participantName) {
+		res.status(400).send('roomName and participantName are required');
+		return;
+	}
+
 	const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
 		identity: participantName,
+		// add metadata to the token, which will be available in the participant's metadata
+		metadata: JSON.stringify({ livekitUrl: process.env.LIVEKIT_URL }),
 	});
 	at.addGrant({ roomJoin: true, room: roomName });
 	const token = at.toJwt();
