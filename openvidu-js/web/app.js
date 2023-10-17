@@ -1,9 +1,6 @@
-// docker run --rm -p 7880:7880 -p 7881:7881 -p 7882:7882/udp -e LIVEKIT_KEYS="devkey: secret" livekit/livekit-server:latest
 
 var LivekitClient = window.LivekitClient;
-var livekitUrl = 'ws://localhost:7880/';
 var room;
-
 
 /* OPENVIDU METHODS */
 
@@ -42,6 +39,7 @@ function joinRoom() {
 
 	// Get a token from the application backend
 	getToken(myRoomName, myUserName).then(token => {
+		const livekitUrl = getLivekitUrlFromMetadata(token);
 
 		// First param is the LiveKit server URL. Second param is the access token
 		room.connect(livekitUrl, token)
@@ -165,15 +163,39 @@ function getToken(roomName, participantName) {
 	return new Promise((resolve, reject) => {
 		$.ajax({
 			type: 'POST',
-			url: APPLICATION_SERVER_URL + 'getToken',
+			url: APPLICATION_SERVER_URL + 'token',
 			data: JSON.stringify({
 				roomName,
 				participantName,
 				permissions: {}
 			}),
 			headers: { "Content-Type": "application/json" },
-			success: (response) => resolve(response), // The token
+			success: (token) => resolve(token),
 			error: (error) => reject(error)
 		});
 	});
+}
+
+function getLivekitUrlFromMetadata(token) {
+	if (!token) throw new Error('Trying to get metadata from an empty token');
+	try {
+		const base64Url = token.split('.')[1];
+		const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+		const jsonPayload = decodeURIComponent(
+			window
+				.atob(base64)
+				.split('')
+				.map((c) => {
+					return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+				})
+				.join('')
+		);
+
+		const payload = JSON.parse(jsonPayload);
+		if (!payload?.metadata) throw new Error('Token does not contain metadata');
+		const metadata = JSON.parse(payload.metadata);
+		return metadata.livekitUrl;
+	} catch (error) {
+		throw new Error('Error decoding and parsing token: ' + error);
+	}
 }
