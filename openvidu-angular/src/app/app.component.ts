@@ -17,11 +17,6 @@ import { environment } from '../environments/environment';
 })
 export class AppComponent implements OnDestroy {
 	APPLICATION_SERVER_URL = environment.applicationServerUrl;
-	livekitUrl = 'ws://localhost:7880/';
-
-	// OpenVidu objects
-	// docker run --rm -p 7880:7880 -p 7881:7881 -p 7882:7882/udp -e LIVEKIT_KEYS="devkey: secret" livekit/livekit-server:latest
-
 	room: Room;
 	localPublication: LocalTrackPublication;
 	remotePublications: RemoteTrackPublication[] = [];
@@ -81,31 +76,29 @@ export class AppComponent implements OnDestroy {
 		// --- 3) Connect to the room with a valid access token ---
 
 		// Get a token from the application backend
-		this.getToken(this.myRoomName, this.myParticipantName).then((token) => {
-			// First param is the LiveKit server URL. Second param is the access token
+		this.getToken(this.myRoomName, this.myParticipantName).then(
+			async (token) => {
+				const livekitUrl = this.getLivekitUrlFromMetadata(token);
 
-			this.room
-				.connect(this.livekitUrl, token)
-				.then(async () => {
+				// First param is the LiveKit server URL. Second param is the access token
+				try {
+					await this.room.connect(livekitUrl, token);
 					// --- 4) Publish your local tracks ---
-
 					await this.room.localParticipant.setMicrophoneEnabled(true);
-					const videoPublication =
-						await this.room.localParticipant.setCameraEnabled(true);
+					const videoPublication = await this.room.localParticipant.setCameraEnabled(true);
 
 					// Set the main video in the page to display our webcam and store our localPublication
-
 					this.localPublication = videoPublication;
 					this.mainPublication = videoPublication;
-				})
-				.catch((error) => {
+				} catch (error) {
 					console.log(
 						'There was an error connecting to the room:',
 						error.code,
 						error.message
 					);
-				});
-		});
+				}
+			}
+		);
 	}
 
 	leaveRoom() {
@@ -163,11 +156,37 @@ export class AppComponent implements OnDestroy {
 		this.mainPublication = publication;
 	}
 
+	private getLivekitUrlFromMetadata(token: string): string {
+		if (!token)
+			throw new Error('Trying to get room metadata from an empty token');
+		try {
+			const base64Url = token.split('.')[1];
+			const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+			const jsonPayload = decodeURIComponent(
+				window
+					.atob(base64)
+					.split('')
+					.map((c) => {
+						return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+					})
+					.join('')
+			);
+
+			const payload = JSON.parse(jsonPayload);
+			if (!payload?.metadata)
+				throw new Error('Token does not contain metadata');
+			const metadata = JSON.parse(payload.metadata);
+			return metadata.livekitUrl;
+		} catch (error) {
+			throw new Error('Error decoding and parsing token: ' + error);
+		}
+	}
+
 	/**
 	 * --------------------------------------------
 	 * GETTING A TOKEN FROM YOUR APPLICATION SERVER
 	 * --------------------------------------------
-	 * The methods below request the creation of a Room and a Token to
+	 * The methods below request the creation of a Token to
 	 * your application server. This keeps your OpenVidu deployment secure.
 	 *
 	 * In this sample code, there is no user control at all. Anybody could

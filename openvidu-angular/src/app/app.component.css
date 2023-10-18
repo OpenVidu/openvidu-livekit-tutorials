@@ -21,3 +21,7 @@ ov-video {
 p {
 	margin: 0;
 }
+
+.hidden {
+	display: none;
+}

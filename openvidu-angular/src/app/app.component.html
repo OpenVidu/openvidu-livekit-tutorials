@@ -74,8 +74,9 @@
 			<div
 				*ngFor="let publication of remotePublications"
 				class="stream-container col-md-6 col-xs-6"
+				[ngClass]="{hidden: publication.kind === 'audio'}"
 			>
-				<p class="participant-name">
+				<p *ngIf="publication.videoTrack" class="participant-name">
 					{{ getParticipantName(publication.trackSid) }}
 				</p>
 				<ov-video
