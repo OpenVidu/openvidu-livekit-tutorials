@@ -1,10 +1,10 @@
 <template>
-	<video autoplay/>
+	<audio playsinline/>
 </template>
 
 <script>
 export default {
-	name: 'OvVideo',
+	name: 'OvAudio',
 
 	props: {
 		track: Object,
