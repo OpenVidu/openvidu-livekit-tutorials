@@ -45,17 +45,15 @@
 					value="Leave room"
 				/>
 			</div>
-			<div id="main-video" class="col-md-6">
-				<p v-if="mainPublication" class="participant-name">{{ getParticipantName(mainPublication.trackSid) }}</p>
-				<OvVideo
-					v-if="mainPublication && mainPublication.videoTrack"
+			<div v-if="mainPublication" id="main-video" class="col-md-6">
+				<p class="participant-name">{{ getParticipantName(mainPublication.trackSid) }}</p>
+				<OvVideo v-if="mainPublication.videoTrack"
 					:track="mainPublication.videoTrack"
 				/>
 			</div>
-			<div id="video-container" class="col-md-6">
-				<p v-if="localPublication && localPublication.videoTrack" class="participant-name">{{ myParticipantName }}</p>
+			<div v-if="localPublication && localPublication.videoTrack" id="video-container" class="col-md-6">
+				<p class="participant-name">{{ myParticipantName }}</p>
 				<OvVideo
-					v-if="localPublication && localPublication.videoTrack"
 					:track="localPublication.videoTrack"
 					@click.native="updateMainPublication(localPublication)"
 				/>
