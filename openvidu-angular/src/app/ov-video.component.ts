@@ -5,7 +5,7 @@ import {
 	Input,
 	ViewChild,
 } from '@angular/core';
-import { LocalAudioTrack, RemoteAudioTrack } from 'livekit-client';
+import { LocalVideoTrack, RemoteVideoTrack } from 'livekit-client';
 
 @Component({
 	selector: 'ov-video',
@@ -14,16 +14,16 @@ import { LocalAudioTrack, RemoteAudioTrack } from 'livekit-client';
 export class OpenViduVideoComponent implements AfterViewInit {
 	@ViewChild('videoElement') elementRef: ElementRef;
 
-	_track: LocalAudioTrack | RemoteAudioTrack;
+	_track: LocalVideoTrack | RemoteVideoTrack;
 
 	ngAfterViewInit() {
 		this._track.attach(this.elementRef.nativeElement);
 	}
 
 	@Input()
-	set track(track: LocalAudioTrack | RemoteAudioTrack) {
+	set track(track: LocalVideoTrack | RemoteVideoTrack) {
 		this._track = track;
-		if (!!this.elementRef) {
+		if (this.elementRef) {
 			this._track.attach(this.elementRef.nativeElement);
 		}
 	}
