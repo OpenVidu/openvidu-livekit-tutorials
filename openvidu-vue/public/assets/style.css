@@ -138,8 +138,9 @@ a:hover .demo-logo {
 
 #img-div {
 	text-align: center;
-	margin-top: 3em;
-	margin-bottom: 3em;
+	margin-top: 2em;
+	margin-bottom: 2em;
+
 	/*position: relative;
 	top: 20%;
 	left: 50%;
@@ -148,6 +149,7 @@ a:hover .demo-logo {
 
 #img-div img {
 	height: 15%;
+	width: 15%;
 }
 
 #join-dialog label {

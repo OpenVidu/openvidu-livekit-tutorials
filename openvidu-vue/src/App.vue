@@ -2,7 +2,7 @@
 	<div id="main-container" class="container">
 		<div id="join" v-if="!room">
 			<div id="img-div">
-				<img src="resources/images/openvidu_grey_bg_transp_cropped.png" />
+				<img src="/assets/images/openvidu_grey_bg_transp_cropped.png" />
 			</div>
 			<div id="join-dialog" class="jumbotron vertical-center">
 				<h1>Join a video room</h1>
@@ -55,7 +55,7 @@
 				<p class="participant-name">{{ myParticipantName }}</p>
 				<OvVideo
 					:track="localPublication.videoTrack"
-					@click.native="updateMainPublication(localPublication)"
+					@click="updateMainPublication(localPublication)"
 				/>
 
 				<div
@@ -69,7 +69,7 @@
 					<OvVideo
 						v-if="publication.videoTrack"
 						:track="publication.videoTrack"
-						@click.native="updateMainPublication(publication)"
+						@click="updateMainPublication(publication)"
 					/>
 					<OvAudio
 						v-if="publication.audioTrack"
@@ -84,8 +84,8 @@
 <script>
 import axios from 'axios';
 
-import OvVideo from './components/OvVideo';
-import OvAudio from './components/OvAudio';
+import OvVideo from './components/OvVideo.vue';
+import OvAudio from './components/OvAudio.vue';
 import { Room, RoomEvent } from 'livekit-client';
 
 axios.defaults.headers.post['Content-Type'] = 'application/json';
