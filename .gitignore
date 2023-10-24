@@ -38,4 +38,5 @@ openvidu-react-native-androidx/ios/build/
 */.idea/
 */node_modules/
 
-openvidu-components/openvidu-admin-dashboard/.vscode/
+
+**/*.vscode/
