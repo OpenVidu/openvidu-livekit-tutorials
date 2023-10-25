@@ -9,7 +9,7 @@ function joinRoom() {
 	var myRoomName = document.getElementById("roomName").value;
 	var myUserName = document.getElementById("userName").value;
 
-	// --- 1) Get an Room object ---
+	// --- 1) Get a Room object ---
 
 	room = new LivekitClient.Room();
 
@@ -71,7 +71,7 @@ function joinRoom() {
 
 function leaveRoom() {
 
-	// --- 9) Leave the room by calling 'disconnect' method over the Room object ---
+	// --- 6) Leave the room by calling 'disconnect' method over the Room object ---
 
 	room.disconnect();
 
@@ -140,42 +140,6 @@ function initMainVideo(videoElement, userData) {
 	document.querySelector('#main-video video')['muted'] = true;
 }
 
-
-/**
- * --------------------------------------------
- * GETTING A TOKEN FROM YOUR APPLICATION SERVER
- * --------------------------------------------
- * The methods below request the creation of a Room and a Token to
- * your application server. This keeps your OpenVidu deployment secure.
- *
- * In this sample code, there is no user control at all. Anybody could
- * access your application server endpoints! In a real production
- * environment, your application server must identify the user to allow
- * access to the endpoints.
- *
- * Visit https://docs.openvidu.io/en/stable/application-server to learn
- * more about the integration of OpenVidu in your application server.
- */
-
-var APPLICATION_SERVER_URL = "http://localhost:5000/";
-
-function getToken(roomName, participantName) {
-	return new Promise((resolve, reject) => {
-		$.ajax({
-			type: 'POST',
-			url: APPLICATION_SERVER_URL + 'token',
-			data: JSON.stringify({
-				roomName,
-				participantName,
-				permissions: {}
-			}),
-			headers: { "Content-Type": "application/json" },
-			success: (token) => resolve(token),
-			error: (error) => reject(error)
-		});
-	});
-}
-
 function getLivekitUrlFromMetadata(token) {
 	if (!token) throw new Error('Trying to get metadata from an empty token');
 	try {
@@ -199,3 +163,38 @@ function getLivekitUrlFromMetadata(token) {
 		throw new Error('Error decoding and parsing token: ' + error);
 	}
 }
+
+
+/**
+ * --------------------------------------------
+ * GETTING A TOKEN FROM YOUR APPLICATION SERVER
+ * --------------------------------------------
+ * The methods below request the creation of a Token to
+ * your application server. This keeps your OpenVidu deployment secure.
+ *
+ * In this sample code, there is no user control at all. Anybody could
+ * access your application server endpoints! In a real production
+ * environment, your application server must identify the user to allow
+ * access to the endpoints.
+ *
+ */
+
+var APPLICATION_SERVER_URL = "http://localhost:5000/";
+
+function getToken(roomName, participantName) {
+	return new Promise((resolve, reject) => {
+		$.ajax({
+			type: 'POST',
+			url: APPLICATION_SERVER_URL + 'token',
+			data: JSON.stringify({
+				roomName,
+				participantName,
+				permissions: {}
+			}),
+			headers: { "Content-Type": "application/json" },
+			success: (token) => resolve(token),
+			error: (error) => reject(error)
+		});
+	});
+}
+
