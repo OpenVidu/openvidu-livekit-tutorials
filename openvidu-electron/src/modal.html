@@ -1,94 +1,177 @@
 <!DOCTYPE html>
-
 <html>
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="script-src 'self' 'unsafe-inline';"
+		/>
+		<title>Screen Sharing Selection</title>
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';" />
-    <title>OpenVidu Electron</title>
+		<style>
+			body {
+				font-family: Arial, sans-serif;
+				background-color: #f0f0f0;
+				text-align: center;
+				padding: 20px;
+			}
 
-    <style>
-        #list-of-screens {
-            margin-bottom: 60px;
-        }
+			h1 {
+				font-size: 24px;
+			}
 
-        #footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            height: 25px;
-            background: white;
-            text-align: right;
-            padding: 10px 0px 10px 0px;
-        }
+			#list-of-screens {
+				/* display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+				grid-gap: 10px;
+				justify-items: center;
+				align-items: start;
+				margin: 20px 0; */
 
-        #share-btn {
-            margin-right: 20px;
-        }
-    </style>
-</head>
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+				gap: 16px; /* Adjust the gap as needed for spacing */
+				align-items: stretch; /* Makes all rows the same height */
 
-<body>
-    <h1>Share your screen</h1>
-    <div id="list-of-screens"></div>
-    <div id="footer">
-        <button id="cancel-btn" onclick="cancelSelection()">Cancel</button>
-        <button id="share-btn" onclick="sendScreenSelection()" disabled>Share</button>
-    </div>
-</body>
+				/* Additional styling for the grid container */
+				padding: 16px;
+				background-color: #f0f0f0;
+			}
 
-<script>
-    var availableScreens = [];
-    var htmlElements = [];
-    var selectedElement;
+			.screen-item {
+				border: 1px solid #ccc;
+				padding: 10px;
+				cursor: pointer;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+				align-items: center;
+				transition: background-color 0.3s, border-color 0.3s;
+			}
 
-    const desktopCapturer = require('@electron/remote').desktopCapturer;
-    const ipcRenderer = require('electron').ipcRenderer;
+			.screen-item:hover {
+				background-color: #f5f5f5;
+			}
 
-    // Call Electron API to list all available screens
-    desktopCapturer.getSources({
-        types: ['window', 'screen']
-    }).then(async sources => {
-        const list = document.getElementById("list-of-screens");
-        sources.forEach(source => {
-            // Add new element to the list with the thumbnail of the screen
-            var el = document.createElement("div");
-            el.onclick = () => {
-                // Style the new selected screen and store it as the current selection
-                htmlElements.forEach(e => {
-                    e.style.border = "none";
-                    e.style.background = "none";
-                })
-                el.style.border = "2px solid #0088aa";
-                el.style.background = "rgba(0, 0, 0, 0.06)";
-                selectedElement = el;
-                document.getElementById("share-btn").disabled = false;
-            }
-            // Store the new source and the new created HTML element
-            availableScreens.push(source);
-            htmlElements.push(el);
-            var img = document.createElement("img");
-            var name = document.createElement("span");
-            img.src = source.thumbnail.toDataURL();
-            name.innerHTML = source.name;
-            // Append new elements to the template
-            el.appendChild(img);
-            el.appendChild(name);
-            list.appendChild(el);
-        });
-    });
+			.screen-item img {
+				max-width: 100px;
+				max-height: 100px;
+				margin-bottom: 10px;
+			}
 
-    function sendScreenSelection() {
-        ipcRenderer.send('screen-share-selected', availableScreens[htmlElements.indexOf(selectedElement)].id);
-        closeWindow();
-    }
+			.screen-item span {
+				padding: 10px;
+				font-weight: bold;
+				text-align: center;
+			}
 
-    function cancelSelection() {
-        ipcRenderer.send('screen-share-selected', undefined);
-        closeWindow();
-    }
+			#footer {
+				position: fixed;
+				bottom: 0;
+				width: 95%;
+				height: 50px;
+				background: #f0f0f0;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				padding: 0 0px;
+			}
 
-    function closeWindow() {
-        require('@electron/remote').getCurrentWindow().close();
-    }
-</script>
+			#share-btn,
+			#cancel-btn {
+				color: #fff;
+				padding: 10px 20px;
+				border: none;
+				border-radius: 5px;
+				cursor: pointer;
+			}
+
+			#share-btn {
+				background-color: #007bff;
+			}
+			#cancel-btn {
+				background-color: rgb(151, 28, 28);
+			}
+
+			.screen-name {
+				font-weight: bold;
+			}
+		</style>
+	</head>
+
+	<body>
+		<h1>Select a Screen to Share</h1>
+		<div id="list-of-screens"></div>
+		<div id="footer">
+			<button id="cancel-btn" onclick="cancelSelection()">Cancel</button>
+			<button id="share-btn" onclick="sendScreenSelection()" disabled>
+				Share Screen
+			</button>
+		</div>
+	</body>
+
+	<script>
+		var availableScreens = [];
+		var htmlElements = [];
+		var selectedElement;
+
+		const desktopCapturer = require('@electron/remote').desktopCapturer;
+		const ipcRenderer = require('electron').ipcRenderer;
+
+		// Call Electron API to list all available screens
+		desktopCapturer
+			.getSources({
+				types: ['window', 'screen'],
+			})
+			.then(async (sources) => {
+				const list = document.getElementById('list-of-screens');
+				sources.forEach((source) => {
+					// Add new element to the list with the thumbnail of the screen
+					var el = document.createElement('div');
+					el.className = 'screen-item';
+					el.onclick = () => {
+						// Style the new selected screen and store it as the current selection
+						htmlElements.forEach((e) => {
+							e.style.border = 'none';
+							e.style.background = 'none';
+						});
+						el.style.border = '2px solid #0088aa';
+						el.style.background = 'rgba(0, 0, 0, 0.06)';
+						selectedElement = el;
+						document.getElementById('share-btn').disabled = false;
+					};
+					// Store the new source and the new created HTML element
+					availableScreens.push(source);
+					htmlElements.push(el);
+					var img = document.createElement('img');
+					var name = document.createElement('span');
+					img.src = source.thumbnail.toDataURL();
+					name.innerHTML = source.name;
+					img.style.width = '100px';
+					img.style.height = '100px';
+
+					// Append new elements to the template
+					el.appendChild(img);
+					el.appendChild(name);
+					list.appendChild(el);
+				});
+			});
+
+		function sendScreenSelection() {
+			ipcRenderer.send(
+				'screen-share-selected',
+				availableScreens[htmlElements.indexOf(selectedElement)].id
+			);
+			closeWindow();
+		}
+
+		function cancelSelection() {
+			ipcRenderer.send('screen-share-selected', undefined);
+			closeWindow();
+		}
+
+		function closeWindow() {
+			require('@electron/remote').getCurrentWindow().close();
+		}
+	</script>
+</html>

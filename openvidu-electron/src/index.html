@@ -17,29 +17,34 @@
     and Electron <span id="electron-version"></span>.
 
     <div id="join">
-        <h1>Join a video session</h1>
+        <h1>Join a Video Room</h1>
         <form onsubmit="initPublisher(); return false">
-            <p>
-                <label>Session:</label>
-                <input type="text" id="sessionId" value="SessionA" required>
-            </p>
-            <p>
-                <input id="screen-sharing" type="checkbox" name="screenshare"> Share screen?<br>
-            </p>
-            <p>
-                <input type="submit" value="JOIN">
-            </p>
+            <div class="form-group">
+                <label for="roomName">Room Name:</label>
+                <input type="text" id="roomName" placeholder="Enter room name" value="RoomA" required>
+            </div>
+            <div class="form-group">
+                <label for="participantName">Your Name:</label>
+                <input type="text" id="participantName" placeholder="Enter your name" required>
+            </div>
+            <div class="form-group screen-chekbox">
+                <input id="screen-sharing" type="checkbox" name="screenshare">
+                <label for="screen-sharing">Share screen?</label>
+            </div>
+            <div class="form-group">
+                <button type="submit">JOIN</button>
+            </div>
         </form>
     </div>
 
-    <div id="session" style="display: none;">
-        <h1 id="session-header"></h1>
-        <input type="button" onclick="leaveSession()" value="LEAVE">
+    <div id="room" style="display: none;">
+        <h1 id="room-header"></h1>
+        <input type="button" onclick="leaveRoom()" value="LEAVE">
         <div>
-            <div id="publisher">
+            <div id="local-participant">
                 <h3>YOU</h3>
             </div>
-            <div id="subscriber">
+            <div id="remote-participants">
                 <h3>OTHERS</h3>
             </div>
         </div>
