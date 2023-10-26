@@ -94,53 +94,59 @@ function leaveRoom() {
 	document.getElementById('room').style.display = 'none';
 }
 
-//
-
 async function toggleScreenShare() {
 	console.log('Toggling screen share');
 	const enabled = !isScreenShared;
 
 	if (enabled) {
-	  // Enable screen sharing
-	  screenSharePublication = await room.localParticipant?.setScreenShareEnabled(enabled);
+		// Enable screen sharing
+		try {
+			screenSharePublication =
+				await room.localParticipant?.setScreenShareEnabled(enabled);
+		} catch (error) {
+			console.error('Error enabling screen sharing', error);
+		}
 
-	  if (screenSharePublication) {
-		console.log('Screen sharing enabled', screenSharePublication);
-		isScreenShared = enabled;
+		if (screenSharePublication) {
+			console.log('Screen sharing enabled', screenSharePublication);
+			isScreenShared = enabled;
 
-		// Attach the screen share track to the video container
-		const element = screenSharePublication.track.attach();
-		element.id = screenSharePublication.trackSid;
-		element.className = 'removable';
-		document.getElementById('video-container').appendChild(element);
+			// Attach the screen share track to the video container
+			const element = screenSharePublication.track.attach();
+			element.id = screenSharePublication.trackSid;
+			element.className = 'removable';
+			document.getElementById('video-container').appendChild(element);
 
-		// Add user data for the screen share
-		appendUserData(element, `${myUserName}_SCREEN`);
+			// Add user data for the screen share
+			appendUserData(element, `${myUserName}_SCREEN`);
 
-		// Listen for the 'ended' event to handle screen sharing stop
-		screenSharePublication.addListener('ended', async () => {
-		  console.debug('Clicked native stop button. Stopping screen sharing');
-		  await stopScreenSharing();
-		});
-	  }
+			// Listen for the 'ended' event to handle screen sharing stop
+			screenSharePublication.addListener('ended', async () => {
+				console.debug('Clicked native stop button. Stopping screen sharing');
+				await stopScreenSharing();
+			});
+		}
 	} else {
-	  // Disable screen sharing
-	  await stopScreenSharing();
+		// Disable screen sharing
+		await stopScreenSharing();
 	}
-  }
-
+}
 
 async function stopScreenSharing() {
-	isScreenShared = false;
-	await room.localParticipant?.setScreenShareEnabled(false);
-	const trackSid = screenSharePublication?.trackSid;
+	try {
+		await room.localParticipant?.setScreenShareEnabled(false);
+		isScreenShared = false;
+		const trackSid = screenSharePublication?.trackSid;
 
-	if (trackSid) {
-	  document.getElementById(trackSid)?.remove();
-	  removeUserData({ identity: `${myUserName}_SCREEN` });
+		if (trackSid) {
+			document.getElementById(trackSid)?.remove();
+			removeUserData({ identity: `${myUserName}_SCREEN` });
+		}
+		screenSharePublication = undefined;
+	} catch (error) {
+		console.error('Error stopping screen sharing', error);
 	}
-	screenSharePublication = undefined;
-  }
+}
 
 window.onbeforeunload = function () {
 	if (room) room.disconnect();
