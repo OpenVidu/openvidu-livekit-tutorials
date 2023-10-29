@@ -18,7 +18,7 @@
 
     <div id="join">
         <h1>Join a Video Room</h1>
-        <form onsubmit="initPublisher(); return false">
+        <form onsubmit="joinRoom(); return false">
             <div class="form-group">
                 <label for="roomName">Room Name:</label>
                 <input type="text" id="roomName" placeholder="Enter room name" value="RoomA" required>
@@ -26,10 +26,6 @@
             <div class="form-group">
                 <label for="participantName">Your Name:</label>
                 <input type="text" id="participantName" placeholder="Enter your name" required>
-            </div>
-            <div class="form-group screen-chekbox">
-                <input id="screen-sharing" type="checkbox" name="screenshare">
-                <label for="screen-sharing">Share screen?</label>
             </div>
             <div class="form-group">
                 <button type="submit">JOIN</button>
@@ -39,7 +35,8 @@
 
     <div id="room" style="display: none;">
         <h1 id="room-header"></h1>
-        <input type="button" onclick="leaveRoom()" value="LEAVE">
+        <button class="leave-button" onclick="leaveRoom()" >LEAVE</button>
+        <button class="share-screen-button" onclick="toggleScreenShare()">Toggle screenshare</button>
         <div>
             <div id="local-participant">
                 <h3>YOU</h3>

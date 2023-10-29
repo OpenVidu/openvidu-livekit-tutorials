@@ -1,9 +1,8 @@
+const axios = require('axios');
+const { Room, RoomEvent } = require('livekit-client');
+
 const ipcRenderer = require('electron').ipcRenderer;
 const { BrowserWindow } = require('@electron/remote');
-
-const { Room, RoomEvent } = require('livekit-client');
-const axios = require('axios');
-
 var room;
 var publisher;
 var myParticipantName;
@@ -13,10 +12,6 @@ var screenSharePublication;
 
 ipcRenderer.on('screen-share-ready', async (event, sourceId) => {
 	if (sourceId) {
-		// User has chosen a screen to share. screenId is message parameter
-		showRoom();
-		await joinRoom();
-
 		try {
 			const stream = await navigator.mediaDevices.getUserMedia({
 				audio: false,
@@ -27,29 +22,20 @@ ipcRenderer.on('screen-share-ready', async (event, sourceId) => {
 					},
 				},
 			});
-            console.log('screenVideoTrack ', stream);
 
-            const track = stream.getVideoTracks()[0];
-            const screenPublication = await room.localParticipant.publishTrack(track);
-            const element = screenPublication.track.attach();
-            element.className = 'removable';
-	        document.getElementById('local-participant').appendChild(element);
+			const track = stream.getVideoTracks()[0];
+			const screenPublication = await room.localParticipant.publishTrack(track);
+			isScreenShared = true;
+			screenSharePublication = screenPublication;
+			const element = screenPublication.track.attach();
+			element.id = screenPublication.trackSid;
+			element.className = 'removable';
+			document.getElementById('local-participant').appendChild(element);
 		} catch (error) {
 			console.error('Error enabling screen sharing', error);
 		}
 	}
 });
-
-async function initPublisher() {
-
-	const shareScreen = document.getElementById('screen-sharing').checked;
-
-	if (shareScreen) {
-		openScreenShareModal();
-	} else {
-		await joinRoom();
-	}
-}
 
 async function joinRoom() {
 	myRoomName = document.getElementById('roomName').value;
@@ -77,12 +63,16 @@ async function joinRoom() {
 		document.getElementById(track.sid)?.remove();
 	});
 
+    // --- 3) Connect to the room with a valid access token ---
+
+    // Get a token from the application backend
 	const token = await getToken(myRoomName, myParticipantName);
 	const livekitUrl = getLivekitUrlFromMetadata(token);
 
 	await room.connect(livekitUrl, token);
 
 	showRoom();
+    // --- 4) Publish your local tracks ---
 	await room.localParticipant.setMicrophoneEnabled(true);
 	const publication = await room.localParticipant.setCameraEnabled(true);
 	const element = publication.track.attach();
@@ -95,30 +85,7 @@ async function toggleScreenShare() {
 	const enabled = !isScreenShared;
 
 	if (enabled) {
-		// Enable screen sharing
-		try {
-			screenSharePublication =
-				await room.localParticipant?.setScreenShareEnabled(enabled);
-		} catch (error) {
-			console.error('Error enabling screen sharing', error);
-		}
-
-		if (screenSharePublication) {
-			console.log('Screen sharing enabled', screenSharePublication);
-			isScreenShared = enabled;
-
-			// Attach the screen share track to the video container
-			const element = screenSharePublication.track.attach();
-			element.id = screenSharePublication.trackSid;
-			element.className = 'removable';
-			document.getElementById('local-participant').appendChild(element);
-
-			// Listen for the 'ended' event to handle screen sharing stop
-			screenSharePublication.addListener('ended', async () => {
-				console.debug('Clicked native stop button. Stopping screen sharing');
-				await stopScreenSharing();
-			});
-		}
+		openScreenShareModal();
 	} else {
 		// Disable screen sharing
 		await stopScreenSharing();
@@ -127,7 +94,7 @@ async function toggleScreenShare() {
 
 async function stopScreenSharing() {
 	try {
-		await room.localParticipant?.setScreenShareEnabled(false);
+		await room.localParticipant.unpublishTrack(screenSharePublication.track);
 		isScreenShared = false;
 		const trackSid = screenSharePublication?.trackSid;
 
@@ -141,12 +108,12 @@ async function stopScreenSharing() {
 }
 
 function leaveRoom() {
-    // --- 6) Leave the room by calling 'disconnect' method over the Room object ---
+	// --- 5) Leave the room by calling 'disconnect' method over the Room object ---
 
 	room.disconnect();
-    // Removing all HTML elements with user's nicknames.
+	// Removing all HTML elements with user's nicknames.
 	// HTML videos are automatically removed when leaving a Room
-	removeAllUserData();
+	removeAllParticipantElements();
 	hideRoom();
 }
 
@@ -161,7 +128,7 @@ function hideRoom() {
 	document.getElementById('room').style.display = 'none';
 }
 
-function removeAllUserData() {
+function removeAllParticipantElements() {
 	var elementsToRemove = document.getElementsByClassName('removable');
 	while (elementsToRemove[0]) {
 		elementsToRemove[0].parentNode.removeChild(elementsToRemove[0]);
@@ -247,7 +214,6 @@ async function getToken(roomName, participantName) {
 			}
 		);
 
-		console.log(response.data);
 		return response.data;
 	} catch (error) {
 		console.error('No connection to application server', error);

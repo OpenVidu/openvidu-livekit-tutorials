@@ -111,10 +111,12 @@
 	</body>
 
 	<script>
+		// Define arrays to store available screens and HTML elements
 		var availableScreens = [];
 		var htmlElements = [];
 		var selectedElement;
 
+		// Import required Electron modules
 		const desktopCapturer = require('@electron/remote').desktopCapturer;
 		const ipcRenderer = require('electron').ipcRenderer;
 
