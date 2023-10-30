@@ -188,8 +188,7 @@ function getToken(roomName, participantName) {
 			url: APPLICATION_SERVER_URL + 'token',
 			data: JSON.stringify({
 				roomName,
-				participantName,
-				permissions: {}
+				participantName
 			}),
 			headers: { "Content-Type": "application/json" },
 			success: (token) => resolve(token),
