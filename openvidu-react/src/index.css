@@ -159,10 +159,7 @@ a:hover .demo-logo {
 	display: inline-block;
 }
 
-#buttonLeaveSession, #buttonSwitchCamera {
-	float: right;
-	margin-top: 20px;
-}
+
 
 #video-container video {
 	position: relative;

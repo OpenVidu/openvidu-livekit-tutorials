@@ -1,3 +1,47 @@
 .stream-container {
 	padding: 0;
 }
+#join-dialog,
+#room {
+	padding: 20px;
+}
+
+video {
+	width: 100%;
+	height: auto;
+	float: left;
+	cursor: pointer;
+}
+.participant-name {
+	position: absolute;
+	background: #f8f8f8;
+	padding-left: 5px;
+	padding-right: 5px;
+	color: #777777;
+	font-weight: bold;
+	border-bottom-right-radius: 4px;
+	z-index: 1000;
+}
+p {
+	margin: 0;
+}
+
+.hidden {
+	display: none;
+}
+
+/* Estilos para el encabezado de la sala */
+#room-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	padding: 10px 20px;
+}
+
+/* Estilos para el título de la sala */
+#room-title {
+	font-size: 24px;
+}
+
+/* Contenedor de botones */
