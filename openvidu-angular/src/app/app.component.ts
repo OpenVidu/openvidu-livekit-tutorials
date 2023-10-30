@@ -67,7 +67,11 @@ export class AppComponent implements OnDestroy {
 		// On every track destroyed...
 		this.room.on(
 			RoomEvent.TrackUnsubscribed,
-			(track, publication, participant) => {
+			(
+				track: RemoteTrack,
+				publication: RemoteTrackPublication,
+				participant: RemoteParticipant
+			) => {
 				// Remove the publication from 'remotePublications' array
 				this.deleteRemoteTrackPublication(publication);
 			}
@@ -85,7 +89,8 @@ export class AppComponent implements OnDestroy {
 					await this.room.connect(livekitUrl, token);
 					// --- 4) Publish your local tracks ---
 					await this.room.localParticipant.setMicrophoneEnabled(true);
-					const videoPublication = await this.room.localParticipant.setCameraEnabled(true);
+					const videoPublication =
+						await this.room.localParticipant.setCameraEnabled(true);
 
 					// Set the main video in the page to display our webcam and store our localPublication
 					this.localPublication = videoPublication;
