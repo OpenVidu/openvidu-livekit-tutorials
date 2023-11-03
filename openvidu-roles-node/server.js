@@ -1,250 +1,191 @@
 /* CONFIGURATION */
 
-var OpenVidu = require('openvidu-node-client').OpenVidu;
-var OpenViduRole = require('openvidu-node-client').OpenViduRole;
-
 // For demo purposes we ignore self-signed certificate
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 // Node imports
-var express = require('express');
-var fs = require('fs');
-var session = require('express-session');
-var https = require('https');
-var bodyParser = require('body-parser'); // Pull information from HTML POST (express4)
-var app = express(); // Create our app with express
+const express = require('express');
+const fs = require('fs');
+const session = require('express-session');
+const https = require('https');
+const bodyParser = require('body-parser');
+const AccessToken = require('livekit-server-sdk').AccessToken;
+const RoomServiceClient = require('livekit-server-sdk').RoomServiceClient;
+const cors = require('cors');
+const app = express();
 
 // Environment variable: PORT where the node server is listening
-var SERVER_PORT = process.env.SERVER_PORT || 5000;
-// Environment variable: URL where our OpenVidu server is listening
-var OPENVIDU_URL = process.env.OPENVIDU_URL || process.argv[2] || 'http://localhost:4443';
-// Environment variable: secret shared with our OpenVidu server
-var OPENVIDU_SECRET = process.env.OPENVIDU_SECRET || process.argv[3] || 'MY_SECRET';
-
-// Entrypoint to OpenVidu Node Client SDK
-var OV = new OpenVidu(OPENVIDU_URL, OPENVIDU_SECRET);
-
-// Collection to pair session names with OpenVidu Session objects
-var mapSessions = {};
-// Collection to pair session names with tokens
-var mapSessionNamesTokens = {};
+const SERVER_PORT = process.env.SERVER_PORT || 5000;
+// Environment variable: api key shared with our LiveKit deployment
+const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || 'devkey';
+// Environment variable: api secret shared with our LiveKit deployment
+const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET || 'secret';
+// Environment variable: url of our LiveKit deployment
+const LIVEKIT_URL = process.env.LIVEKIT_URL || 'ws://localhost:7880';
 
 // Listen (start app with node server.js)
-var options = {
-    key: fs.readFileSync('openvidukey.pem'),
-    cert: fs.readFileSync('openviducert.pem')
+const options = {
+	key: fs.readFileSync('openvidukey.pem'),
+	cert: fs.readFileSync('openviducert.pem'),
 };
 
-// Mock database
-var users = [{
-    user: "publisher1",
-    pass: "pass",
-    role: OpenViduRole.PUBLISHER
-}, {
-    user: "publisher2",
-    pass: "pass",
-    role: OpenViduRole.PUBLISHER
-}, {
-    user: "subscriber",
-    pass: "pass",
-    role: OpenViduRole.SUBSCRIBER
-}];
+// The users of our application
+// They should be stored in a database
+const users = [
+	{
+		user: 'publisher1',
+		pass: 'pass',
+		role: 'PUBLISHER',
+	},
+	{
+		user: 'publisher2',
+		pass: 'pass',
+		role: 'PUBLISHER',
+	},
+	{
+		user: 'subscriber',
+		pass: 'pass',
+		role: 'SUBSCRIBER',
+	},
+];
+const livekitUrlHostname = LIVEKIT_URL.replace(/^ws:/, 'http:').replace(
+	/^wss:/,
+	'https:'
+);
+// const roomClient = new RoomServiceClient(
+// 	livekitUrlHostname,
+// 	LIVEKIT_API_KEY,
+// 	LIVEKIT_API_SECRET
+// );
 
+// Enable CORS support
+app.use(
+	cors({
+		origin: '*',
+	})
+);
 
 // Server configuration
-app.use(session({
-    saveUninitialized: true,
-    resave: false,
-    secret: 'MY_SECRET'
-}));
-app.use(express.static(__dirname + '/public')); // Set the static files location
-app.use(bodyParser.urlencoded({
-    'extended': 'true'
-})); // Parse application/x-www-form-urlencoded
-app.use(bodyParser.json()); // Parse application/json
-app.use(bodyParser.json({
-    type: 'application/vnd.api+json'
-})); // Parse application/vnd.api+json as json
+app.use(
+	session({
+		saveUninitialized: true,
+		resave: false,
+		secret: 'MY_SECRET',
+	})
+);
+// Set the static files location
+app.use(express.static(__dirname + '/public'));
+// Parse application/x-www-form-urlencoded
+app.use(
+	bodyParser.urlencoded({
+		extended: 'true',
+	})
+);
+// Parse application/json
+app.use(bodyParser.json());
 
+// Parse application/vnd.api+json as json
+app.use(
+	bodyParser.json({
+		type: 'application/vnd.api+json',
+	})
+);
 
 https.createServer(options, app).listen(SERVER_PORT, () => {
-    console.log(`App listening on port ${SERVER_PORT}`);
-    console.log(`OPENVIDU_URL: ${OPENVIDU_URL}`);
-    console.log(`OPENVIDU_SECRET: ${OPENVIDU_SECRET}`);
+	console.log(`App listening on port ${SERVER_PORT}`);
+	console.log(`LIVEKIT API KEY: ${LIVEKIT_API_KEY}`);
+	console.log(`LIVEKIT API SECRET: ${LIVEKIT_API_SECRET}`);
+	console.log(`LIVEKIT URL: ${LIVEKIT_URL}`);
+	console.log();
+	console.log('Access the app at https://localhost:' + SERVER_PORT);
 });
 
 /* CONFIGURATION */
 
-
-
 /* REST API */
 
-// Login
-app.post('/api-login/login', function (req, res) {
+app.post('/login', (req, res) => {
+	// Retrieve params from body
+	const { user, pass } = req.body;
 
-    // Retrieve params from POST body
-    var user = req.body.user;
-    var pass = req.body.pass;
-    console.log("Logging in | {user, pass}={" + user + ", " + pass + "}");
-
-    if (login(user, pass)) { // Correct user-pass
-        // Validate session and return OK
-        // Value stored in req.session allows us to identify the user in future requests
-        console.log("'" + user + "' has logged in");
-        req.session.loggedUser = user;
-        res.status(200).send();
-    } else { // Wrong user-pass
-        // Invalidate session and return error
-        console.log("'" + user + "' invalid credentials");
-        req.session.destroy();
-        res.status(401).send('User/Pass incorrect');
-    }
+	if (login(user, pass)) {
+		// Successful login
+		// Validate session and return OK
+		// Value stored in req.session allows us to identify the user in future requests
+		console.log(`Successful login for user '${user}'`);
+		req.session.loggedUser = user;
+		res.status(200).json({});
+	} else {
+		// Credentials are NOT valid
+		// Invalidate session and return error
+		console.log(`Invalid credentials for user '${user}'`);
+		req.session.destroy();
+		res.status(401).json({ message: 'Invalid credentials' });
+	}
 });
 
-// Logout
-app.post('/api-login/logout', function (req, res) {
-    console.log("'" + req.session.loggedUser + "' has logged out");
-    req.session.destroy();
-    res.status(200).send();
+app.post('/logout', function (req, res) {
+	console.log(`'${req.session.loggedUser}' has logged out`);
+	req.session.destroy();
+	res.status(200).json({});
 });
 
-// Get token (add new user to session)
-app.post('/api-sessions/get-token', function (req, res) {
-    if (!isLogged(req.session)) {
-        req.session.destroy();
-        res.status(401).send('User not logged');
-    } else {
-        // The video-call to connect
-        var sessionName = req.body.sessionName;
+app.post('/token', (req, res) => {
+	const {roomName, participantName} = req.body;
 
-        // Role associated to this user
-        var role = users.find(u => (u.user === req.session.loggedUser)).role;
+	if (!isLogged(req.session)) {
+		req.session.destroy();
+		res.status(401).json({ message: 'User not logged' });
+		return;
+	}
 
-        // Optional data to be passed to other users when this user connects to the video-call
-        // In this case, a JSON with the value we stored in the req.session object on login
-        var serverData = JSON.stringify({ serverData: req.session.loggedUser });
+	console.log(
+		`Getting a token for room '${roomName}' and participant '${participantName}'`
+	);
 
-        console.log("Getting a token | {sessionName}={" + sessionName + "}");
+	if (!roomName || !participantName) {
+		res
+			.status(400)
+			.json({ message: 'roomName and participantName are required' });
+		return;
+	}
 
-        // Build connectionProperties object with the serverData and the role
-        var connectionProperties = {
-            data: serverData,
-            role: role
-        };
-
-        if (mapSessions[sessionName]) {
-            // Session already exists
-            console.log('Existing session ' + sessionName);
-
-            // Get the existing Session from the collection
-            var mySession = mapSessions[sessionName];
-
-            // Generate a new token asynchronously with the recently created connectionProperties
-            mySession.createConnection(connectionProperties)
-                .then(connection => {
-
-                    // Store the new token in the collection of tokens
-                    mapSessionNamesTokens[sessionName].push(connection.token);
-
-                    // Return the token to the client
-                    res.status(200).send({
-                        0: connection.token
-                    });
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-        } else {
-            // New session
-            console.log('New session ' + sessionName);
-
-            // Create a new OpenVidu Session asynchronously
-            OV.createSession()
-                .then(session => {
-                    // Store the new Session in the collection of Sessions
-                    mapSessions[sessionName] = session;
-                    // Store a new empty array in the collection of tokens
-                    mapSessionNamesTokens[sessionName] = [];
-
-                    // Generate a new connection asynchronously with the recently created connectionProperties
-                    session.createConnection(connectionProperties)
-                        .then(connection => {
-
-                            // Store the new token in the collection of tokens
-                            mapSessionNamesTokens[sessionName].push(connection.token);
-
-                            // Return the Token to the client
-                            res.status(200).send({
-                                0: connection.token
-                            });
-                        })
-                        .catch(error => {
-                            console.error(error);
-                        });
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-        }
-    }
-});
-
-// Remove user from session
-app.post('/api-sessions/remove-user', function (req, res) {
-    if (!isLogged(req.session)) {
-        req.session.destroy();
-        res.status(401).send('User not logged');
-    } else {
-        // Retrieve params from POST body
-        var sessionName = req.body.sessionName;
-        var token = req.body.token;
-        console.log('Removing user | {sessionName, token}={' + sessionName + ', ' + token + '}');
-
-        // If the session exists
-        if (mapSessions[sessionName] && mapSessionNamesTokens[sessionName]) {
-            var tokens = mapSessionNamesTokens[sessionName];
-            var index = tokens.indexOf(token);
-
-            // If the token exists
-            if (index !== -1) {
-                // Token removed
-                tokens.splice(index, 1);
-                console.log(sessionName + ': ' + tokens.toString());
-            } else {
-                var msg = 'Problems in the app server: the TOKEN wasn\'t valid';
-                console.log(msg);
-                res.status(500).send(msg);
-            }
-            if (tokens.length == 0) {
-                // Last user left: session must be removed
-                console.log(sessionName + ' empty!');
-                delete mapSessions[sessionName];
-            }
-            res.status(200).send();
-        } else {
-            var msg = 'Problems in the app server: the SESSION does not exist';
-            console.log(msg);
-            res.status(500).send(msg);
-        }
-    }
+	const user = users.find((u) => u.user === req.session.loggedUser);
+	const {role, user: nickname} = user;
+	const canPublish = role === 'PUBLISHER';
+	const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
+		identity: participantName,
+		// add metadata to the token, which will be available in the participant's metadata
+		metadata: JSON.stringify({ livekitUrl: LIVEKIT_URL, nickname, role }),
+	});
+	at.addGrant({
+		roomJoin: true,
+		room: roomName,
+		canPublish,
+		canSubscribe: true,
+	});
+	res.status(200).json({ token: at.toJwt() });
 });
 
 /* REST API */
-
-
 
 /* AUXILIARY METHODS */
 
 function login(user, pass) {
-    return (users.find(u => (u.user === user) && (u.pass === pass)));
+	return users.find((u) => u.user === user && u.pass === pass);
 }
 
 function isLogged(session) {
-    return (session.loggedUser != null);
+	return session.loggedUser != null;
 }
 
-function getBasicAuth() {
-    return 'Basic ' + (new Buffer('OPENVIDUAPP:' + OPENVIDU_SECRET).toString('base64'));
-}
+// async function getRoom(roomName) {
+// 	try {
+// 		const rooms = await roomClient.listRooms(roomName);
+// 		return rooms[0];
+// 	} catch (error) {
+// 		return undefined;
+// 	}
+// }
 
 /* AUXILIARY METHODS */
