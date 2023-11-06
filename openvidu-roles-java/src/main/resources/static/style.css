@@ -13,6 +13,10 @@ nav {
 	border-top-left-radius: 0 !important;
 }
 
+.navbar {
+	margin-bottom: 0px !important;
+}
+
 .navbar-header {
 	width: 100%;
 }
@@ -41,8 +45,23 @@ nav i.fa:hover {
 
 #main-container {
 	padding-bottom: 80px;
-	display: flex;
-	justify-content: center;
+	display: contents;
+}
+
+.vertical-center {
+    width: -webkit-fit-content;
+    width: fit-content;
+    margin: auto;
+}
+
+.vertical-center#not-logged form {
+	width: -moz-fit-content;
+	margin: auto;
+}
+
+.vertical-center#not-logged table {
+	width: -moz-fit-content;
+	margin: auto;
 }
 
 .vertical-center table {
@@ -163,7 +182,6 @@ a:hover .demo-logo {
 
 #not-logged {
 	padding-top: 40px;
-	width: 350px;
 }
 
 #join-dialog h1 {
@@ -202,19 +220,19 @@ a:hover .demo-logo {
     margin: auto;
 }
 
-#session-header {
+#room-header {
 	margin-bottom: 20px;
 }
 
-#session-header form {
+#room-header form {
 	display: inline;
 }
 
-#session-title {
+#room-title {
 	display: inline-block;
 }
 
-#buttonLeaveSession {
+#buttonLeaveRoom {
 	float: right;
 	margin-top: 20px;
 }
@@ -243,7 +261,7 @@ a:hover .demo-logo {
 	border-bottom-right-radius: 4px;
 }
 
-#video-container p.userName {
+#video-container p.nickname {
 	float: right;
     border-bottom-left-radius: 4px;
     border-bottom-right-radius: 0px;
@@ -270,7 +288,7 @@ video {
 	border-bottom-right-radius: 4px;
 }
 
-#main-video p.userName {
+#main-video p.nickname {
 	position: absolute;
 	right: 0;
 	font-size: 16px !important;
@@ -284,7 +302,7 @@ video {
 }
 
 
-#session img {
+#room img {
 	width: 100%;
 	height: auto;
 	display: inline-block;
@@ -292,7 +310,7 @@ video {
 	vertical-align: baseline;
 }
 
-#session #video-container img {
+#room #video-container img {
 	position: relative;
 	float: left;
 	width: 50%;
@@ -338,7 +356,7 @@ table i {
 	#join {
 		padding-top: inherit;
 	}
-	
+
 	#not-logged {
 		padding-top: inherit;
 	}
