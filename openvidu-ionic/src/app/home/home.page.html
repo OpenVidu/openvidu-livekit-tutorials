@@ -1,0 +1,115 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="primary">
+      <ion-button
+        color="dark"
+        href="https://github.com/OpenVidu/openvidu-tutorials/tree/master/openvidu-ionic"
+      >
+        <ion-icon slot="icon-only" name="logo-github"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<!-- Maybe in iOS the content background must be transparent as old project? -->
+<ion-content *ngIf="!room" [fullscreen]="true" class="ion-padding">
+  <div id="img-div">
+    <img src="assets/images/openvidu_grey_bg_transp_cropped.png" />
+  </div>
+  <h1 align="center" id="title">Join a video room</h1>
+  <ion-item>
+    <ion-input
+      id="user-input"
+      label="Participant"
+      labelPlacement="floating"
+      [(ngModel)]="myParticipantName"
+    ></ion-input>
+  </ion-item>
+  <ion-item>
+    <ion-input
+      id="room-input"
+      label="Room"
+      labelPlacement="floating"
+      [(ngModel)]="myRoomName"
+    ></ion-input>
+  </ion-item>
+
+  <ion-button
+    id="join-button"
+    [disabled]="!myRoomName && !myParticipantName"
+    (click)="joinRoom()"
+    expand="block"
+    shape="round"
+    color="primary"
+  >
+    <ion-icon slot="start" name="videocam"></ion-icon>
+    Join
+  </ion-button>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button
+      id="settings-button"
+      [disabled]="!myRoomName && !myParticipantName"
+      (click)="presentSettingsAlert()"
+      size="small"
+      color="dark"
+    >
+      <ion-icon name="settings"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+
+<ion-content [scrollEvents]="true" *ngIf="room" class="transparent">
+  <div class="container">
+    <div *ngIf="localPublication" class="local-publication publication">
+      <p class="participant-name">
+        {{ getParticipantName(localPublication.trackSid) }}
+      </p>
+      <ov-video
+        *ngIf="localPublication.videoTrack"
+        [track]="localPublication.videoTrack"
+      ></ov-video>
+    </div>
+
+    <div
+      *ngFor="let publication of remotePublications"
+      [ngClass]="{hidden: publication.kind === 'audio'}"
+      class="remote-publication publication"
+    >
+      <p *ngIf="publication.videoTrack" class="participant-name">
+        {{ getParticipantName(publication.trackSid) }}
+      </p>
+      <ov-video
+        *ngIf="publication.videoTrack"
+        [track]="publication.videoTrack"
+      ></ov-video>
+      <ov-audio
+        *ngIf="publication.audioTrack"
+        [track]="publication.audioTrack"
+      ></ov-audio>
+    </div>
+  </div>
+
+  <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button
+      class="action-button"
+      color="light"
+      id="camButton"
+      (click)="swapCamera()"
+    >
+      <ion-icon name="camera-reverse-sharp"></ion-icon>
+    </ion-fab-button>
+
+    <ion-fab-button (click)="toggleMicrophone()" class="action-button">
+      <ion-icon name="{{ microphoneIcon }}"></ion-icon>
+    </ion-fab-button>
+
+    <ion-fab-button (click)="toggleCamera()" class="action-button">
+      <ion-icon name="{{ cameraIcon }}"></ion-icon>
+    </ion-fab-button>
+
+    <ion-fab-button color="danger" (click)="leaveRoom()" class="action-button">
+      <ion-icon name="power"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
