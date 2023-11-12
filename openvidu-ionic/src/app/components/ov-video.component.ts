@@ -9,10 +9,10 @@ import { LocalVideoTrack, RemoteVideoTrack } from 'livekit-client';
 
 @Component({
   selector: 'ov-video',
-  template: '<video #videoElement style="height: 100%"></video>',
+  template: '<video #videoElement controls poster="../../assets/images/video-poster.png"></video>',
 })
 export class OpenViduVideoComponent implements AfterViewInit {
-  @ViewChild('videoElement') elementRef!: ElementRef;
+  @ViewChild('videoElement') elementRef!: ElementRef<HTMLVideoElement>;
 
   _track!: LocalVideoTrack | RemoteVideoTrack;
 

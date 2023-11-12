@@ -8,6 +8,7 @@ import { HomePageRoutingModule } from './home-routing.module';
 import { HttpClientModule } from '@angular/common/http';
 import { OpenViduVideoComponent } from '../components/ov-video.component';
 import { OpenViduAudioComponent } from '../components/ov-audio.component';
+import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 
 
 @NgModule({
@@ -19,5 +20,8 @@ import { OpenViduAudioComponent } from '../components/ov-audio.component';
     HttpClientModule,
   ],
   declarations: [HomePage, OpenViduVideoComponent, OpenViduAudioComponent],
+  providers: [
+    AndroidPermissions,
+  ],
 })
 export class HomePageModule {}

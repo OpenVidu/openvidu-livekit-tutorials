@@ -59,36 +59,45 @@
   </ion-fab>
 </ion-content>
 
-<ion-content [scrollEvents]="true" *ngIf="room" class="transparent">
-  <div class="container">
-    <div *ngIf="localPublication" class="local-publication publication">
-      <p class="participant-name">
-        {{ getParticipantName(localPublication.trackSid) }}
-      </p>
-      <ov-video
-        *ngIf="localPublication.videoTrack"
-        [track]="localPublication.videoTrack"
-      ></ov-video>
-    </div>
-
-    <div
-      *ngFor="let publication of remotePublications"
-      [ngClass]="{hidden: publication.kind === 'audio'}"
-      class="remote-publication publication"
-    >
-      <p *ngIf="publication.videoTrack" class="participant-name">
-        {{ getParticipantName(publication.trackSid) }}
-      </p>
-      <ov-video
-        *ngIf="publication.videoTrack"
-        [track]="publication.videoTrack"
-      ></ov-video>
-      <ov-audio
-        *ngIf="publication.audioTrack"
-        [track]="publication.audioTrack"
-      ></ov-audio>
-    </div>
+<ion-content *ngIf="room" [scrollEvents]="true" class="transparent" id="room">
+  <div id="room-header">
+    <h1 id="room-name">{{ myRoomName }}</h1>
   </div>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col size="12">
+        <div *ngIf="localPublication" class="local-publication publication">
+          <p class="participant-name">
+            {{ getParticipantName(localPublication.trackSid) }}
+          </p>
+          <ov-video
+            *ngIf="localPublication.videoTrack"
+            [track]="localPublication.videoTrack"
+          ></ov-video>
+        </div>
+      </ion-col>
+
+      <ion-col
+        size="6"
+        *ngFor="let publication of remotePublications"
+        [ngClass]="{hidden: publication.kind === 'audio'}"
+        class="remote-publication publication"
+      >
+        <p *ngIf="publication.videoTrack" class="participant-name">
+          {{ getParticipantName(publication.trackSid) }}
+        </p>
+        <ov-video
+          *ngIf="publication.videoTrack"
+          [track]="publication.videoTrack"
+        ></ov-video>
+        <ov-audio
+          *ngIf="publication.audioTrack"
+          [track]="publication.audioTrack"
+        ></ov-audio>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 
   <ion-fab vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button

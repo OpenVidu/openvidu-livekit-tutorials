@@ -6,10 +6,13 @@ import {
   RemoteTrackPublication,
   Room,
   RoomEvent,
+  TrackPublishOptions,
 } from 'livekit-client';
 import { HttpClient } from '@angular/common/http';
 import { AlertController, Platform } from '@ionic/angular';
 import { lastValueFrom, take } from 'rxjs';
+import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -36,25 +39,32 @@ export class HomePage {
   private cameraSelected!: MediaDeviceInfo;
   private isFrontCamera: boolean = false;
 
+  ANDROID_PERMISSIONS = [
+    this.androidPermissions.PERMISSION.CAMERA,
+    this.androidPermissions.PERMISSION.RECORD_AUDIO,
+    this.androidPermissions.PERMISSION.MODIFY_AUDIO_SETTINGS,
+  ];
+
   constructor(
     private httpClient: HttpClient,
     private alertController: AlertController,
-    private platform: Platform
+    private platform: Platform,
+    private androidPermissions: AndroidPermissions
   ) {
     this.generateParticipantInfo();
 
-    // WARNING!! To make easier first steps with mobile devices, this code allows
-    // using the demos OpenVidu deployment when no custom deployment is provided
-    // if (
-    //   this.platform.is('hybrid') &&
-    //   this.APPLICATION_SERVER_URL === 'http://localhost:5000/'
-    // ) {
-    //   /**
-    //    * WARNING: this APPLICATION_SERVER_URL is not secure and is only meant for a first quick test.
-    //    * Anyone could access your video rooms. You should modify the APPLICATION_SERVER_URL to a custom private one.
-    //    */
-    //   this.APPLICATION_SERVER_URL = 'https://call.next.openvidu.io/';
-    // }
+    // WARNING!! To make the mobile development easier, this code allows
+    // using your local IP address for communicating with the backend.
+    // For production uses, the server should be accessible from the Internet
+    if (this.platform.is('hybrid')) {
+      if (environment.externalIp) {
+        console.warn('Your local IP address: ', environment.externalIp);
+        this.APPLICATION_SERVER_URL = this.APPLICATION_SERVER_URL.replace(
+          'localhost',
+          environment.externalIp
+        );
+      }
+    }
   }
 
   @HostListener('window:beforeunload')
@@ -103,16 +113,28 @@ export class HomePage {
         this.myRoomName,
         this.myParticipantName
       );
-      const livekitUrl = this.getLivekitUrlFromMetadata(token);
+
+      let livekitUrl = this.getLivekitUrlFromMetadata(token);
+
+      if (environment.externalIp) {
+        // WARNING!! To make the mobile development easier, this code allows
+        // using your local IP address for communicating with the backend.
+        // For production uses, the server should be accessible from the Internet
+        livekitUrl = livekitUrl.replace('localhost', environment.externalIp);
+      }
+
       // First param is the LiveKit server URL. Second param is the access token
 
       await this.room.connect(livekitUrl, token);
 
       // --- 5) Requesting and Checking Android Permissions
       if (this.platform.is('hybrid') && this.platform.is('android')) {
-        console.log('Ionic Android platform');
         await this.checkAndroidPermissions();
       }
+
+      const publishOptions: TrackPublishOptions = {
+        stream: 'test',
+      };
 
       const [audioPublication, videoPublication] = await Promise.all([
         this.room.localParticipant.setMicrophoneEnabled(true),
@@ -121,6 +143,7 @@ export class HomePage {
 
       // Set the main video in the page to display our webcam and store our localPublication
       this.localPublication = videoPublication;
+      this.refreshVideos();
       await this.initDevices();
     } catch (error: any) {
       console.log(
@@ -185,7 +208,13 @@ export class HomePage {
   async toggleCamera() {
     if (this.room) {
       const enabled = !this.room.localParticipant.isCameraEnabled;
+      // const options: VideoCaptureOptions = {};
+      // const publishOptions: TrackPublishOptions = {
+      //   stream: 'test',
+      // };
+
       await this.room.localParticipant.setCameraEnabled(enabled);
+      this.refreshVideos();
       this.cameraIcon = enabled ? 'videocam' : 'eye-off';
     }
   }
@@ -193,7 +222,14 @@ export class HomePage {
   async toggleMicrophone() {
     if (this.room) {
       const enabled = !this.room.localParticipant.isMicrophoneEnabled;
-      await this.room.localParticipant.setMicrophoneEnabled(enabled);
+      const publishOptions: TrackPublishOptions = {
+        stream: 'test',
+      };
+      await this.room.localParticipant.setMicrophoneEnabled(
+        enabled,
+        undefined,
+        publishOptions
+      );
       this.microphoneIcon = enabled ? 'mic' : 'mic-off';
     }
   }
@@ -207,6 +243,8 @@ export class HomePage {
       if (newCamera && this.room) {
         await this.room.switchActiveDevice('videoinput', newCamera.deviceId);
         this.cameraSelected = newCamera;
+
+        this.refreshVideos();
       }
     } catch (error) {
       console.error(error);
@@ -245,9 +283,43 @@ export class HomePage {
     await alert.present();
   }
 
+  private refreshVideos() {
+    // setTimeout(() => {
+    //     console.warn('track restarted: UPDATED DOM');
+    //     const refreshedElement = document.getElementById('refreshed-workaround');
+    //     if (refreshedElement) {
+    //       refreshedElement.remove();
+    //     } else {
+    //       const p = document.createElement('p');
+    //       p.id = 'refreshed-workaround';
+    //       document.getElementById('room')?.appendChild(p);
+    //     }
+    // }, 200);
+  }
+
   private async checkAndroidPermissions(): Promise<void> {
     await this.platform.ready();
-    //TODO: Implement Android permissions
+    try {
+      await this.androidPermissions.requestPermissions(
+        this.ANDROID_PERMISSIONS
+      );
+      const promisesArray: Promise<any>[] = [];
+      this.ANDROID_PERMISSIONS.forEach((permission) => {
+        console.log('Checking ', permission);
+        promisesArray.push(this.androidPermissions.checkPermission(permission));
+      });
+      const responses = await Promise.all(promisesArray);
+      let allHasPermissions = true;
+      responses.forEach((response, i) => {
+        allHasPermissions = response.hasPermission;
+        if (!allHasPermissions) {
+          throw new Error('Permissions denied: ' + this.ANDROID_PERMISSIONS[i]);
+        }
+      });
+    } catch (error) {
+      console.error('Error requesting or checking permissions: ', error);
+      throw error;
+    }
   }
 
   private async initDevices() {
