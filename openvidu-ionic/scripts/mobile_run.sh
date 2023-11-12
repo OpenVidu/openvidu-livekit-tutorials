@@ -8,6 +8,7 @@ if [ -z "$1" ]; then
 fi
 
 PLATFORM=$1
+ENV_FILE="src/environments/environment.ts"
 
 # Getting the operating system
 os_name=$(uname)
@@ -16,14 +17,37 @@ case "$os_name" in
     "Linux")
         # Commands for Linux
         LOCAL_IP=$(hostname -I | awk '{print $1}')
+
+
+        if [ -z "$LOCAL_IP" ]; then
+            echo "Cannot get your local IP address."
+            exit 1
+        fi
+
+        sed -i "s/\(externalIp:\s*'\)[^']*/\1$LOCAL_IP/" src/environments/environment.ts
+        echo "Your local ip is $LOCAL_IP"
+        echo "Setting up your movile environment for developing OpenVidu..."
+        npx ionic cap run $PLATFORM -l --external --disable-host-check --public-host=$LOCAL_IP --ssl 
+
         ;;
     "Darwin")
         # Commands for macOS
-        LOCAL_IP=$(ifconfig | grep "inet " | grep -Fv)
-        ;;
-    CYGWIN*|"MINGW32_NT"|"MINGW64_NT")
-        # Commands for Windows (Cygwin or MinGW)
-        LOCAL_IP=$(ipconfig | grep "IPv4 Address" | awk '{print $NF}')
+        for interface in $(ifconfig -l); do
+            ip=$(ipconfig getifaddr $interface)
+            if [ -n "$ip" ]; then
+                LOCAL_IP=$ip
+                break
+            fi
+        done
+
+        if [ -z "$LOCAL_IP" ]; then
+            echo "Cannot get your local IP address."
+            exit 1
+        fi
+        echo "Your local ip is $LOCAL_IP"
+        echo "Setting up your movile environment for developing OpenVidu..."
+        sed -i '' "s/externalIp: .*/externalIp: '$LOCAL_IP'/g" $ENV_FILE
+        npx ionic capacitor run ios -c development 
         ;;
     *)
         # Unsupported/Unknown OS
@@ -31,19 +55,5 @@ case "$os_name" in
         exit 1
         ;;
 esac
-
-if [ -z "$LOCAL_IP" ]; then
-    echo "Cannot get your local IP address."
-    exit 1
-fi
-
-echo "Your local ip is $LOCAL_IP"
-echo "Setting up your movile environment for developing OpenVidu..."
-
-# Set environment variables
-sed -i "s/\(externalIp:\s*'\)[^']*/\1$LOCAL_IP/" src/environments/environment.ts
-
-npx ionic cap run $PLATFORM -l --external --disable-host-check --public-host=$LOCAL_IP --ssl
-
 
 
