@@ -1,0 +1,9 @@
+
+{$IP_ADDRESS}:5001 {
+	reverse_proxy http://localhost:5000
+	@ws {
+		header Connection *Upgrade*
+		header Upgrade websocket
+	}
+	reverse_proxy @ws http://localhost:7880
+}

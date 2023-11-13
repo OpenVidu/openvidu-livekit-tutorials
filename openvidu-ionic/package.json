@@ -4,14 +4,13 @@
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
   "scripts": {
-    "start": "ionic serve",
-    "build": "ng build",
+    "start": "npx ionic serve",
+    "build": "npx ionic build",
     "watch": "ng build --watch --configuration development",
-    "android": "./scripts/mobile_run.sh androidd",
+    "android": "./scripts/mobile_run.sh android",
     "ios": "./scripts/mobile_run.sh ios",
     "sync": "npx ionic capacitor sync",
-    "build:full": "npm run trapeze && npx ionic capacitor sync",
-    "build:android": "npm run build:full && npx ionic capacitor build android --no-open && cd android && ./gradlew assembleDebug && ./gradlew assembleRelease",
+    "build:android": "npx ionic capacitor build android --no-open && cd android && ./gradlew assembleDebug && ./gradlew assembleRelease",
     "copy:android": "cp ./android/app/build/outputs/apk/debug/app-debug.apk /opt/openvidu/android/openvidu-ionic.apk"
   },
   "private": true,

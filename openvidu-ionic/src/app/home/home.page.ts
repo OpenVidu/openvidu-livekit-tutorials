@@ -6,7 +6,6 @@ import {
   RemoteTrackPublication,
   Room,
   RoomEvent,
-  TrackPublishOptions,
 } from 'livekit-client';
 import { HttpClient } from '@angular/common/http';
 import { AlertController, Platform } from '@ionic/angular';
@@ -21,24 +20,20 @@ import { environment } from 'src/environments/environment';
 })
 export class HomePage {
   APPLICATION_SERVER_URL = 'http://localhost:5000/';
+  WS_LIVEKIT_URL = 'ws://localhost:7880/';
+  private IS_DEVICE_DEV_MODE = false;
 
   // OpenVidu objects
   room: Room | undefined = undefined;
-
   localPublication: LocalTrackPublication | undefined = undefined;
   remotePublications: RemoteTrackPublication[] = [];
-
   // Join form
   myRoomName!: string;
   myParticipantName!: string;
-
   cameraIcon = 'videocam';
   microphoneIcon = 'mic';
-
   private cameras: MediaDeviceInfo[] = [];
   private cameraSelected!: MediaDeviceInfo;
-  private isFrontCamera: boolean = false;
-
   ANDROID_PERMISSIONS = [
     this.androidPermissions.PERMISSION.CAMERA,
     this.androidPermissions.PERMISSION.RECORD_AUDIO,
@@ -52,25 +47,29 @@ export class HomePage {
     private androidPermissions: AndroidPermissions
   ) {
     this.generateParticipantInfo();
-
-    // WARNING!! To make the mobile development easier, this code allows
-    // using your local IP address for communicating with the backend.
-    // For production uses, the server should be accessible from the Internet
-    if (this.platform.is('hybrid')) {
-      if (environment.externalIp) {
-        console.warn('Your local IP address: ', environment.externalIp);
-        this.APPLICATION_SERVER_URL = this.APPLICATION_SERVER_URL.replace(
-          'localhost',
-          environment.externalIp
-        );
-      }
-    }
   }
 
   @HostListener('window:beforeunload')
   beforeunloadHandler() {
     // On window closed leave room
     this.leaveRoom();
+  }
+
+  ngOnInit() {
+    /**
+     * WARNING!! To make the mobile development easier, this code allows
+     * using your local IP address for communicating with the backend.
+     * For production uses, the server should be accessible from the Internet
+     * and the code below should be removed.
+     */
+    if (this.platform.is('hybrid') && environment.externalIp) {
+      this.IS_DEVICE_DEV_MODE = true;
+      this.prepareForDeviceDevelopment();
+    }
+
+    console.log('IS_DEVICE_DEV_MODE: ', this.IS_DEVICE_DEV_MODE);
+    console.log('APPLICATION_SERVER_URL: ', this.APPLICATION_SERVER_URL);
+    console.log('WS_LIVEKIT_URL: ', this.WS_LIVEKIT_URL);
   }
 
   ngOnDestroy() {
@@ -114,27 +113,19 @@ export class HomePage {
         this.myParticipantName
       );
 
-      let livekitUrl = this.getLivekitUrlFromMetadata(token);
-
-      if (environment.externalIp) {
-        // WARNING!! To make the mobile development easier, this code allows
-        // using your local IP address for communicating with the backend.
-        // For production uses, the server should be accessible from the Internet
-        livekitUrl = livekitUrl.replace('localhost', environment.externalIp);
+      if (!this.IS_DEVICE_DEV_MODE) {
+        // Get the Livekit WebSocket URL from the token metadata if not in device dev mode
+        this.WS_LIVEKIT_URL = this.getLivekitUrlFromMetadata(token);
       }
 
       // First param is the LiveKit server URL. Second param is the access token
 
-      await this.room.connect(livekitUrl, token);
+      await this.room.connect(this.WS_LIVEKIT_URL, token);
 
       // --- 5) Requesting and Checking Android Permissions
       if (this.platform.is('hybrid') && this.platform.is('android')) {
         await this.checkAndroidPermissions();
       }
-
-      const publishOptions: TrackPublishOptions = {
-        stream: 'test',
-      };
 
       const [audioPublication, videoPublication] = await Promise.all([
         this.room.localParticipant.setMicrophoneEnabled(true),
@@ -143,7 +134,10 @@ export class HomePage {
 
       // Set the main video in the page to display our webcam and store our localPublication
       this.localPublication = videoPublication;
-      this.refreshVideos();
+      videoPublication?.track?.on('elementAttached', (track) => {
+        this.refreshVideos();
+      });
+
       await this.initDevices();
     } catch (error: any) {
       console.log(
@@ -154,11 +148,11 @@ export class HomePage {
     }
   }
 
-  leaveRoom() {
+  async leaveRoom() {
     // --- 7) Leave the room by calling 'disconnect' method over the Session object ---
 
     if (this.room) {
-      this.room.disconnect();
+      await this.room.disconnect();
     }
 
     // Empty all properties...
@@ -166,6 +160,8 @@ export class HomePage {
     this.localPublication = undefined;
     this.room = undefined;
     this.generateParticipantInfo();
+    this.cameraIcon = 'videocam';
+    this.microphoneIcon = 'mic';
   }
 
   // Others methods...
@@ -208,11 +204,6 @@ export class HomePage {
   async toggleCamera() {
     if (this.room) {
       const enabled = !this.room.localParticipant.isCameraEnabled;
-      // const options: VideoCaptureOptions = {};
-      // const publishOptions: TrackPublishOptions = {
-      //   stream: 'test',
-      // };
-
       await this.room.localParticipant.setCameraEnabled(enabled);
       this.refreshVideos();
       this.cameraIcon = enabled ? 'videocam' : 'eye-off';
@@ -222,14 +213,7 @@ export class HomePage {
   async toggleMicrophone() {
     if (this.room) {
       const enabled = !this.room.localParticipant.isMicrophoneEnabled;
-      const publishOptions: TrackPublishOptions = {
-        stream: 'test',
-      };
-      await this.room.localParticipant.setMicrophoneEnabled(
-        enabled,
-        undefined,
-        publishOptions
-      );
+      await this.room.localParticipant.setMicrophoneEnabled(enabled);
       this.microphoneIcon = enabled ? 'mic' : 'mic-off';
     }
   }
@@ -251,6 +235,10 @@ export class HomePage {
     }
   }
 
+  /**
+   * This method allows to change the LiveKit websocket URL and the application server URL
+   * from the application itself. This is useful for development purposes.
+   */
   async presentSettingsAlert() {
     const alert = await this.alertController.create({
       header: 'Application server',
@@ -261,6 +249,13 @@ export class HomePage {
           value: this.APPLICATION_SERVER_URL,
           placeholder: 'URL',
           id: 'url-input',
+        },
+        {
+          name: 'websocket',
+          type: 'text',
+          value: this.WS_LIVEKIT_URL,
+          placeholder: 'WS URL',
+          id: 'ws-input',
         },
       ],
       buttons: [
@@ -275,6 +270,7 @@ export class HomePage {
           id: 'ok-btn',
           handler: (data) => {
             this.APPLICATION_SERVER_URL = data.url;
+            this.WS_LIVEKIT_URL = data.websocket;
           },
         },
       ],
@@ -284,17 +280,21 @@ export class HomePage {
   }
 
   private refreshVideos() {
-    // setTimeout(() => {
-    //     console.warn('track restarted: UPDATED DOM');
-    //     const refreshedElement = document.getElementById('refreshed-workaround');
-    //     if (refreshedElement) {
-    //       refreshedElement.remove();
-    //     } else {
-    //       const p = document.createElement('p');
-    //       p.id = 'refreshed-workaround';
-    //       document.getElementById('room')?.appendChild(p);
-    //     }
-    // }, 200);
+    if (this.platform.is('hybrid') && this.platform.is('android')) {
+      // Workaround for Android devices
+      setTimeout(() => {
+        const refreshedElement = document.getElementById(
+          'refreshed-workaround'
+        );
+        if (refreshedElement) {
+          refreshedElement.remove();
+        } else {
+          const p = document.createElement('p');
+          p.id = 'refreshed-workaround';
+          document.getElementById('room')?.appendChild(p);
+        }
+      }, 250);
+    }
   }
 
   private async checkAndroidPermissions(): Promise<void> {
@@ -351,6 +351,19 @@ export class HomePage {
     } catch (error) {
       throw new Error('Error decoding and parsing token: ' + error);
     }
+  }
+
+  private prepareForDeviceDevelopment() {
+    /**
+     * WARNING!! To make the mobile development easier, this code allows
+     * using your local IP address for communicating with the backend.
+     * For production uses, the server should be accessible from the Internet
+     * and the code below should be removed.
+     */
+    console.warn('Your local IP address: ', environment.externalIp);
+    // Pointing to our proxy server through https/wss and our local IP address
+    this.APPLICATION_SERVER_URL = `https://${environment.externalIp}:5001/`;
+    this.WS_LIVEKIT_URL = `wss://${environment.externalIp}:5001/`;
   }
 
   /**
