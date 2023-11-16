@@ -19,8 +19,8 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
-  APPLICATION_SERVER_URL = 'http://localhost:5000/';
-  WS_LIVEKIT_URL = 'ws://localhost:7880/';
+  APPLICATION_SERVER_URL = environment.applicationServerUrl;
+  WS_LIVEKIT_URL = environment.wsLivekitUrl;
   private IS_DEVICE_DEV_MODE = false;
 
   // OpenVidu objects
