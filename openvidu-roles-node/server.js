@@ -1,5 +1,7 @@
 /* CONFIGURATION */
-
+require('dotenv').config(
+	!!process.env.CONFIG ? { path: process.env.CONFIG } : {}
+);
 // For demo purposes we ignore self-signed certificate
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
@@ -10,7 +12,6 @@ const session = require('express-session');
 const https = require('https');
 const bodyParser = require('body-parser');
 const AccessToken = require('livekit-server-sdk').AccessToken;
-const RoomServiceClient = require('livekit-server-sdk').RoomServiceClient;
 const cors = require('cors');
 const app = express();
 
@@ -48,15 +49,6 @@ const users = [
 		role: 'SUBSCRIBER',
 	},
 ];
-const livekitUrlHostname = LIVEKIT_URL.replace(/^ws:/, 'http:').replace(
-	/^wss:/,
-	'https:'
-);
-// const roomClient = new RoomServiceClient(
-// 	livekitUrlHostname,
-// 	LIVEKIT_API_KEY,
-// 	LIVEKIT_API_SECRET
-// );
 
 // Enable CORS support
 app.use(
@@ -179,13 +171,5 @@ function isLogged(session) {
 	return session.loggedUser != null;
 }
 
-// async function getRoom(roomName) {
-// 	try {
-// 		const rooms = await roomClient.listRooms(roomName);
-// 		return rooms[0];
-// 	} catch (error) {
-// 		return undefined;
-// 	}
-// }
 
 /* AUXILIARY METHODS */
