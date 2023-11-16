@@ -13,12 +13,11 @@ import axios from 'axios';
 import OvVideo from './OvVideo';
 import OvAudio from './OvAudio';
 
-function App() {
-	const APPLICATION_SERVER_URL = 'http://localhost:5000/';
-
+const App = () => {
+	const APPLICATION_SERVER_URL = import.meta.env.VITE_APPLICATION_SERVER_URL;
 	const [myRoomName, setMyRoomName] = useState('');
 	const [myParticipantName, setMyParticipantName] = useState('');
-	const [room, setRoom] = useState(new Room());
+	const [room, setRoom] = useState<Room | undefined>(undefined);
 	const [myMainPublication, setMyMainPublication] = useState<
 		LocalTrackPublication | RemoteTrackPublication | undefined
 	>(undefined);
@@ -30,7 +29,11 @@ function App() {
 	>([]);
 
 	const joinRoom = () => {
-		console.log('Joining room ' + myRoomName + '...');
+
+    // --- 1) Get a Room object ---
+
+    const room = new Room();
+    setRoom(room);
 
 		// --- 2) Specify the actions when events take place in the room ---
 
@@ -57,7 +60,6 @@ function App() {
 
 		getToken(myRoomName, myParticipantName).then(async (token: string) => {
 			const livekitUrl = getLivekitUrlFromMetadata(token);
-			console.log(livekitUrl);
 
 			// First param is the LiveKit server URL. Second param is the access token
 			try {
@@ -93,7 +95,6 @@ function App() {
 		setLocalPublication(undefined);
 		setRoom(new Room());
 
-		// this.generateParticipantInfo();
 	};
 
 	const deleteRemoteTrackPublication = useMemo(
@@ -154,7 +155,7 @@ function App() {
 				localPublication?.track?.mediaStreamTrack.getSettings().deviceId
 		);
 		if (!newDevice) return;
-		room.switchActiveDevice('videoinput', newDevice?.deviceId);
+		room?.switchActiveDevice('videoinput', newDevice?.deviceId);
 	};
 
 	/**
@@ -191,7 +192,7 @@ function App() {
 					throw error;
 				}
 			},
-		[]
+		[APPLICATION_SERVER_URL]
 	);
 
 	return (
@@ -274,6 +275,7 @@ function App() {
 					) : null}
 					<div id="video-container" className="col-md-6">
 						{localPublication !== undefined ? (
+              // sss
 							<div className="stream-container col-md-6 col-xs-6">
 								{localPublication.videoTrack && (
 									<OvVideo
