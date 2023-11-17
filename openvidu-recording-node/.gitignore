@@ -58,3 +58,7 @@ typings/
 .env
 
 .vscode/
+*.mp4
+*.mov
+*.ogg
+
