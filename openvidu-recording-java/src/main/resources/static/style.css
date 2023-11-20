@@ -222,27 +222,27 @@ a:hover .demo-logo {
 	margin-top: 100px;
 }
 
-#session-header {
+#room-header {
 	margin-bottom: 20px;
 	height: 8%;
 	margin-top: 70px;
 }
 
-#session-header form {
+#room-header form {
 	display: inline-block;
 }
 
-#session-header input.btn {
+#room-header input.btn {
 	float: right;
 	margin-top: 20px;
 	margin-left: 5px;
 }
 
-#session-title {
+#room-title {
 	display: inline-block;
 }
 
-#session-header .form-control {
+#room-header .form-control {
 	width: initial;
 	float: right;
 	margin: 18px 0px 0px 5px;
@@ -300,12 +300,12 @@ video {
     object-fit: scale-down;
 }
 
-#session {
+#room {
 	height: 100%;
 	padding-bottom: 80px;
 }
 
-#session img {
+#room img {
 	width: 100%;
 	height: auto;
 	display: inline-block;
@@ -313,7 +313,7 @@ video {
 	vertical-align: baseline;
 }
 
-#session #video-container img {
+#room #video-container img {
 	position: relative;
 	float: left;
 	width: 50%;
@@ -387,11 +387,12 @@ table i {
 }
 
 #textarea-http-container {
-	width: 69%;
+	width: 59%;
 }
 
-#textarea-events-container {
-	width: 29%;
+#recordings-list-container {
+	width: 39%;
+	overflow: auto;
 }
 
 .textarea-container button {

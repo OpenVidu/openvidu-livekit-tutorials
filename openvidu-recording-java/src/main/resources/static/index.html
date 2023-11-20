@@ -1,7 +1,7 @@
 <html>
 
 <head>
-	<title>openvidu-recording-java</title>
+	<title>openvidu-recording-node</title>
 
 	<meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
 	<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
@@ -17,7 +17,7 @@
 	<!-- Bootstrap -->
 
 	<link rel="styleSheet" href="style.css" type="text/css" media="screen">
-	<script src="openvidu-browser-2.27.0.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
 	<script src="app.js"></script>
 	<script>
 		$(document).ready(function () {
@@ -35,11 +35,11 @@
 			<div class="navbar-header">
 				<a class="navbar-brand" href="/">
 					<img class="demo-logo" src="images/openvidu_vert_white_bg_trans_cropped.png" /> Recording Java</a>
-				<a class="navbar-brand nav-icon" href="https://github.com/OpenVidu/openvidu-tutorials/tree/master/openvidu-recording-java"
+				<a class="navbar-brand nav-icon" href="https://github.com/OpenVidu/openvidu-livekit-tutorials/tree/master/openvidu-recording-node"
 				 title="GitHub Repository" target="_blank">
 					<i class="fa fa-github" aria-hidden="true"></i>
 				</a>
-				<a class="navbar-brand nav-icon" href="http://www.docs.openvidu.io/en/stable/tutorials/openvidu-recording-java/" title="Documentation"
+				<a class="navbar-brand nav-icon" href="#" title="Documentation"
 				 target="_blank">
 					<i class="fa fa-book" aria-hidden="true"></i>
 				</a>
@@ -53,48 +53,30 @@
 				<img src="images/openvidu_grey_bg_transp_cropped.png" />
 			</div>
 			<div id="join-dialog" class="jumbotron">
-				<h1>Join a video session</h1>
+				<h1>Join a video room</h1>
 				<form class="form-group" onsubmit="return false">
 					<p>
-						<label>Session</label>
-						<input class="form-control" type="text" id="sessionName" value="SessionA" required>
+						<label>Room</label>
+						<input class="form-control" type="text" id="roomName" value="RoomA" required>
 					</p>
 					<p class="text-center">
-						<button class="btn btn-lg btn-success" id="join-btn" onclick="joinSession()">Join!</button>
+						<button class="btn btn-lg btn-success" id="join-btn" onclick="joinRoom()">Join!</button>
 					</p>
 				</form>
 				<hr>
 			</div>
 		</div>
 
-		<div id="session" style="display: none">
-			<div id="session-header">
-				<h1 id="session-title"></h1>
-				<input class="btn btn-sm btn-danger" type="button" id="buttonCloseSession" onmouseup="closeSession()" value="Close session">
-				<input class="btn btn-sm btn-danger" type="button" id="buttonLeaveSession" onmouseup="removeUser(); leaveSession()"
-				 value="Leave session">
-				<div class="vertical-separator-top"></div>
-				<input class="form-control" id="forceValue" type="text" onkeyup="checkBtnsForce()">
-				<input class="btn btn-sm" type="button" id="buttonForceUnpublish" onmouseup="forceUnpublish()" value="Force unpublish"
-				 disabled>
-				<input class="btn btn-sm" type="button" id="buttonForceDisconnect" onmouseup="forceDisconnect()" value="Force disconnect"
-				 disabled>
-				<div class="vertical-separator-top"></div>
-				<input class="btn btn-sm" type="button" id="buttonFetchInfo" onmouseup="fetchInfo()" value="Fetch info">
-				<input class="btn btn-sm" type="button" id="buttonFetchAll" onmouseup="fetchAll()" value="Fetch all">
+		<div id="room" style="display: none">
+			<div id="room-header">
+				<h1 id="room-title"></h1>
+				<input class="btn btn-sm btn-danger" type="button" id="buttonLeaveRoom" onmouseup="leaveRoom()"
+				 value="Leave room">
 			</div>
 			<div id="video-container" class="col-md-12"></div>
 			<div id="recording-btns">
 				<div class="btns">
-					<input class="btn btn-md" type="button" id="buttonStartRecording" onmouseup="startRecording()" value="Start recording">
-					<form>
-						<label class="radio-inline">
-							<input type="radio" name="outputMode" value="COMPOSED" id="radio-composed" checked>COMPOSED
-						</label>
-						<label class="radio-inline">
-							<input type="radio" name="outputMode" value="INDIVIDUAL" id="radio-individual">INDIVIDUAL
-						</label>
-					</form>
+					<input class="btn btn-md" type="button" id="buttonStartRecording" onmouseup="startComposedRecording()" value="Start Composed recording">
 					<form>
 						<label class="checkbox-inline">
 							<input type="checkbox" id="has-audio-checkbox" checked>Has audio
@@ -107,11 +89,7 @@
 				<div class="btns">
 					<input class="btn btn-md" type="button" id="buttonListRecording" onmouseup="listRecordings()" value="List recordings">
 					<div class="vertical-separator-bottom"></div>
-					<input class="btn btn-md" type="button" id="buttonGetRecording" onmouseup="getRecording()" value="Get recording"
-					 disabled>
-					<input class="btn btn-md" type="button" id="buttonStopRecording" onmouseup="stopRecording()" value="Stop recording"
-					 disabled>
-					<input class="btn btn-md" type="button" id="buttonDeleteRecording" onmouseup="deleteRecording()" value="Delete recording"
+					<input class="btn btn-md btn-danger" type="button" id="buttonStopRecording" onmouseup="stopRecording()" value="Stop recording"
 					 disabled>
 					<input class="form-control" id="forceRecordingId" type="text" onkeyup="checkBtnsRecordings()">
 				</div>
@@ -120,10 +98,10 @@
 					<span>HTTP responses</span>
 					<textarea id="textarea-http" readonly="true" class="form-control" name="textarea-http"></textarea>
 				</div>
-				<div class="textarea-container" id="textarea-events-container">
-					<button type="button" class="btn btn-outline-secondary" id="clear-events-btn" onclick="clearEventsTextarea()">Clear</button>
-					<span>OpenVidu events</span>
-					<textarea id="textarea-events" readonly="true" class="form-control" name="textarea-events"></textarea>
+				<div class="textarea-container" id="recordings-list-container">
+					<button type="button" class="btn btn-md btn-danger" id="delete-recordings-btn" onclick="deleteRecordings()" disabled>Delete All</button>
+					<span>Recordings list</span>
+					<ul id="recording-list"></ul>
 				</div>
 			</div>
 		</div>
@@ -131,7 +109,7 @@
 
 	<footer class="footer">
 		<div class="container">
-			<div class="text-muted">OpenVidu © 2022</div>
+			<div class="text-muted">OpenVidu © 2023</div>
 			<a href="http://www.openvidu.io/" target="_blank">
 				<img class="openvidu-logo" src="images/openvidu_globe_bg_transp_cropped.png" />
 			</a>
