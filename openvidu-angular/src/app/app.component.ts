@@ -49,7 +49,7 @@ export class AppComponent implements OnDestroy {
 
 		// If LIVEKIT_URL is not configured, use default value from local development
 		if (!LIVEKIT_URL) {
-			if (window.location.hostname !== 'localhost') {
+			if (window.location.hostname === 'localhost') {
 				LIVEKIT_URL = 'ws://localhost:7880/';	
 			} else {
 				LIVEKIT_URL = 'wss://' + window.location.hostname + ':7443/';

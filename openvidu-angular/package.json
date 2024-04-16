@@ -3,9 +3,9 @@
 	"version": "2.27.0",
 	"license": "Apache-2.0",
 	"scripts": {
-		"start": "./node_modules/@angular/cli/bin/ng.js serve",
-		"build": "./node_modules/@angular/cli/bin/ng.js build",
-		"build:prod": "./node_modules/@angular/cli/bin/ng.js build --output-path ./openvidu-basic-node/public/ --configuration production"
+		"start": "ng serve --port=5080 --host=0.0.0.0 --disable-host-check",
+		"build": "ng build",
+		"build:prod": "ng build --output-path ./openvidu-basic-node/public/ --configuration production"
 	},
 	"dependencies": {
 		"@angular/animations": "15.0.4",
