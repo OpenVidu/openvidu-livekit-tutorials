@@ -9,7 +9,7 @@ var cors = require('cors');
 var app = express();
 
 // Environment variable: PORT where the node server is listening
-var SERVER_PORT = process.env.SERVER_PORT || 5000;
+var SERVER_PORT = process.env.SERVER_PORT || 6080;
 // Environment variable: api key shared with our LiveKit deployment
 var LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || 'devkey';
 // Environment variable: api secret shared with our LiveKit deployment
@@ -48,8 +48,6 @@ app.post('/token', (req, res) => {
 
 	const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
 		identity: participantName,
-		// add metadata to the token, which will be available in the participant's metadata
-		metadata: JSON.stringify({ livekitUrl: process.env.LIVEKIT_URL }),
 	});
 	at.addGrant({ roomJoin: true, room: roomName });
 	const token = at.toJwt();

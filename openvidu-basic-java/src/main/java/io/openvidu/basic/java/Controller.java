@@ -2,7 +2,6 @@ package io.openvidu.basic.java;
 
 import java.util.Map;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +15,6 @@ import io.livekit.server.*;
 @CrossOrigin(origins = "*")
 @RestController
 public class Controller {
-
-	@Value("${LIVEKIT_URL}")
-	private String LIVEKIT_URL;
 
 	@Value("${LIVEKIT_API_KEY}")
 	private String LIVEKIT_API_KEY;
@@ -44,12 +40,6 @@ public class Controller {
 		AccessToken token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
 		token.setName(participantName);
 		token.setIdentity(participantName);
-
-
-        JSONObject metadata = new JSONObject();
-        metadata.put("livekitUrl", LIVEKIT_URL);
-		// add metadata to the token, which will be available in the participant's metadata
-		token.setMetadata(metadata.toString());
 		token.addGrants(new RoomJoin(true), new RoomName(roomName));
 
 		return new ResponseEntity<>(token.toJwt(), HttpStatus.OK);

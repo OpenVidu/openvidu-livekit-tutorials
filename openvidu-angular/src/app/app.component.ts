@@ -8,7 +8,11 @@ import {
 	RemoteTrack,
 	LocalTrackPublication,
 } from 'livekit-client';
-import { environment } from '../environments/environment';
+
+// For local development, leave these variables empty
+// For production, configure them with correct URLs depending on your deployment
+let APPLICATION_SERVER_URL = '';
+let LIVEKIT_URL = '';
 
 @Component({
 	selector: 'app-root',
@@ -16,7 +20,6 @@ import { environment } from '../environments/environment';
 	styleUrls: ['./app.component.css'],
 })
 export class AppComponent implements OnDestroy {
-	APPLICATION_SERVER_URL = environment.applicationServerUrl;
 	room: Room;
 	localPublication: LocalTrackPublication;
 	remotePublications: RemoteTrackPublication[] = [];
@@ -30,7 +33,28 @@ export class AppComponent implements OnDestroy {
 	mainPublication: LocalTrackPublication | RemoteTrackPublication;
 
 	constructor(private httpClient: HttpClient) {
+		this.generateUrls();
 		this.generateParticipantInfo();
+	}
+
+	generateUrls() {
+		// If APPLICATION_SERVER_URL is not configured, use default value from local development
+		if (!APPLICATION_SERVER_URL) {
+			if (window.location.hostname === 'localhost') {
+				APPLICATION_SERVER_URL = 'http://localhost:6080/';
+			} else {
+				APPLICATION_SERVER_URL = 'https://' + window.location.hostname + ':6443/';
+			}
+		}
+
+		// If LIVEKIT_URL is not configured, use default value from local development
+		if (!LIVEKIT_URL) {
+			if (window.location.hostname !== 'localhost') {
+				LIVEKIT_URL = 'ws://localhost:7880/';	
+			} else {
+				LIVEKIT_URL = 'wss://' + window.location.hostname + ':7443/';
+			}
+		}
 	}
 
 	@HostListener('window:beforeunload')
@@ -82,11 +106,9 @@ export class AppComponent implements OnDestroy {
 		// Get a token from the application backend
 		this.getToken(this.myRoomName, this.myParticipantName).then(
 			async (token) => {
-				const livekitUrl = this.getLivekitUrlFromMetadata(token);
-
 				// First param is the LiveKit server URL. Second param is the access token
 				try {
-					await this.room.connect(livekitUrl, token);
+					await this.room.connect(LIVEKIT_URL, token);
 					// --- 4) Publish your local tracks ---
 					await this.room.localParticipant.setMicrophoneEnabled(true);
 					const videoPublication =
@@ -161,32 +183,6 @@ export class AppComponent implements OnDestroy {
 		this.mainPublication = publication;
 	}
 
-	private getLivekitUrlFromMetadata(token: string): string {
-		if (!token)
-			throw new Error('Trying to get room metadata from an empty token');
-		try {
-			const base64Url = token.split('.')[1];
-			const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-			const jsonPayload = decodeURIComponent(
-				window
-					.atob(base64)
-					.split('')
-					.map((c) => {
-						return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-					})
-					.join('')
-			);
-
-			const payload = JSON.parse(jsonPayload);
-			if (!payload?.metadata)
-				throw new Error('Token does not contain metadata');
-			const metadata = JSON.parse(payload.metadata);
-			return metadata.livekitUrl;
-		} catch (error) {
-			throw new Error('Error decoding and parsing token: ' + error);
-		}
-	}
-
 	/**
 	 * --------------------------------------------
 	 * GETTING A TOKEN FROM YOUR APPLICATION SERVER
@@ -202,11 +198,10 @@ export class AppComponent implements OnDestroy {
 	 * Visit https://docs.openvidu.io/en/stable/application-server to learn
 	 * more about the integration of OpenVidu in your application server.
 	 */
-
 	async getToken(roomName: string, participantName: string): Promise<string> {
 		return this.httpClient
 			.post(
-				this.APPLICATION_SERVER_URL + 'token',
+				APPLICATION_SERVER_URL + 'token',
 				{ roomName, participantName },
 				{
 					headers: { 'Content-Type': 'application/json' },

@@ -3,6 +3,9 @@ import requests
 import livekit
 from flask import Flask, request
 from flask_cors import CORS
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -11,7 +14,6 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Load env variables
 SERVER_PORT = os.environ.get("SERVER_PORT")
-LIVEKIT_URL = os.environ.get("LIVEKIT_URL")
 LIVEKIT_API_KEY = os.environ.get("LIVEKIT_API_KEY")
 LIVEKIT_API_SECRET = os.environ.get("LIVEKIT_API_SECRET")
 
@@ -28,9 +30,8 @@ def getToken():
     # Create a VideoGrant with the necessary permissions
     grant = livekit.VideoGrant(room_join=True, room=room_name)
 
-    # Create an AccessToken with your API key, secret, and the VideoGrant
+    # Create an AccessToken with your API key, secret and the VideoGrant
     access_token = livekit.AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, grant=grant, identity=participant_name)
-    access_token.metadata = {"livekitUrl": LIVEKIT_URL}
 
     # Generate the token
     return access_token.to_jwt()

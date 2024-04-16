@@ -9,7 +9,6 @@ require './env.rb'
 
 # Load env variables
 SERVER_PORT = ENV['SERVER_PORT']
-LIVEKIT_URL = ENV['LIVEKIT_URL']
 LIVEKIT_API_KEY = ENV['LIVEKIT_API_KEY']
 LIVEKIT_API_SECRET = ENV['LIVEKIT_API_SECRET']
 
@@ -39,7 +38,6 @@ post '/token' do
   token.identity = participant_name
   token.name = participant_name
   token.add_grant(roomJoin: true, room: room_name)
-  token.metadata = { "livekitUrl" =>  LIVEKIT_URL}
 
   token.to_jwt
 end
