@@ -14,7 +14,29 @@ import OvVideo from './OvVideo';
 import OvAudio from './OvAudio';
 
 const App = () => {
-	const APPLICATION_SERVER_URL = import.meta.env.VITE_APPLICATION_SERVER_URL;
+	// For local development, leave these variables empty
+	// For production, configure them with correct URLs depending on your deployment
+	let APPLICATION_SERVER_URL = '';
+	let LIVEKIT_URL = '';
+
+	// If APPLICATION_SERVER_URL is not configured, use default value from local development
+	if (!APPLICATION_SERVER_URL) {
+		if (window.location.hostname === 'localhost') {
+			APPLICATION_SERVER_URL = 'http://localhost:6080/';
+		} else {
+			APPLICATION_SERVER_URL = 'https://' + window.location.hostname + ':6443/';
+		}
+	}
+
+	// If LIVEKIT_URL is not configured, use default value from local development
+	if (!LIVEKIT_URL) {
+		if (window.location.hostname === 'localhost') {
+			LIVEKIT_URL = 'ws://localhost:7880/';
+		} else {
+			LIVEKIT_URL = 'wss://' + window.location.hostname + ':7443/';
+		}
+	}
+
 	const [myRoomName, setMyRoomName] = useState('');
 	const [myParticipantName, setMyParticipantName] = useState('');
 	const [room, setRoom] = useState<Room | undefined>(undefined);
@@ -30,10 +52,10 @@ const App = () => {
 
 	const joinRoom = () => {
 
-    // --- 1) Get a Room object ---
+		// --- 1) Get a Room object ---
 
-    const room = new Room();
-    setRoom(room);
+		const room = new Room();
+		setRoom(room);
 
 		// --- 2) Specify the actions when events take place in the room ---
 
@@ -59,11 +81,9 @@ const App = () => {
 		);
 
 		getToken(myRoomName, myParticipantName).then(async (token: string) => {
-			const livekitUrl = getLivekitUrlFromMetadata(token);
-
 			// First param is the LiveKit server URL. Second param is the access token
 			try {
-				await room.connect(livekitUrl, token);
+				await room.connect(LIVEKIT_URL, token);
 				// --- 4) Publish your local tracks ---
 				await room.localParticipant.setMicrophoneEnabled(true);
 				const videoPublication = await room.localParticipant.setCameraEnabled(
@@ -103,36 +123,6 @@ const App = () => {
 				prevPublications.filter((p) => p !== publication)
 			);
 		},
-		[]
-	);
-
-	const getLivekitUrlFromMetadata = useMemo(
-		() =>
-			(token: string): string => {
-				if (!token)
-					throw new Error('Trying to get room metadata from an empty token');
-				try {
-					const base64Url = token.split('.')[1];
-					const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-					const jsonPayload = decodeURIComponent(
-						window
-							.atob(base64)
-							.split('')
-							.map((c) => {
-								return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-							})
-							.join('')
-					);
-
-					const payload = JSON.parse(jsonPayload);
-					if (!payload?.metadata)
-						throw new Error('Token does not contain metadata');
-					const metadata = JSON.parse(payload.metadata);
-					return metadata.livekitUrl;
-				} catch (error) {
-					throw new Error('Error decoding and parsing token: ' + error);
-				}
-			},
 		[]
 	);
 
