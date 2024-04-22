@@ -74,7 +74,28 @@ import { Room, RoomEvent } from 'livekit-client'
 
 axios.defaults.headers.post['Content-Type'] = 'application/json'
 
-const APPLICATION_SERVER_URL = 'http://localhost:5000/'
+// For local development, leave these variables empty
+// For production, configure them with correct URLs depending on your deployment
+let APPLICATION_SERVER_URL = ''
+let LIVEKIT_URL = ''
+
+// If APPLICATION_SERVER_URL is not configured, use default value from local development
+if (!APPLICATION_SERVER_URL) {
+  if (window.location.hostname === 'localhost') {
+    APPLICATION_SERVER_URL = 'http://localhost:6080/'
+  } else {
+    APPLICATION_SERVER_URL = 'https://' + window.location.hostname + ':6443/'
+  }
+}
+
+// If LIVEKIT_URL is not configured, use default value from local development
+if (!LIVEKIT_URL) {
+  if (window.location.hostname === 'localhost') {
+    LIVEKIT_URL = 'ws://localhost:7880/'
+  } else {
+    LIVEKIT_URL = 'wss://' + window.location.hostname + ':7443/'
+  }
+}
 
 export default {
   name: 'App',
@@ -123,11 +144,9 @@ export default {
 
       // Get a token from the application backend
       this.getToken(this.myRoomName, this.myParticipantName).then(async (token) => {
-        const livekitUrl = this.getLivekitUrlFromMetadata(token)
-        // First param is the token. Second param can be retrieved by every user on event
-        // 'streamCreated' (property Stream.connection.data), and will be appended to DOM as the user's nickname
+        // First param is the LiveKit server URL. Second param is the access token
         try {
-          await this.room.connect(livekitUrl, token)
+          await this.room.connect(LIVEKIT_URL, token)
           // --- 4) Publish your local tracks ---
           await this.room.localParticipant.setMicrophoneEnabled(true)
           const videoPublication = await this.room.localParticipant.setCameraEnabled(true)
@@ -180,30 +199,6 @@ export default {
       let index = this.remotePublications.findIndex((p) => p.trackSid === publication.trackSid)
       if (index > -1) {
         this.remotePublications.splice(index, 1)
-      }
-    },
-
-    getLivekitUrlFromMetadata(token) {
-      if (!token) throw new Error('Trying to get metadata from an empty token')
-      try {
-        const base64Url = token.split('.')[1]
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-        const jsonPayload = decodeURIComponent(
-          window
-            .atob(base64)
-            .split('')
-            .map((c) => {
-              return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-            })
-            .join('')
-        )
-
-        const payload = JSON.parse(jsonPayload)
-        if (!payload?.metadata) throw new Error('Token does not contain metadata')
-        const metadata = JSON.parse(payload.metadata)
-        return metadata.livekitUrl
-      } catch (error) {
-        throw new Error('Error decoding and parsing token: ' + error)
       }
     },
 

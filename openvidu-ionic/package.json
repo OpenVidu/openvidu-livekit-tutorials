@@ -4,7 +4,7 @@
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
   "scripts": {
-    "start": "npx ionic serve",
+    "start": "npx ionic serve --port=5080",
     "build": "npx ionic build",
     "watch": "ng build --watch --configuration development",
     "android": "./scripts/mobile_run.sh android",

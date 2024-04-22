@@ -10,6 +10,10 @@ var myRoomName;
 var isScreenShared = false;
 var screenSharePublication;
 
+// Configure this constants with correct URLs depending on your deployment
+const APPLICATION_SERVER_URL = 'http://localhost:6080/';
+const LIVEKIT_URL = 'ws://localhost:7880/';
+
 ipcRenderer.on('screen-share-ready', async (event, sourceId) => {
 	if (sourceId) {
 		try {
@@ -67,9 +71,8 @@ async function joinRoom() {
 
     // Get a token from the application backend
 	const token = await getToken(myRoomName, myParticipantName);
-	const livekitUrl = getLivekitUrlFromMetadata(token);
 
-	await room.connect(livekitUrl, token);
+	await room.connect(LIVEKIT_URL, token);
 
 	showRoom();
     // --- 4) Publish your local tracks ---
@@ -159,30 +162,6 @@ function openScreenShareModal() {
 	win.loadURL(theUrl);
 }
 
-function getLivekitUrlFromMetadata(token) {
-	if (!token) throw new Error('Trying to get metadata from an empty token');
-	try {
-		const base64Url = token.split('.')[1];
-		const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-		const jsonPayload = decodeURIComponent(
-			window
-				.atob(base64)
-				.split('')
-				.map((c) => {
-					return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-				})
-				.join('')
-		);
-
-		const payload = JSON.parse(jsonPayload);
-		if (!payload?.metadata) throw new Error('Token does not contain metadata');
-		const metadata = JSON.parse(payload.metadata);
-		return metadata.livekitUrl;
-	} catch (error) {
-		throw new Error('Error decoding and parsing token: ' + error);
-	}
-}
-
 /**
  * --------------------------------------------
  * GETTING A TOKEN FROM YOUR APPLICATION SERVER
@@ -196,9 +175,6 @@ function getLivekitUrlFromMetadata(token) {
  * access to the endpoints.
  *
  */
-
-var APPLICATION_SERVER_URL = 'http://localhost:5000/';
-
 async function getToken(roomName, participantName) {
 	try {
 		const response = await axios.post(

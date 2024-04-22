@@ -113,11 +113,6 @@ export class HomePage {
         this.myParticipantName
       );
 
-      if (!this.IS_DEVICE_DEV_MODE) {
-        // Get the Livekit WebSocket URL from the token metadata if not in device dev mode
-        this.WS_LIVEKIT_URL = this.getLivekitUrlFromMetadata(token);
-      }
-
       // First param is the LiveKit server URL. Second param is the access token
 
       await this.room.connect(this.WS_LIVEKIT_URL, token);
@@ -325,32 +320,6 @@ export class HomePage {
   private async initDevices() {
     this.cameras = await Room.getLocalDevices('videoinput');
     this.cameraSelected = this.cameras[0];
-  }
-
-  private getLivekitUrlFromMetadata(token: string): string {
-    if (!token)
-      throw new Error('Trying to get room metadata from an empty token');
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        window
-          .atob(base64)
-          .split('')
-          .map((c) => {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-          })
-          .join('')
-      );
-
-      const payload = JSON.parse(jsonPayload);
-      if (!payload?.metadata)
-        throw new Error('Token does not contain metadata');
-      const metadata = JSON.parse(payload.metadata);
-      return metadata.livekitUrl;
-    } catch (error) {
-      throw new Error('Error decoding and parsing token: ' + error);
-    }
   }
 
   private prepareForDeviceDevelopment() {

@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  applicationServerUrl: 'http://localhost:5000/',
+  applicationServerUrl: 'http://localhost:6080/',
   wsLivekitUrl: 'ws://localhost:7880/',
   // Only for local development with a real device. This will be filled automatically running 'npm dev:android' or 'npm dev:ios'
   externalIp: ''

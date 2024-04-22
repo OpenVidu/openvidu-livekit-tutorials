@@ -3,7 +3,7 @@
   "version": "2.27.0",
   "private": true,
   "scripts": {
-    "serve": "vite",
+    "serve": "vite --port 5080 --host",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
