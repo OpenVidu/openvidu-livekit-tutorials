@@ -4,11 +4,11 @@
   "author": "Ionic Framework",
   "homepage": "https://ionicframework.com/",
   "scripts": {
-    "start": "npx ionic serve --port=5080",
+    "start": "npx ionic serve --port=5080 --external -- --disable-host-check",
     "build": "npx ionic build",
     "watch": "ng build --watch --configuration development",
-    "android": "./scripts/mobile_run.sh android",
-    "ios": "./scripts/mobile_run.sh ios",
+    "android": "npx ionic cap sync android && npx ionic cap run android",
+    "ios": "npx ionic cap sync ios && npx ionic cap run ios",
     "sync": "npx ionic capacitor sync",
     "build:android": "npx ionic capacitor build android --no-open && cd android && ./gradlew assembleDebug && ./gradlew assembleRelease",
     "copy:android": "cp ./android/app/build/outputs/apk/debug/app-debug.apk /opt/openvidu/android/openvidu-ionic.apk"
@@ -35,7 +35,7 @@
     "@ionic/angular": "^7.0.0",
     "cordova-plugin-android-permissions": "^1.1.5",
     "ionicons": "^7.0.0",
-    "livekit-client": "^1.14.4",
+    "livekit-client": "^2.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.13.0"
@@ -52,7 +52,6 @@
     "@angular/language-service": "^16.0.0",
     "@capacitor/cli": "5.5.0",
     "@ionic/angular-toolkit": "^9.0.0",
-    "@jcesarmobile/ssl-skip": "^0.2.0",
     "@types/jasmine": "~4.3.0",
     "@types/node": "^12.11.1",
     "@typescript-eslint/eslint-plugin": "5.3.0",

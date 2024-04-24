@@ -11,7 +11,6 @@ import { HttpClient } from '@angular/common/http';
 import { AlertController, Platform } from '@ionic/angular';
 import { lastValueFrom, take } from 'rxjs';
 import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
-import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-home',
@@ -19,8 +18,11 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
-  APPLICATION_SERVER_URL = environment.applicationServerUrl;
-  WS_LIVEKIT_URL = environment.wsLivekitUrl;
+  // For local development launching app in web browser, leave these variables empty
+  // For production or when launching app in device, configure them with correct URLs
+  APPLICATION_SERVER_URL = '';
+  LIVEKIT_URL = '';
+  
   private IS_DEVICE_DEV_MODE = false;
 
   // OpenVidu objects
@@ -56,21 +58,35 @@ export class HomePage {
   }
 
   ngOnInit() {
-    /**
-     * WARNING!! To make the mobile development easier, this code allows
-     * using your local IP address for communicating with the backend.
-     * For production uses, the server should be accessible from the Internet
-     * and the code below should be removed.
-     */
-    if (this.platform.is('hybrid') && environment.externalIp) {
-      this.IS_DEVICE_DEV_MODE = true;
-      this.prepareForDeviceDevelopment();
-    }
+    this.IS_DEVICE_DEV_MODE = this.platform.is('hybrid');
+    this.generateUrls();
 
     console.log('IS_DEVICE_DEV_MODE: ', this.IS_DEVICE_DEV_MODE);
     console.log('APPLICATION_SERVER_URL: ', this.APPLICATION_SERVER_URL);
-    console.log('WS_LIVEKIT_URL: ', this.WS_LIVEKIT_URL);
+    console.log('LIVEKIT_URL: ', this.LIVEKIT_URL);
   }
+
+  generateUrls() {
+		// If APPLICATION_SERVER_URL is not configured and app is not launched in device dev mode,
+    // use default value from local development
+		if (!this.APPLICATION_SERVER_URL && !this.IS_DEVICE_DEV_MODE) {
+			if (window.location.hostname === 'localhost') {
+				this.APPLICATION_SERVER_URL = 'http://localhost:6080/';
+			} else {
+				this.APPLICATION_SERVER_URL = 'https://' + window.location.hostname + ':6443/';
+			}
+		}
+
+		// If LIVEKIT_URL is not configured and app is not launched in device dev mode,
+    // use default value from local development
+		if (!this.LIVEKIT_URL && !this.IS_DEVICE_DEV_MODE) {
+			if (window.location.hostname === 'localhost') {
+				this.LIVEKIT_URL = 'ws://localhost:7880/';	
+			} else {
+				this.LIVEKIT_URL = 'wss://' + window.location.hostname + ':7443/';
+			}
+		}
+	}
 
   ngOnDestroy() {
     // On component destroyed leave room
@@ -115,7 +131,7 @@ export class HomePage {
 
       // First param is the LiveKit server URL. Second param is the access token
 
-      await this.room.connect(this.WS_LIVEKIT_URL, token);
+      await this.room.connect(this.LIVEKIT_URL, token);
 
       // --- 5) Requesting and Checking Android Permissions
       if (this.platform.is('hybrid') && this.platform.is('android')) {
@@ -188,9 +204,9 @@ export class HomePage {
 
     // Find in remote participants the participant with the track and return his name
     if (!this.room) return;
-    const remoteParticipant = Array.from(this.room.participants.values()).find(
+    const remoteParticipant = Array.from(this.room.remoteParticipants.values()).find(
       (p) => {
-        return p.getTracks().some((t) => t.trackSid === trackSid);
+        return p.getTrackPublications().some((t) => t.trackSid === trackSid);
       }
     );
     return remoteParticipant?.identity;
@@ -248,7 +264,7 @@ export class HomePage {
         {
           name: 'websocket',
           type: 'text',
-          value: this.WS_LIVEKIT_URL,
+          value: this.LIVEKIT_URL,
           placeholder: 'WS URL',
           id: 'ws-input',
         },
@@ -265,7 +281,7 @@ export class HomePage {
           id: 'ok-btn',
           handler: (data) => {
             this.APPLICATION_SERVER_URL = data.url;
-            this.WS_LIVEKIT_URL = data.websocket;
+            this.LIVEKIT_URL = data.websocket;
           },
         },
       ],
@@ -320,19 +336,6 @@ export class HomePage {
   private async initDevices() {
     this.cameras = await Room.getLocalDevices('videoinput');
     this.cameraSelected = this.cameras[0];
-  }
-
-  private prepareForDeviceDevelopment() {
-    /**
-     * WARNING!! To make the mobile development easier, this code allows
-     * using your local IP address for communicating with the backend.
-     * For production uses, the server should be accessible from the Internet
-     * and the code below should be removed.
-     */
-    console.warn('Your local IP address: ', environment.externalIp);
-    // Pointing to our proxy server through https/wss and our local IP address
-    this.APPLICATION_SERVER_URL = `https://${environment.externalIp}:5001/`;
-    this.WS_LIVEKIT_URL = `wss://${environment.externalIp}:5001/`;
   }
 
   /**
