@@ -1,0 +1,30 @@
+# Basic Backend Node
+
+Basic server application built with Node.js and Express. It internally uses [livekit-server-sdk-js](https://docs.livekit.io/server-sdk-js/).
+
+For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/backend/node).
+
+## Prerequisites
+
+-   [Node](https://nodejs.org/en/download)
+
+## Run
+
+1. Download repository
+
+```bash
+git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
+cd openvidu-livekit-tutorials/basic/backend/node
+```
+
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Run the application
+
+```bash
+npm start
+```

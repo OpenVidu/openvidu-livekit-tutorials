@@ -1,0 +1,16 @@
+{
+    "name": "basic-node",
+    "version": "1.0.0",
+    "description": "Basic server application built with Node.js and Express",
+    "main": "index.js",
+    "type": "module",
+    "scripts": {
+        "start": "node index.js"
+    },
+    "dependencies": {
+        "cors": "2.8.5",
+        "dotenv": "16.4.5",
+        "express": "4.19.2",
+        "livekit-server-sdk": "2.1.2"
+    }
+}
