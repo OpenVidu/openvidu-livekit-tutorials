@@ -28,7 +28,6 @@ post '/token' do
 
   token = LiveKit::AccessToken.new(api_key: LIVEKIT_API_KEY, api_secret: LIVEKIT_API_SECRET)
   token.identity = participant_name
-  token.name = participant_name
   token.add_grant(roomJoin: true, room: room_name)
 
   return token.to_jwt
