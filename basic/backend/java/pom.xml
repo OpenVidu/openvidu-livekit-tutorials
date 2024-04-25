@@ -14,7 +14,7 @@
 	<artifactId>basic-java</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>basic-java</name>
-	<description>Basic server application built with Spring Boot and Java</description>
+	<description>Basic server application built for Java with Spring Boot</description>
 
 	<properties>
 		<java.version>17</java.version>

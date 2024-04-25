@@ -1,7 +1,7 @@
 {
     "name": "basic-node",
     "version": "1.0.0",
-    "description": "Basic server application built with Node.js and Express",
+    "description": "Basic server application built for Node.js with Express",
     "main": "index.js",
     "type": "module",
     "scripts": {

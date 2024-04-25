@@ -1,6 +1,6 @@
 # Basic Backend Node
 
-Basic server application built with Node.js and Express. It internally uses [livekit-server-sdk-js](https://docs.livekit.io/server-sdk-js/).
+Basic server application built for Node.js with Express. It internally uses [livekit-server-sdk-js](https://docs.livekit.io/server-sdk-js/).
 
 For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/backend/node).
 

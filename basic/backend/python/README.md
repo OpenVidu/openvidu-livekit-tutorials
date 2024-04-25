@@ -1,6 +1,6 @@
 # Basic Backend Node
 
-Basic server application built with Python and Flask. It internally uses [livekit-python-sdk](https://github.com/livekit/python-sdks).
+Basic server application built for Python with Flask. It internally uses [livekit-python-sdk](https://github.com/livekit/python-sdks).
 
 For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/backend/python).
 

@@ -1,6 +1,6 @@
 # Basic Backend Java
 
-Basic server application built with Spring Boot and Java. It internally uses [livekit-server-sdk-kotlin](https://github.com/livekit/server-sdk-kotlin).
+Basic server application built for Java with Spring Boot. It internally uses [livekit-server-sdk-kotlin](https://github.com/livekit/server-sdk-kotlin).
 
 For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/backend/java).
 

@@ -1,0 +1,3 @@
+ENV['SERVER_PORT'] = '6080'
+ENV['LIVEKIT_API_KEY'] = 'devkey'
+ENV['LIVEKIT_API_SECRET'] = 'secret'
