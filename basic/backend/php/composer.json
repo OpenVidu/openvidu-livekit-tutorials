@@ -1,0 +1,22 @@
+{
+    "name": "openvidu/basic-php",
+    "description": "Basic server application built for PHP",
+    "type": "project",
+    "require": {
+        "vlucas/phpdotenv": "^5.6",
+        "agence104/livekit-server-sdk": "^1.2"
+    },
+    "authors": [
+        {
+            "name": "openvidu"
+        }
+    ],
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    },
+    "scripts": {
+        "start": "php -S localhost:6080"
+    }
+}
