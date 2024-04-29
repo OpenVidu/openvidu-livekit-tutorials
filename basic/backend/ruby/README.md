@@ -1,4 +1,4 @@
-# Basic Backend Node
+# Basic Backend Ruby
 
 Basic server application built for Ruby with Sinatra. It internally uses [livekit-server-sdk-ruby](https://github.com/livekit/server-sdk-ruby).
 

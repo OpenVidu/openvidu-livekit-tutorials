@@ -1,4 +1,4 @@
-# Basic Backend Node
+# Basic Backend PHP
 
 Basic server application built for PHP. It internally uses [livekit-server-sdk-php](https://github.com/agence104/livekit-server-sdk-php).
 

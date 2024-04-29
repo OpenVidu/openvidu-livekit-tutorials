@@ -1,4 +1,4 @@
-# Basic Backend Node
+# Basic Backend Python
 
 Basic server application built for Python with Flask. It internally uses [livekit-python-sdk](https://github.com/livekit/python-sdks).
 

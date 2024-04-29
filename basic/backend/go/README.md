@@ -1,4 +1,4 @@
-# Basic Backend Node
+# Basic Backend Go
 
 Basic server application built for Go with Gin. It internally uses [livekit-server-sdk-go](https://pkg.go.dev/github.com/livekit/server-sdk-go).
 
