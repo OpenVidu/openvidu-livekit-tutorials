@@ -4,177 +4,155 @@ var APPLICATION_SERVER_URL = "";
 var LIVEKIT_URL = "";
 configureUrls();
 
-var LivekitClient = window.LivekitClient;
+const LivekitClient = window.LivekitClient;
 var room;
 
 function configureUrls() {
-	// If APPLICATION_SERVER_URL is not configured, use default value from local development
-	if (!APPLICATION_SERVER_URL) {
-		if (window.location.hostname === "localhost") {
-			APPLICATION_SERVER_URL = "http://localhost:6080/";
-		} else {
-			APPLICATION_SERVER_URL = "https://" + window.location.hostname + ":6443/";
-		}
-	}
+    // If APPLICATION_SERVER_URL is not configured, use default value from local development
+    if (!APPLICATION_SERVER_URL) {
+        if (window.location.hostname === "localhost") {
+            APPLICATION_SERVER_URL = "http://localhost:6080/";
+        } else {
+            APPLICATION_SERVER_URL = "https://" + window.location.hostname + ":6443/";
+        }
+    }
 
-	// If LIVEKIT_URL is not configured, use default value from local development
-	if (!LIVEKIT_URL) {
-		if (window.location.hostname === "localhost") {
-			LIVEKIT_URL = "ws://localhost:7880/";
-		} else {
-			LIVEKIT_URL = "wss://" + window.location.hostname + ":7443/";
-		}
-	}
+    // If LIVEKIT_URL is not configured, use default value from local development
+    if (!LIVEKIT_URL) {
+        if (window.location.hostname === "localhost") {
+            LIVEKIT_URL = "ws://localhost:7880/";
+        } else {
+            LIVEKIT_URL = "wss://" + window.location.hostname + ":7443/";
+        }
+    }
 }
 
-function joinRoom() {
-    var myRoomName = document.getElementById("roomName").value;
-    var myUserName = document.getElementById("userName").value;
+async function joinRoom() {
+    const roomName = document.getElementById("roomName").value;
+    const userName = document.getElementById("userName").value;
 
-    // --- 1) Get a Room object ---
+    // 1. Get a Room object
     room = new LivekitClient.Room();
 
-    // --- 2) Specify the actions when events take place in the room ---
+    // 2. Specify the actions when events take place in the room
     // On every new Track received...
-    room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, publication, participant) => {
-        const element = track.attach();
-        element.id = track.sid;
-        element.className = "removable";
-        document.getElementById("video-container").appendChild(element);
-
-        if (track.kind === "video") {
-            appendUserData(element, participant.identity);
-        }
+    room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, _publication, participant) => {
+        addTrack(track, participant.identity);
     });
 
     // On every new Track destroyed...
-    room.on(LivekitClient.RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+    room.on(LivekitClient.RoomEvent.TrackUnsubscribed, (track, _publication, participant) => {
         track.detach();
         document.getElementById(track.sid)?.remove();
-		
+
         if (track.kind === "video") {
-            removeUserData(participant);
+            removeUserData(participant.identity);
         }
     });
 
-    // --- 3) Connect to the room with a valid access token ---
-    // Get a token from the application backend
-    getToken(myRoomName, myUserName).then((token) => {
-        // First param is the LiveKit server URL. Second param is the access token
-        room.connect(LIVEKIT_URL, token)
-            .then(() => {
-                // --- 4) Set page layout for active call ---
-                document.getElementById("room-title").innerText = myRoomName;
-                document.getElementById("join").style.display = "none";
-                document.getElementById("room").style.display = "block";
+    // 3. Connect to the room with a valid access token
+    try {
+        // Get a token from the application backend
+        const token = await getToken(roomName, userName);
+        await room.connect(LIVEKIT_URL, token);
 
-                // --- 5) Publish your local tracks ---
-                room.localParticipant.setMicrophoneEnabled(true);
-                room.localParticipant.setCameraEnabled(true).then((publication) => {
-                    const element = publication.track.attach();
-                    document.getElementById("video-container").appendChild(element);
-                    initMainVideo(element, myUserName);
-                    appendUserData(element, myUserName);
-                    element.className = "removable";
-                });
-            })
-            .catch((error) => {
-                console.log("There was an error connecting to the room:", error.code, error.message);
-            });
-    });
+        // 4. Set page layout for active call
+        document.getElementById("room-title").innerText = roomName;
+        document.getElementById("join").hidden = true;
+        document.getElementById("room").hidden = false;
+
+        // 5. Publish your local tracks
+        await room.localParticipant.setMicrophoneEnabled(true);
+        const publication = await room.localParticipant.setCameraEnabled(true);
+        addTrack(publication.track, userName, true);
+    } catch (error) {
+        console.log("There was an error connecting to the room:", error.message);
+    }
 }
 
-function leaveRoom() {
-    // --- 6) Leave the room by calling 'disconnect' method over the Room object ---
-    room.disconnect();
+function addTrack(track, participantIdentity, local = false) {
+    const element = track.attach();
+    element.id = track.sid;
+    element.className = "removable";
+    document.getElementById("video-container").appendChild(element);
 
-    // Removing all HTML elements with user's nicknames.
-    // HTML videos are automatically removed when leaving a Room
-    removeAllUserData();
+    if (track.kind === "video") {
+        appendUserData(element, participantIdentity + (local ? " (You)" : ""));
+    }
+}
+
+async function leaveRoom() {
+    // 6. Leave the room by calling 'disconnect' method over the Room object
+    await room.disconnect();
+
+    // Removing all HTML audio/video elements and user's nicknames.
+    removeAllRemovableElements();
 
     // Back to 'Join room' page
-    document.getElementById("join").style.display = "block";
-    document.getElementById("room").style.display = "none";
+    document.getElementById("join").hidden = false;
+    document.getElementById("room").hidden = true;
 }
 
-window.onbeforeunload = function () {
-    if (room) room.disconnect();
+window.onbeforeunload = () => {
+    room?.disconnect();
 };
 
-// APPLICATION SPECIFIC METHODS
-window.addEventListener("load", function () {
-    generateParticipantInfo();
-});
+window.onload = generateParticipantInfo;
 
 function generateParticipantInfo() {
-    document.getElementById("roomName").value = "RoomA";
+    document.getElementById("roomName").value = "Test Room";
     document.getElementById("userName").value = "Participant" + Math.floor(Math.random() * 100);
 }
 
 function appendUserData(videoElement, participantIdentity) {
-    var dataNode = document.createElement("div");
+    const dataNode = document.createElement("div");
+    dataNode.id = `data-${participantIdentity}`;
     dataNode.className = "removable";
-    dataNode.id = "data-" + participantIdentity;
-    dataNode.innerHTML = "<p>" + participantIdentity + "</p>";
+    dataNode.innerHTML = `<p>${participantIdentity}</p>`;
     videoElement.parentNode.insertBefore(dataNode, videoElement.nextSibling);
-    addClickListener(videoElement, participantIdentity);
 }
 
-function removeUserData(participant) {
-    var dataNode = document.getElementById("data-" + participant.identity);
-    dataNode?.parentNode.removeChild(dataNode);
+function removeUserData(participantIdentity) {
+    const dataNode = document.getElementById(`data-${participantIdentity}`);
+    dataNode?.remove();
 }
 
-function removeAllUserData() {
-    var elementsToRemove = document.getElementsByClassName("removable");
-    while (elementsToRemove[0]) {
-        elementsToRemove[0].parentNode.removeChild(elementsToRemove[0]);
-    }
-}
-
-function addClickListener(videoElement, userData) {
-    videoElement.addEventListener("click", function () {
-        var mainVideo = $("#main-video video").get(0);
-        if (mainVideo.srcObject !== videoElement.srcObject) {
-            $("#main-video").fadeOut("fast", () => {
-                $("#main-video p").html(userData);
-                mainVideo.srcObject = videoElement.srcObject;
-                $("#main-video").fadeIn("fast");
-            });
-        }
+function removeAllRemovableElements() {
+    const elementsToRemove = document.getElementsByClassName("removable");
+    Array.from(elementsToRemove).forEach((element) => {
+        element.remove();
     });
-}
-
-function initMainVideo(videoElement, userData) {
-    document.querySelector("#main-video video").srcObject = videoElement.srcObject;
-    document.querySelector("#main-video p").innerHTML = userData;
-    document.querySelector("#main-video video")["muted"] = true;
 }
 
 /**
  * --------------------------------------------
  * GETTING A TOKEN FROM YOUR APPLICATION SERVER
  * --------------------------------------------
- * The methods below request the creation of a Token to
- * your application server. This keeps your OpenVidu deployment secure.
+ * The method below request the creation of a token to
+ * your application server. This prevents the need to expose
+ * your LiveKit API key and secret to the client side.
  *
  * In this sample code, there is no user control at all. Anybody could
- * access your application server endpoints! In a real production
+ * access your application server endpoints. In a real production
  * environment, your application server must identify the user to allow
  * access to the endpoints.
  */
-function getToken(roomName, participantName) {
-    return new Promise((resolve, reject) => {
-        $.ajax({
-            type: "POST",
-            url: APPLICATION_SERVER_URL + "token",
-            data: JSON.stringify({
-                roomName,
-                participantName,
-            }),
-            headers: { "Content-Type": "application/json" },
-            success: (token) => resolve(token),
-            error: (error) => reject(error),
-        });
+async function getToken(roomName, participantName) {
+    const response = await fetch(APPLICATION_SERVER_URL + "token", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            roomName,
+            participantName
+        })
     });
+
+    if (!response.ok) {
+        throw new Error("Failed to get token");
+    }
+
+    const token = await response.json();
+    return token;
 }

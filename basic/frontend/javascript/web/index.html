@@ -1,11 +1,11 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
     <head>
-        <title>openvidu-js</title>
-
-        <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8" />
+        <title>Basic JavaScript</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="shortcut icon" href="resources/images/favicon.ico" type="image/x-icon" />
 
-        <!-- Bootstrap -->
         <script
             src="https://code.jquery.com/jquery-3.3.1.min.js"
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
@@ -26,7 +26,6 @@
             rel="stylesheet"
             href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
         />
-        <!-- Bootstrap -->
 
         <link rel="stylesheet" href="style.css" type="text/css" media="screen" />
         <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.1.1/dist/livekit-client.umd.js"></script>
@@ -83,22 +82,14 @@
                 </div>
             </div>
 
-            <div id="room" style="display: none">
+            <div id="room" hidden>
                 <div id="room-header">
                     <h1 id="room-title"></h1>
-                    <input
-                        class="btn btn-large btn-danger"
-                        type="button"
-                        id="buttonLeaveRoom"
-                        onmouseup="leaveRoom()"
-                        value="Leave room"
-                    />
+                    <button class="btn btn-large btn-danger" id="buttonLeaveRoom" onclick="leaveRoom()">
+                        Leave room
+                    </button>
                 </div>
-                <div id="main-video" class="col-md-6">
-                    <p></p>
-                    <video autoplay playsinline="true"></video>
-                </div>
-                <div id="video-container" class="col-md-6"></div>
+                <div id="video-container" class="col-md-12"></div>
             </div>
         </div>
 
