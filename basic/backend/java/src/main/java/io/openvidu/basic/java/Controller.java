@@ -25,13 +25,16 @@ public class Controller {
 	 * @param params JSON object with roomName and participantName
 	 * @return The JWT token
 	 */
-	@PostMapping("/token")
+	@PostMapping(
+		value = "/token",
+		produces = "application/json"
+	)
 	public ResponseEntity<String> getToken(@RequestBody Map<String, String> params) {
 		String roomName = params.get("roomName");
 		String participantName = params.get("participantName");
 
 		if (roomName == null || participantName == null) {
-			return ResponseEntity.badRequest().body("roomName and participantName are required");
+			return ResponseEntity.badRequest().body("\"roomName and participantName are required\"");
 		}
 
 		AccessToken token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
@@ -39,7 +42,7 @@ public class Controller {
 		token.setIdentity(participantName);
 		token.addGrants(new RoomJoin(true), new RoomName(roomName));
 
-		return ResponseEntity.ok(token.toJwt());
+		return ResponseEntity.ok("\"" + token.toJwt() + "\"");
 	}
 
 }

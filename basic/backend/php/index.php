@@ -1,5 +1,5 @@
 <?php
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . "/vendor/autoload.php";
 
 use Agence104\LiveKit\AccessToken;
 use Agence104\LiveKit\AccessTokenOptions;
@@ -14,18 +14,18 @@ header("Access-Control-Allow-Methods: OPTIONS,GET,POST,PUT,DELETE");
 header("Access-Control-Max-Age: 3600");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-$LIVEKIT_API_KEY = $_ENV['LIVEKIT_API_KEY'] ?? 'devkey';
-$LIVEKIT_API_SECRET = $_ENV['LIVEKIT_API_SECRET'] ?? 'secret';
+$LIVEKIT_API_KEY = $_ENV["LIVEKIT_API_KEY"] ?? "devkey";
+$LIVEKIT_API_SECRET = $_ENV["LIVEKIT_API_SECRET"] ?? "secret";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['PATH_INFO'] === '/token') {
-    $data = json_decode(file_get_contents('php://input'), true);
+if ($_SERVER["REQUEST_METHOD"] === "POST" && $_SERVER["PATH_INFO"] === "/token") {
+    $data = json_decode(file_get_contents("php://input"), true);
 
-    $roomName = $data['roomName'] ?? null;
-    $participantName = $data['participantName'] ?? null;
+    $roomName = $data["roomName"] ?? null;
+    $participantName = $data["participantName"] ?? null;
 
     if (!$roomName || !$participantName) {
         http_response_code(400);
-        echo "roomName and participantName are required";
+        echo json_encode("roomName and participantName are required");
         exit();
     }
 
@@ -39,9 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['PATH_INFO'] === '/token')
         ->setGrant($videoGrant)
         ->toJwt();
     
-    echo $token;
+    echo json_encode($token);
     exit();
 }
 
-echo "Unsupported endpoint or method";
+echo json_encode("Unsupported endpoint or method");
 exit();

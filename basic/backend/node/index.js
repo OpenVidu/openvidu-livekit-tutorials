@@ -17,18 +17,18 @@ app.post("/token", async (req, res) => {
     const participantName = req.body.participantName;
 
     if (!roomName || !participantName) {
-        res.status(400).send("roomName and participantName are required");
+        res.status(400).json("roomName and participantName are required");
         return;
     }
 
     const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
-        identity: participantName,
+        identity: participantName
     });
     at.addGrant({ roomJoin: true, room: roomName });
     const token = await at.toJwt();
-    res.send(token);
+    res.json(token);
 });
 
 app.listen(SERVER_PORT, () => {
-    console.log("Application started on port: ", SERVER_PORT);
+    console.log("Server started on port:", SERVER_PORT);
 });

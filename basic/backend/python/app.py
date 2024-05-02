@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
 from livekit import api
@@ -20,7 +20,7 @@ def getToken():
     participant_name = request.json.get("participantName")
 
     if not room_name or not participant_name:
-        return "roomName and participantName are required", 400
+        return jsonify("roomName and participantName are required"), 400
 
     token = api.AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET) \
         .with_identity(participant_name) \
@@ -28,7 +28,7 @@ def getToken():
             room_join=True,
             room=room_name
         ))
-    return token.to_jwt()
+    return jsonify(token.to_jwt())
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=SERVER_PORT)
