@@ -28,8 +28,8 @@ function configureUrls() {
 }
 
 async function joinRoom() {
-    const roomName = document.getElementById("roomName").value;
-    const userName = document.getElementById("userName").value;
+    const roomName = document.getElementById("room-name").value;
+    const userName = document.getElementById("participant-name").value;
 
     // 1. Get a Room object
     room = new LivekitClient.Room();
@@ -46,7 +46,7 @@ async function joinRoom() {
         document.getElementById(track.sid)?.remove();
 
         if (track.kind === "video") {
-            removeUserData(participant.identity);
+            removeVideoContainer(participant.identity);
         }
     });
 
@@ -73,11 +73,15 @@ async function joinRoom() {
 function addTrack(track, participantIdentity, local = false) {
     const element = track.attach();
     element.id = track.sid;
-    element.className = "removable";
-    document.getElementById("video-container").appendChild(element);
 
+    /* If the track is a video track, we create a container and append the video element to it 
+    with the participant's identity */
     if (track.kind === "video") {
-        appendUserData(element, participantIdentity + (local ? " (You)" : ""));
+        const videoContainer = createVideoContainer(participantIdentity);
+        videoContainer.appendChild(element);
+        appendParticipantData(videoContainer, participantIdentity + (local ? " (You)" : ""));
+    } else {
+        document.getElementById("layout-container").appendChild(element);
     }
 }
 
@@ -85,8 +89,8 @@ async function leaveRoom() {
     // 6. Leave the room by calling 'disconnect' method over the Room object
     await room.disconnect();
 
-    // Removing all HTML audio/video elements and user's nicknames.
-    removeAllRemovableElements();
+    // Removing all HTML elements inside the layout container
+    removeAllLayoutElements();
 
     // Back to 'Join room' page
     document.getElementById("join").hidden = false;
@@ -97,29 +101,36 @@ window.onbeforeunload = () => {
     room?.disconnect();
 };
 
-window.onload = generateParticipantInfo;
+window.onload = generateFormValues;
 
-function generateParticipantInfo() {
-    document.getElementById("roomName").value = "Test Room";
-    document.getElementById("userName").value = "Participant" + Math.floor(Math.random() * 100);
+function generateFormValues() {
+    document.getElementById("room-name").value = "Test Room";
+    document.getElementById("participant-name").value = "Participant" + Math.floor(Math.random() * 100);
 }
 
-function appendUserData(videoElement, participantIdentity) {
-    const dataNode = document.createElement("div");
-    dataNode.id = `data-${participantIdentity}`;
-    dataNode.className = "removable";
-    dataNode.innerHTML = `<p>${participantIdentity}</p>`;
-    videoElement.parentNode.insertBefore(dataNode, videoElement.nextSibling);
+function createVideoContainer(participantIdentity) {
+    const videoContainer = document.createElement("div");
+    videoContainer.id = `camera-${participantIdentity}`;
+    videoContainer.className = "video-container";
+    document.getElementById("layout-container").appendChild(videoContainer);
+    return videoContainer;
 }
 
-function removeUserData(participantIdentity) {
-    const dataNode = document.getElementById(`data-${participantIdentity}`);
-    dataNode?.remove();
+function appendParticipantData(videoContainer, participantIdentity) {
+    const dataElement = document.createElement("div");
+    dataElement.className = "participant-data";
+    dataElement.innerHTML = `<p>${participantIdentity}</p>`;
+    videoContainer.appendChild(dataElement);
 }
 
-function removeAllRemovableElements() {
-    const elementsToRemove = document.getElementsByClassName("removable");
-    Array.from(elementsToRemove).forEach((element) => {
+function removeVideoContainer(participantIdentity) {
+    const videoContainer = document.getElementById(`camera-${participantIdentity}`);
+    videoContainer?.remove();
+}
+
+function removeAllLayoutElements() {
+    const layoutElements = document.getElementById("layout-container").children;
+    Array.from(layoutElements).forEach((element) => {
         element.remove();
     });
 }
