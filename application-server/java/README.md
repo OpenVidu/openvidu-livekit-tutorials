@@ -2,7 +2,7 @@
 
 Basic server application built for Java with Spring Boot. It internally uses [livekit-server-sdk-kotlin](https://github.com/livekit/server-sdk-kotlin).
 
-For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/server/java).
+For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/tutorials/application-server/java/).
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ For further information, check the [tutorial documentation](https://livekit-tuto
 
 ```bash
 git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
-cd openvidu-livekit-tutorials/server/java
+cd openvidu-livekit-tutorials/application-server/java
 ```
 
 2. Run the application

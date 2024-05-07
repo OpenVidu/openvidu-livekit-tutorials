@@ -2,7 +2,7 @@
 
 Basic server application built for Ruby with Sinatra. It internally uses [livekit-server-sdk-ruby](https://github.com/livekit/server-sdk-ruby).
 
-For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/server/ruby).
+For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/tutorials/application-server/ruby/).
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ For further information, check the [tutorial documentation](https://livekit-tuto
 
 ```bash
 git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
-cd openvidu-livekit-tutorials/server/ruby
+cd openvidu-livekit-tutorials/application-server/ruby
 ```
 
 2. Install dependencies

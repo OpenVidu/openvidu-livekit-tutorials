@@ -2,7 +2,7 @@
 
 Basic client application built with Angular. It internally uses [livekit-client-sdk-js](https://docs.livekit.io/client-sdk-js/).
 
-For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/client/angular).
+For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/tutorials/application-client/angular/).
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ For further information, check the [tutorial documentation](https://livekit-tuto
 
 ```bash
 git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
-cd openvidu-livekit-tutorials/client/angular
+cd openvidu-livekit-tutorials/application-client/angular
 ```
 
 2. Install dependencies

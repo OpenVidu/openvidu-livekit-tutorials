@@ -2,7 +2,7 @@
 
 Basic server application built for Python with Flask. It internally uses [livekit-python-sdk](https://github.com/livekit/python-sdks).
 
-For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/server/python).
+For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/tutorials/application-server/python/).
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ For further information, check the [tutorial documentation](https://livekit-tuto
 
 ```bash
 git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
-cd openvidu-livekit-tutorials/server/python
+cd openvidu-livekit-tutorials/application-server/python
 ```
 
 2. Create python virtual environment and activate it
