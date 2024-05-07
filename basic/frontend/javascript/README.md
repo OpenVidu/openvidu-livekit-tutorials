@@ -22,7 +22,7 @@ cd openvidu-livekit-tutorials/basic/frontend/javascript
 To run this tutorial, you will need a HTTP web server installed on your development computer. If you have Node.js installed, you can easily set up [http-server](https://github.com/indexzero/http-server):
 
 ```bash
-npm install --global http-server
+npm install -g http-server
 ```
 
 After installing http-server, serve the tutorial:

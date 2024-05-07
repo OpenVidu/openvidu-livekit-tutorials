@@ -1,0 +1,41 @@
+@if (!room) {
+<div id="join">
+    <a href="http://www.openvidu.io/" target="_blank">
+        <img id="openvidu-logo" src="assets/images/openvidu_logo.png" alt="OpenVidu logo" />
+    </a>
+    <div id="join-dialog">
+        <h2>Join a Video Room</h2>
+        <form [formGroup]="roomForm" (ngSubmit)="joinRoom()">
+            <div>
+                <label for="participant-name">Participant</label>
+                <input formControlName="participantName" id="participant-name" class="form-control" type="text" />
+            </div>
+            <div>
+                <label for="room-name">Room</label>
+                <input formControlName="roomName" id="room-name" class="form-control" type="text" />
+            </div>
+            <button class="btn btn-lg btn-success" type="submit" [disabled]="!roomForm.valid">Join!</button>
+        </form>
+    </div>
+</div>
+} @else {
+<div id="room">
+    <div id="room-header">
+        <h2 id="room-title">{{ roomForm.value.roomName }}</h2>
+        <button class="btn btn-danger" id="leave-room-button" (click)="leaveRoom()">Leave Room</button>
+    </div>
+    <div id="layout-container">
+        @if (localTrack) {
+        <video-component
+            [track]="localTrack"
+            [participantIdentity]="roomForm.value.participantName!"
+            [isLocal]="true"
+        ></video-component>
+        } @for (publication of remoteTrackPublications.keys(); track publication.trackSid) { @if (publication.kind === "video") {
+        <video-component [track]="publication.videoTrack!" [participantIdentity]="getParticipantIdentity(publication)"></video-component>
+        } @else {
+        <audio-component [track]="castToRemoteAudioTrack(publication.audioTrack!)" hidden></audio-component>
+        } }
+    </div>
+</div>
+}
