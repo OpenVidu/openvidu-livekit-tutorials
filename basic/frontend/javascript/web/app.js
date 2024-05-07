@@ -70,18 +70,18 @@ async function joinRoom() {
     }
 }
 
-function addTrack(track, participantIdentity, local = false) {
+function addTrack(track, participantIdentity, isLocal = false) {
     const element = track.attach();
     element.id = track.sid;
 
     /* If the track is a video track, we create a container and append the video element to it 
     with the participant's identity */
     if (track.kind === "video") {
-        const videoContainer = createVideoContainer(participantIdentity);
-        videoContainer.appendChild(element);
-        appendParticipantData(videoContainer, participantIdentity + (local ? " (You)" : ""));
+        const videoContainer = createVideoContainer(participantIdentity, isLocal);
+        videoContainer.append(element);
+        appendParticipantData(videoContainer, participantIdentity + (isLocal ? " (You)" : ""));
     } else {
-        document.getElementById("layout-container").appendChild(element);
+        document.getElementById("layout-container").append(element);
     }
 }
 
@@ -108,11 +108,18 @@ function generateFormValues() {
     document.getElementById("participant-name").value = "Participant" + Math.floor(Math.random() * 100);
 }
 
-function createVideoContainer(participantIdentity) {
+function createVideoContainer(participantIdentity, isLocal = false) {
     const videoContainer = document.createElement("div");
     videoContainer.id = `camera-${participantIdentity}`;
     videoContainer.className = "video-container";
-    document.getElementById("layout-container").appendChild(videoContainer);
+    const layoutContainer = document.getElementById("layout-container");
+
+    if (isLocal) {
+        layoutContainer.prepend(videoContainer);
+    } else {
+        layoutContainer.append(videoContainer);
+    }
+
     return videoContainer;
 }
 
@@ -120,7 +127,7 @@ function appendParticipantData(videoContainer, participantIdentity) {
     const dataElement = document.createElement("div");
     dataElement.className = "participant-data";
     dataElement.innerHTML = `<p>${participantIdentity}</p>`;
-    videoContainer.appendChild(dataElement);
+    videoContainer.prepend(dataElement);
 }
 
 function removeVideoContainer(participantIdentity) {

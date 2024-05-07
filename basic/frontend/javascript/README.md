@@ -1,8 +1,8 @@
-# Basic Frontend JavaScript
+# Basic JavaScript
 
 Basic client application built with plain HTML, CSS and JavaScript. It internally uses [livekit-client-sdk-js](https://docs.livekit.io/client-sdk-js/).
 
-For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/frontend/javascript).
+For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/client/javascript).
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ For further information, check the [tutorial documentation](https://livekit-tuto
 
 ```bash
 git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
-cd openvidu-livekit-tutorials/basic/frontend/javascript
+cd openvidu-livekit-tutorials/client/javascript
 ```
 
 2. Run the application
