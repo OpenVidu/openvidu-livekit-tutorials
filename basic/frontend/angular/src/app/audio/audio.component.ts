@@ -1,5 +1,5 @@
-import { Component, ElementRef, Input, ViewChild } from '@angular/core';
-import { RemoteAudioTrack } from 'livekit-client';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { LocalAudioTrack, RemoteAudioTrack } from 'livekit-client';
 
 @Component({
     selector: 'audio-component',
@@ -8,10 +8,23 @@ import { RemoteAudioTrack } from 'livekit-client';
     templateUrl: './audio.component.html',
     styleUrl: './audio.component.css',
 })
-export class AudioComponent {
+export class AudioComponent implements AfterViewInit, OnDestroy {
     @ViewChild('audioElement') audioElement?: ElementRef<HTMLAudioElement>;
 
-    _track?: RemoteAudioTrack;
+    private _track?: RemoteAudioTrack | LocalAudioTrack;
+
+    @Input()
+    set track(track: RemoteAudioTrack | LocalAudioTrack) {
+        this._track = track;
+
+        if (this.audioElement) {
+            this._track.attach(this.audioElement.nativeElement);
+        }
+    }
+
+    get track(): RemoteAudioTrack | LocalAudioTrack | undefined {
+        return this._track;
+    }
 
     ngAfterViewInit() {
         if (this._track && this.audioElement) {
@@ -19,12 +32,7 @@ export class AudioComponent {
         }
     }
 
-    @Input()
-    set track(track: RemoteAudioTrack) {
-        this._track = track;
-
-        if (this.audioElement) {
-            this._track.attach(this.audioElement.nativeElement);
-        }
+    ngOnDestroy() {
+        this._track?.detach();
     }
 }

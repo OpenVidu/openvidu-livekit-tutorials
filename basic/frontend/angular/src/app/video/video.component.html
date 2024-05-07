@@ -1,6 +1,6 @@
 <div id="camera-{{ participantIdentity }}" class="video-container">
     <div class="participant-data">
-        <p>{{ participantIdentity }} @if (isLocal) { (You)}</p>
+        <p>{{ participantIdentity + (isLocal ? " (You)" : "") }}</p>
     </div>
-    <video #videoElement></video>
+    <video #videoElement [id]="track?.sid"></video>
 </div>

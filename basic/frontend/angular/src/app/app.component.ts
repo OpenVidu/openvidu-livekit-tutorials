@@ -1,9 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, HostListener, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import {
-    LocalAudioTrack,
     LocalVideoTrack,
-    RemoteAudioTrack,
     RemoteParticipant,
     RemoteTrack,
     RemoteTrackPublication,
@@ -14,6 +12,11 @@ import { VideoComponent } from './video/video.component';
 import { AudioComponent } from './audio/audio.component';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
+
+type TrackInfo = {
+    trackPublication: RemoteTrackPublication;
+    participantIdentity: string;
+};
 
 // For local development, leave these variables empty
 // For production, configure them with correct URLs depending on your deployment
@@ -27,7 +30,7 @@ var LIVEKIT_URL = '';
     templateUrl: './app.component.html',
     styleUrl: './app.component.css',
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
     roomForm = new FormGroup({
         roomName: new FormControl('Test Room', Validators.required),
         participantName: new FormControl('Participant' + Math.floor(Math.random() * 100), Validators.required),
@@ -35,7 +38,7 @@ export class AppComponent {
 
     room?: Room;
     localTrack?: LocalVideoTrack;
-    remoteTrackPublications: Map<RemoteTrackPublication, string> = new Map();
+    remoteTracksMap: Map<string, TrackInfo> = new Map();
 
     constructor(private httpClient: HttpClient) {
         this.configureUrls();
@@ -70,7 +73,10 @@ export class AppComponent {
         this.room.on(
             RoomEvent.TrackSubscribed,
             (_track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
-                this.remoteTrackPublications.set(publication, participant.identity);
+                this.remoteTracksMap.set(publication.trackSid, {
+                    trackPublication: publication,
+                    participantIdentity: participant.identity,
+                });
             }
         );
 
@@ -78,7 +84,7 @@ export class AppComponent {
         this.room.on(
             RoomEvent.TrackUnsubscribed,
             (_track: RemoteTrack, publication: RemoteTrackPublication, _participant: RemoteParticipant) => {
-                this.remoteTrackPublications.delete(publication);
+                this.remoteTracksMap.delete(publication.trackSid);
             }
         );
 
@@ -106,15 +112,13 @@ export class AppComponent {
         // Empty all properties...
         delete this.room;
         delete this.localTrack;
-        this.remoteTrackPublications.clear();
+        this.remoteTracksMap.clear();
     }
 
-    getParticipantIdentity(publication: RemoteTrackPublication): string {
-        return this.remoteTrackPublications.get(publication) || '';
-    }
-
-    castToRemoteAudioTrack(audioTrack: LocalAudioTrack | RemoteAudioTrack): RemoteAudioTrack {
-        return audioTrack as RemoteAudioTrack;
+    @HostListener('window:beforeunload')
+    async ngOnDestroy() {
+        // On window closed or component destroyed, leave the room
+        await this.leaveRoom();
     }
 
     /**

@@ -124,6 +124,11 @@
     #join-dialog h2 {
         font-size: 40px;
     }
+
+    #layout-container {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
 }
 
 @media screen and (max-width: 480px) {
@@ -134,5 +139,9 @@
 
     #join-dialog h2 {
         font-size: 30px;
+    }
+
+    #layout-container {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     }
 }

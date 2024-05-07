@@ -31,11 +31,17 @@
             [participantIdentity]="roomForm.value.participantName!"
             [isLocal]="true"
         ></video-component>
-        } @for (publication of remoteTrackPublications.keys(); track publication.trackSid) { @if (publication.kind === "video") {
-        <video-component [track]="publication.videoTrack!" [participantIdentity]="getParticipantIdentity(publication)"></video-component>
-        } @else {
-        <audio-component [track]="castToRemoteAudioTrack(publication.audioTrack!)" hidden></audio-component>
-        } }
+        }
+        @for (remoteTrack of remoteTracksMap.values(); track remoteTrack.trackPublication.trackSid) {
+            @if (remoteTrack.trackPublication.kind === 'video') {
+            <video-component
+                [track]="remoteTrack.trackPublication.videoTrack!"
+                [participantIdentity]="remoteTrack.participantIdentity"
+            ></video-component>
+            } @else {
+            <audio-component [track]="remoteTrack.trackPublication.audioTrack!" hidden></audio-component>
+            }
+        }
     </div>
 </div>
 }

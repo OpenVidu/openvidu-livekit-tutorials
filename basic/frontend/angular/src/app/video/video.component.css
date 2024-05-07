@@ -27,17 +27,7 @@
 }
 
 /* Media Queries */
-@media screen and (max-width: 768px) {
-    #layout-container {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-}
-
 @media screen and (max-width: 480px) {
-    #layout-container {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-
     .video-container {
         aspect-ratio: 9/16;
     }

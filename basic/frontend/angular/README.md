@@ -1,27 +1,30 @@
-# Angular
+# Basic Angular
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.6.
+Basic client application built with Angular. It internally uses [livekit-client-sdk-js](https://docs.livekit.io/client-sdk-js/).
 
-## Development server
+For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/basic/client/angular).
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+## Prerequisites
 
-## Code scaffolding
+-   [Node](https://nodejs.org/en/download)
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Run
 
-## Build
+1. Download repository
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+```bash
+git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
+cd openvidu-livekit-tutorials/client/angular
+```
 
-## Running unit tests
+2. Install dependencies
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+```bash
+npm install
+```
 
-## Running end-to-end tests
+3. Run the application
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+```bash
+npm start
+```
