@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
-
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 IConfiguration config = new ConfigurationBuilder()
