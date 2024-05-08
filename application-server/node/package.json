@@ -11,6 +11,6 @@
         "cors": "2.8.5",
         "dotenv": "16.4.5",
         "express": "4.19.2",
-        "livekit-server-sdk": "2.1.2"
+        "livekit-server-sdk": "2.3.0"
     }
 }

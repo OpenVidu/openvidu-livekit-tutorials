@@ -25,10 +25,7 @@ public class Controller {
 	 * @param params JSON object with roomName and participantName
 	 * @return The JWT token
 	 */
-	@PostMapping(
-		value = "/token",
-		produces = "application/json"
-	)
+	@PostMapping(value = "/token", produces = "application/json")
 	public ResponseEntity<String> getToken(@RequestBody Map<String, String> params) {
 		String roomName = params.get("roomName");
 		String participantName = params.get("participantName");
