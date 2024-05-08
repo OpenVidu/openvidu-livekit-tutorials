@@ -6,7 +6,6 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/livekit/protocol/auth"
 )
 
@@ -44,8 +43,7 @@ func getToken(context *gin.Context) {
 		RoomJoin: true,
 		Room:     body.RoomName,
 	}
-	at.AddGrant(grant).
-		SetIdentity(body.ParticipantName)
+	at.AddGrant(grant).SetIdentity(body.ParticipantName)
 
 	token, err := at.ToJWT()
 	if err != nil {
@@ -59,8 +57,6 @@ func getToken(context *gin.Context) {
 func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
-
 	router.POST("/token", getToken)
-
 	router.Run(":" + SERVER_PORT)
 }
