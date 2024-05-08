@@ -15,7 +15,7 @@ IConfiguration config = new ConfigurationBuilder()
 // Load env variables
 var SERVER_PORT = config.GetValue<int>("SERVER_PORT");
 var LIVEKIT_API_KEY = config.GetValue<string>("LIVEKIT_API_KEY");
-var LIVEKIT_API_SECRET = config.GetValue<string>("LIVEKIT_API_SECRET");
+var LIVEKIT_API_SECRET = config.GetValue<string>("LIVEKIT_API_SECRET"); // ATTENTION! Make sure that this string is at least 32 characters long
 
 // Enable CORS support
 builder.Services.AddCors(options =>
