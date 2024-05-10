@@ -38,7 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && $_SERVER["PATH_INFO"] === "/token")
         ->init($tokenOptions)
         ->setGrant($videoGrant)
         ->toJwt();
-    
+
     echo json_encode($token);
     exit();
 }
