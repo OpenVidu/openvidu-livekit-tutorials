@@ -14,6 +14,7 @@ app = Flask(__name__)
 
 CORS(app)
 
+
 @app.post("/token")
 def getToken():
     room_name = request.json.get("roomName")
@@ -22,13 +23,13 @@ def getToken():
     if not room_name or not participant_name:
         return jsonify("roomName and participantName are required"), 400
 
-    token = api.AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET) \
-        .with_identity(participant_name) \
-        .with_grants(api.VideoGrants(
-            room_join=True,
-            room=room_name
-        ))
+    token = (
+        api.AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET)
+        .with_identity(participant_name)
+        .with_grants(api.VideoGrants(room_join=True, room=room_name))
+    )
     return jsonify(token.to_jwt())
+
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=SERVER_PORT)
