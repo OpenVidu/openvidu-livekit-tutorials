@@ -16,7 +16,7 @@ CORS(app)
 
 
 @app.post("/token")
-def getToken():
+def createToken():
     room_name = request.json.get("roomName")
     participant_name = request.json.get("participantName")
 

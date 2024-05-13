@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/livekit/protocol/auth"
+	"github.com/livekit/protocol/webhook"
 )
 
 var (
@@ -22,7 +24,7 @@ func getEnv(key, defaultValue string) string {
 	return defaultValue
 }
 
-func getToken(context *gin.Context) {
+func createToken(context *gin.Context) {
 	var body struct {
 		RoomName        string `json:"roomName"`
 		ParticipantName string `json:"participantName"`
@@ -54,9 +56,22 @@ func getToken(context *gin.Context) {
 	context.JSON(http.StatusOK, token)
 }
 
+func receiveWebhook(context *gin.Context) {
+	authProvider := auth.NewSimpleKeyProvider(
+		LIVEKIT_API_KEY, LIVEKIT_API_SECRET,
+	)
+	event, err := webhook.ReceiveWebhookEvent(context.Request, authProvider)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error validating webhook event: %v", err)
+		return
+	}
+	fmt.Println("LiveKit Webhook", event)
+}
+
 func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
-	router.POST("/token", getToken)
+	router.POST("/token", createToken)
+	router.POST("/webhook", receiveWebhook)
 	router.Run(":" + SERVER_PORT)
 }

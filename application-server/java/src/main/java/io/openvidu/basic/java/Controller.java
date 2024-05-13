@@ -7,9 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.livekit.server.*;
+import io.livekit.server.AccessToken;
+import io.livekit.server.RoomJoin;
+import io.livekit.server.RoomName;
+import io.livekit.server.WebhookReceiver;
+import livekit.LivekitWebhook;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -20,13 +25,13 @@ public class Controller {
 
 	@Value("${livekit.api.secret}")
 	private String LIVEKIT_API_SECRET;
-
+	
 	/**
 	 * @param params JSON object with roomName and participantName
 	 * @return The JWT token
 	 */
-	@PostMapping(value = "/token", produces = "application/json")
-	public ResponseEntity<String> getToken(@RequestBody Map<String, String> params) {
+	@PostMapping(value = "/token", consumes = "application/json", produces = "application/json")
+	public ResponseEntity<String> createToken(@RequestBody Map<String, String> params) {
 		String roomName = params.get("roomName");
 		String participantName = params.get("participantName");
 
@@ -40,6 +45,13 @@ public class Controller {
 		token.addGrants(new RoomJoin(true), new RoomName(roomName));
 
 		return ResponseEntity.ok("\"" + token.toJwt() + "\"");
+	}
+
+	@PostMapping(value = "/webhook", consumes = "application/webhook+json")
+	public void receiveWebhook(@RequestHeader("Authorization") String authHeader, @RequestBody RequestBody body) {
+		WebhookReceiver webhookReceiver = new WebhookReceiver(LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
+		LivekitWebhook.WebhookEvent event = webhookReceiver.receive(body.toString(), authHeader);
+		System.out.println("LiveKit Webhook event: " + event.toString());
 	}
 
 }

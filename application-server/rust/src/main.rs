@@ -25,7 +25,7 @@ async fn main() {
         .allow_origin(Any)
         .allow_headers([CONTENT_TYPE]);
 
-    let app = Router::new().route("/token", post(get_token)).layer(cors);
+    let app = Router::new().route("/token", post(create_token)).layer(cors);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:".to_string() + &server_port)
         .await
@@ -33,7 +33,7 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn get_token(payload: Option<Json<Value>>) -> (StatusCode, Json<String>) {
+async fn create_token(payload: Option<Json<Value>>) -> (StatusCode, Json<String>) {
     if let Some(payload) = payload {
         let livekit_api_key = env::var("LIVEKIT_API_KEY").expect("LIVEKIT_API_KEY is not set");
         let livekit_api_secret =
