@@ -1,9 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-
-import { AccessToken } from "livekit-server-sdk";
-import { WebhookReceiver } from "livekit-server-sdk";
+import { AccessToken, WebhookReceiver } from "livekit-server-sdk";
 
 const SERVER_PORT = process.env.SERVER_PORT || 6080;
 const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || "devkey";
