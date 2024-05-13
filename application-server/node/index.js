@@ -7,11 +7,6 @@ const SERVER_PORT = process.env.SERVER_PORT || 6080;
 const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || "devkey";
 const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET || "secret";
 
-const webhookReceiver = new WebhookReceiver(
-  LIVEKIT_API_KEY,
-  LIVEKIT_API_SECRET
-);
-
 const app = express();
 
 app.use(cors());
@@ -34,6 +29,11 @@ app.post("/token", async (req, res) => {
   const token = await at.toJwt();
   res.json(token);
 });
+
+const webhookReceiver = new WebhookReceiver(
+  LIVEKIT_API_KEY,
+  LIVEKIT_API_SECRET
+);
 
 app.post("/webhook", async (req, res) => {
   try {
