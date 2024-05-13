@@ -60,7 +60,7 @@ async fn get_token(payload: Option<Json<Value>>) -> (StatusCode, Json<String>) {
             room_name, participant_name
         );
 
-        return (StatusCode::CREATED, Json(token));
+        return (StatusCode::OK, Json(token));
     } else {
         return (
             StatusCode::BAD_REQUEST,
