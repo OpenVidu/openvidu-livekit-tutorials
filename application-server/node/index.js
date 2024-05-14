@@ -45,6 +45,7 @@ app.post("/webhook", async (req, res) => {
   } catch (error) {
     console.error("Error validating webhook event", error);
   }
+  res.status(200).send();
 });
 
 app.listen(SERVER_PORT, () => {
