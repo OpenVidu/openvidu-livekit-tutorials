@@ -48,7 +48,7 @@ public class Controller {
 	}
 
 	@PostMapping(value = "/webhook", consumes = "application/webhook+json")
-	public void receiveWebhook(@RequestHeader("Authorization") String authHeader, @RequestBody String body) {
+	public ResponseEntity<String> receiveWebhook(@RequestHeader("Authorization") String authHeader, @RequestBody String body) {
 		WebhookReceiver webhookReceiver = new WebhookReceiver(LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
 		try {
 			LivekitWebhook.WebhookEvent event = webhookReceiver.receive(body, authHeader);
@@ -56,6 +56,7 @@ public class Controller {
 		} catch (Exception e) {
 			System.err.println("Error validating webhook event: " + e.getMessage());
 		}
+		return ResponseEntity.ok("ok");
 	}
 
 }
