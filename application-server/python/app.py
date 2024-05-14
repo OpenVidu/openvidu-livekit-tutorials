@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from dotenv import load_dotenv
-from livekit import api
+from livekit.api import AccessToken, VideoGrants, TokenVerifier, WebhookReceiver
 
 load_dotenv()
 
@@ -16,7 +16,7 @@ CORS(app)
 
 
 @app.post("/token")
-def createToken():
+def create_token():
     room_name = request.json.get("roomName")
     participant_name = request.json.get("participantName")
 
@@ -24,11 +24,31 @@ def createToken():
         return jsonify("roomName and participantName are required"), 400
 
     token = (
-        api.AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET)
+        AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET)
         .with_identity(participant_name)
-        .with_grants(api.VideoGrants(room_join=True, room=room_name))
+        .with_grants(VideoGrants(room_join=True, room=room_name))
     )
     return jsonify(token.to_jwt())
+
+
+token_verifier = TokenVerifier(LIVEKIT_API_KEY, LIVEKIT_API_SECRET)
+webhook_receiver = WebhookReceiver(token_verifier)
+
+
+@app.post("/webhook")
+async def receive_webhook():
+    auth_token = request.headers.get("Authorization")
+
+    if not auth_token:
+        return jsonify("Authorization header is required"), 401
+
+    try:
+        event = webhook_receiver.receive(request.data.decode("utf-8"), auth_token)
+        print("LiveKit Webhook:", event)
+        return jsonify(), 200
+    except:
+        print("Authorization header is not valid")
+        return jsonify("Authorization header is not valid"), 401
 
 
 if __name__ == "__main__":
