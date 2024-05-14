@@ -25,7 +25,7 @@ public class Controller {
 
 	@Value("${livekit.api.secret}")
 	private String LIVEKIT_API_SECRET;
-	
+
 	/**
 	 * @param params JSON object with roomName and participantName
 	 * @return The JWT token
@@ -48,10 +48,10 @@ public class Controller {
 	}
 
 	@PostMapping(value = "/webhook", consumes = "application/webhook+json")
-	public void receiveWebhook(@RequestHeader("Authorization") String authHeader, @RequestBody RequestBody body) {
+	public void receiveWebhook(@RequestHeader("Authorization") String authHeader, @RequestBody String body) {
 		WebhookReceiver webhookReceiver = new WebhookReceiver(LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
-		LivekitWebhook.WebhookEvent event = webhookReceiver.receive(body.toString(), authHeader);
-		System.out.println("LiveKit Webhook event: " + event.toString());
+		LivekitWebhook.WebhookEvent event = webhookReceiver.receive(body, authHeader);
+		System.out.println("LiveKit Webhook: " + event.toString());
 	}
 
 }
