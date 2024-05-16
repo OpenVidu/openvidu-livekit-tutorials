@@ -3,8 +3,8 @@
   "description": "Basic server application built for PHP",
   "type": "project",
   "require": {
-    "vlucas/phpdotenv": "^5.6",
-    "agence104/livekit-server-sdk": "^1.2"
+    "vlucas/phpdotenv": "5.6.0",
+    "agence104/livekit-server-sdk": "1.2.3"
   },
   "authors": [
     {
@@ -17,6 +17,6 @@
     }
   },
   "scripts": {
-    "start": "php -S localhost:6080"
+    "start": "php -S 0.0.0.0:6080"
   }
 }
