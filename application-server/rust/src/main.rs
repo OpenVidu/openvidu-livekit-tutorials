@@ -79,13 +79,13 @@ async fn receive_webhook(headers: HeaderMap, body: String) -> StatusCode {
     let token_verifier = TokenVerifier::with_api_key(&livekit_api_key, &livekit_api_secret);
     let webhook_receiver = WebhookReceiver::new(token_verifier);
 
-    let jwt: &str = headers
+    let auth_header: &str = headers
         .get("Authorization")
         .expect("Authorization header is required")
         .to_str()
         .unwrap();
 
-    let res = webhook_receiver.receive(&body, jwt);
+    let res = webhook_receiver.receive(&body, auth_header);
 
     if let Ok(event) = res {
         println!("LiveKit WebHook: {:?}", event);
