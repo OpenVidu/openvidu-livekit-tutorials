@@ -1,18 +1,19 @@
+use axum::http::HeaderMap;
 use axum::{
     extract::Json, http::header::CONTENT_TYPE, http::Method, http::StatusCode, routing::post,
     Router,
 };
 use dotenv::dotenv;
-use env_logger::Env;
-use livekit_api::access_token;
-use log::info;
+use livekit_api::access_token::AccessToken;
+use livekit_api::access_token::TokenVerifier;
+use livekit_api::access_token::VideoGrants;
+use livekit_api::webhooks::WebhookReceiver;
 use serde_json::Value;
 use std::env;
 use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() {
-    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init(); // Init logger
     dotenv().ok(); // Load environment variables from .env
 
     // Check that required environment variables are set
@@ -25,7 +26,10 @@ async fn main() {
         .allow_origin(Any)
         .allow_headers([CONTENT_TYPE]);
 
-    let app = Router::new().route("/token", post(create_token)).layer(cors);
+    let app = Router::new()
+        .route("/token", post(create_token))
+        .route("/webhook", post(receive_webhook))
+        .layer(cors);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:".to_string() + &server_port)
         .await
@@ -44,10 +48,10 @@ async fn create_token(payload: Option<Json<Value>>) -> (StatusCode, Json<String>
             .get("participantName")
             .expect("participantName is required");
 
-        let token = access_token::AccessToken::with_api_key(&livekit_api_key, &livekit_api_secret)
+        let token = AccessToken::with_api_key(&livekit_api_key, &livekit_api_secret)
             .with_identity(&participant_name.to_string())
             .with_name(&participant_name.to_string())
-            .with_grants(access_token::VideoGrants {
+            .with_grants(VideoGrants {
                 room_join: true,
                 room: room_name.to_string(),
                 ..Default::default()
@@ -55,7 +59,7 @@ async fn create_token(payload: Option<Json<Value>>) -> (StatusCode, Json<String>
             .to_jwt()
             .unwrap();
 
-        info!(
+        println!(
             "Sending token for room {} to participant {}",
             room_name, participant_name
         );
@@ -66,5 +70,26 @@ async fn create_token(payload: Option<Json<Value>>) -> (StatusCode, Json<String>
             StatusCode::BAD_REQUEST,
             Json("roomName and participantName are required".to_string()),
         );
+    }
+}
+
+async fn receive_webhook(headers: HeaderMap, body: String) -> StatusCode {
+    let token_verifier = TokenVerifier::new().unwrap();
+    let webhook_receiver = WebhookReceiver::new(token_verifier);
+
+    let jwt: &str = headers
+        .get("Authorization")
+        .expect("Authorization header is required")
+        .to_str()
+        .unwrap();
+
+    let res = webhook_receiver.receive(&body, jwt);
+
+    if let Ok(event) = res {
+        println!("LiveKit WebHook: {:?}", event);
+        return StatusCode::OK;
+    } else {
+        println!("Error validating webhook event: {:?}", res);
+        return StatusCode::UNAUTHORIZED;
     }
 }
