@@ -34,10 +34,10 @@ end
 
 post '/webhook' do
   auth_header = request.env['HTTP_AUTHORIZATION']
-  body = JSON.parse(request.body.read)
   token_verifier = LiveKit::TokenVerifier.new(api_key: LIVEKIT_API_KEY, api_secret: LIVEKIT_API_SECRET)
   begin
     token_verifier.verify(auth_header)
+    body = JSON.parse(request.body.read)
     puts "LiveKit Webhook: #{body}"
     return JSON.generate('ok')
   rescue => e
