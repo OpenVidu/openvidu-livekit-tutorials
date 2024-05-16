@@ -74,7 +74,9 @@ async fn create_token(payload: Option<Json<Value>>) -> (StatusCode, Json<String>
 }
 
 async fn receive_webhook(headers: HeaderMap, body: String) -> StatusCode {
-    let token_verifier = TokenVerifier::new().unwrap();
+    let livekit_api_key = env::var("LIVEKIT_API_KEY").expect("LIVEKIT_API_KEY is not set");
+    let livekit_api_secret = env::var("LIVEKIT_API_SECRET").expect("LIVEKIT_API_SECRET is not set");
+    let token_verifier = TokenVerifier::with_api_key(&livekit_api_key, &livekit_api_secret);
     let webhook_receiver = WebhookReceiver::new(token_verifier);
 
     let jwt: &str = headers
