@@ -2,6 +2,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.IdentityModel.Tokens;
 using System.Text.Json;
+using System.Security.Cryptography;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
@@ -51,6 +53,31 @@ app.MapPost("/token", async (HttpRequest request) =>
     }
 });
 
+app.MapPost("/webhook", async (HttpRequest request) =>
+{
+    var body = new StreamReader(request.Body);
+    string postData = await body.ReadToEndAsync();
+
+    var authHeader = request.Headers["Authorization"];
+    if (authHeader.Count == 0)
+    {
+        return Results.BadRequest("Authorization header is required");
+    }
+    try
+    {
+        VerifyWebhookEvent(authHeader.First(), postData);
+
+    }
+    catch (Exception e)
+    {
+        Console.Error.WriteLine("Error validating webhook event: " + e.Message);
+        return Results.Unauthorized();
+    }
+
+    Console.Out.WriteLine(postData);
+    return Results.Ok();
+});
+
 string CreateLiveKitJWT(string roomName, string participantName)
 {
     JwtHeader headers = new(new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(LIVEKIT_API_SECRET)), "HS256"));
@@ -71,6 +98,32 @@ string CreateLiveKitJWT(string roomName, string participantName)
     };
     JwtSecurityToken token = new(headers, payload);
     return new JwtSecurityTokenHandler().WriteToken(token);
+}
+
+void VerifyWebhookEvent(string authHeader, string body)
+{
+    var utf8Encoding = new UTF8Encoding();
+    var algorithm = new HMACSHA256();
+    var tokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(utf8Encoding.GetBytes(LIVEKIT_API_SECRET)),
+        ValidateIssuer = true,
+        ValidIssuer = LIVEKIT_API_KEY,
+        ValidateAudience = false
+    };
+
+    var jwtValidator = new JwtSecurityTokenHandler();
+    var principal = jwtValidator.ValidateToken(authHeader, tokenValidationParameters, out SecurityToken validatedToken);
+
+    var sha256 = SHA256.Create();
+    var hashBytes = sha256.ComputeHash(utf8Encoding.GetBytes(body));
+    var hash = Convert.ToBase64String(hashBytes);
+
+    if (principal.HasClaim(c => c.Type == "sha256") && principal.FindFirstValue("sha256") != hash)
+    {
+        throw new ArgumentException("sha256 checksum of body does not match!");
+    }
 }
 
 if (LIVEKIT_API_KEY == null || LIVEKIT_API_SECRET == null)
