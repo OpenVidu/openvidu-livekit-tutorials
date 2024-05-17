@@ -103,7 +103,6 @@ string CreateLiveKitJWT(string roomName, string participantName)
 void VerifyWebhookEvent(string authHeader, string body)
 {
     var utf8Encoding = new UTF8Encoding();
-    var algorithm = new HMACSHA256();
     var tokenValidationParameters = new TokenValidationParameters()
     {
         ValidateIssuerSigningKey = true,
