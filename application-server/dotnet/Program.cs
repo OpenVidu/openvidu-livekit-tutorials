@@ -113,13 +113,13 @@ void VerifyWebhookEvent(string authHeader, string body)
     };
 
     var jwtValidator = new JwtSecurityTokenHandler();
-    var principal = jwtValidator.ValidateToken(authHeader, tokenValidationParameters, out SecurityToken validatedToken);
+    var claimsPrincipal = jwtValidator.ValidateToken(authHeader, tokenValidationParameters, out SecurityToken validatedToken);
 
     var sha256 = SHA256.Create();
     var hashBytes = sha256.ComputeHash(utf8Encoding.GetBytes(body));
     var hash = Convert.ToBase64String(hashBytes);
 
-    if (principal.HasClaim(c => c.Type == "sha256") && principal.FindFirstValue("sha256") != hash)
+    if (claimsPrincipal.HasClaim(c => c.Type == "sha256") && claimsPrincipal.FindFirstValue("sha256") != hash)
     {
         throw new ArgumentException("sha256 checksum of body does not match!");
     }
