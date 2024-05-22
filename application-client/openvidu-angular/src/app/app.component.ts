@@ -1,22 +1,10 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import {
-    LocalVideoTrack,
-    RemoteParticipant,
-    RemoteTrack,
-    RemoteTrackPublication,
-    Room,
-    RoomEvent,
-} from 'livekit-client';
+import { Room } from 'livekit-client';
 import { VideoComponent } from './video/video.component';
 import { AudioComponent } from './audio/audio.component';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
-
-type TrackInfo = {
-    trackPublication: RemoteTrackPublication;
-    participantIdentity: string;
-};
 
 // For local development, leave these variables empty
 // For production, configure them with correct URLs depending on your deployment
@@ -37,8 +25,6 @@ export class AppComponent implements OnDestroy {
     });
 
     room?: Room;
-    localTrack?: LocalVideoTrack;
-    remoteTracksMap: Map<string, TrackInfo> = new Map();
 
     constructor(private httpClient: HttpClient) {
         this.configureUrls();
@@ -65,54 +51,31 @@ export class AppComponent implements OnDestroy {
     }
 
     async joinRoom() {
-        // 1. Get a Room object
+        // Initialize a new Room object
         this.room = new Room();
 
-        // 2. Specify the actions when events take place in the room
-        // On every new Track received...
-        this.room.on(
-            RoomEvent.TrackSubscribed,
-            (_track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
-                this.remoteTracksMap.set(publication.trackSid, {
-                    trackPublication: publication,
-                    participantIdentity: participant.identity,
-                });
-            }
-        );
-
-        // On every new Track destroyed...
-        this.room.on(
-            RoomEvent.TrackUnsubscribed,
-            (_track: RemoteTrack, publication: RemoteTrackPublication, _participant: RemoteParticipant) => {
-                this.remoteTracksMap.delete(publication.trackSid);
-            }
-        );
-
-        // 3. Connect to the room with a valid access token
         try {
-            // Get a token from the application backend
+            // Get the room name and participant name from the form
             const roomName = this.roomForm.value.roomName!;
             const participantName = this.roomForm.value.participantName!;
+
+            // Get a token from your application server with the room name and participant name
             const token = await this.getToken(roomName, participantName);
+
+            // Connect to the room with the LiveKit URL and the token
             await this.room.connect(LIVEKIT_URL, token);
 
-            // 4. Publish your local tracks
-            await this.room.localParticipant.setMicrophoneEnabled(true);
-            const publication = await this.room.localParticipant.setCameraEnabled(true);
-            this.localTrack = publication?.videoTrack;
+            // Publish your camera and microphone
+            await this.room.localParticipant.enableCameraAndMicrophone();
         } catch (error: any) {
             console.log('There was an error connecting to the room:', error?.message);
         }
     }
 
     async leaveRoom() {
-        // 5. Leave the room by calling 'disconnect' method over the Room object
+        // Leave the room by calling 'disconnect' method over the Room object
         await this.room?.disconnect();
-
-        // Empty all properties...
         delete this.room;
-        delete this.localTrack;
-        this.remoteTracksMap.clear();
     }
 
     @HostListener('window:beforeunload')

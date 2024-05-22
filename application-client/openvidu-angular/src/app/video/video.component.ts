@@ -13,7 +13,7 @@ export class VideoComponent implements AfterViewInit, OnDestroy {
 
     private _track?: LocalVideoTrack | RemoteVideoTrack;
     @Input() participantIdentity?: string;
-    @Input() isLocal = false;
+    @Input() local = false;
 
     @Input()
     set track(track: LocalVideoTrack | RemoteVideoTrack) {

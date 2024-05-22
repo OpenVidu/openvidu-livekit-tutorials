@@ -28,13 +28,10 @@ function configureUrls() {
 }
 
 async function joinRoom() {
-    const roomName = document.getElementById("room-name").value;
-    const userName = document.getElementById("participant-name").value;
-
-    // 1. Get a Room object
+    // Initialize a new Room object
     room = new LivekitClient.Room();
 
-    // 2. Specify the actions when events take place in the room
+    // Specify the actions when events take place in the room
     // On every new Track received...
     room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, _publication, participant) => {
         addTrack(track, participant.identity);
@@ -50,46 +47,51 @@ async function joinRoom() {
         }
     });
 
-    // 3. Connect to the room with a valid access token
     try {
-        // Get a token from the application backend
+        // Get the room name and participant name from the form
+        const roomName = document.getElementById("room-name").value;
+        const userName = document.getElementById("participant-name").value;
+
+        // Get a token from your application server with the room name and participant name
         const token = await getToken(roomName, userName);
+
+        // Connect to the room with the LiveKit URL and the token
         await room.connect(LIVEKIT_URL, token);
 
-        // 4. Set page layout for active call
+        // Hide the 'Join room' page and show the 'Room' page
         document.getElementById("room-title").innerText = roomName;
         document.getElementById("join").hidden = true;
         document.getElementById("room").hidden = false;
 
-        // 5. Publish your local tracks
-        await room.localParticipant.setMicrophoneEnabled(true);
-        const publication = await room.localParticipant.setCameraEnabled(true);
-        addTrack(publication.track, userName, true);
+        // Publish your camera and microphone
+        await room.localParticipant.enableCameraAndMicrophone();
+        const localVideoTrack = this.room.localParticipant.videoTrackPublications.values().next().value.track;
+        addTrack(localVideoTrack, userName, true);
     } catch (error) {
         console.log("There was an error connecting to the room:", error.message);
     }
 }
 
-function addTrack(track, participantIdentity, isLocal = false) {
+function addTrack(track, participantIdentity, local = false) {
     const element = track.attach();
     element.id = track.sid;
 
     /* If the track is a video track, we create a container and append the video element to it 
     with the participant's identity */
     if (track.kind === "video") {
-        const videoContainer = createVideoContainer(participantIdentity, isLocal);
+        const videoContainer = createVideoContainer(participantIdentity, local);
         videoContainer.append(element);
-        appendParticipantData(videoContainer, participantIdentity + (isLocal ? " (You)" : ""));
+        appendParticipantData(videoContainer, participantIdentity + (local ? " (You)" : ""));
     } else {
         document.getElementById("layout-container").append(element);
     }
 }
 
 async function leaveRoom() {
-    // 6. Leave the room by calling 'disconnect' method over the Room object
+    // Leave the room by calling 'disconnect' method over the Room object
     await room.disconnect();
 
-    // Removing all HTML elements inside the layout container
+    // Remove all HTML elements inside the layout container
     removeAllLayoutElements();
 
     // Back to 'Join room' page
@@ -108,13 +110,13 @@ function generateFormValues() {
     document.getElementById("participant-name").value = "Participant" + Math.floor(Math.random() * 100);
 }
 
-function createVideoContainer(participantIdentity, isLocal = false) {
+function createVideoContainer(participantIdentity, local = false) {
     const videoContainer = document.createElement("div");
     videoContainer.id = `camera-${participantIdentity}`;
     videoContainer.className = "video-container";
     const layoutContainer = document.getElementById("layout-container");
 
-    if (isLocal) {
+    if (local) {
         layoutContainer.prepend(videoContainer);
     } else {
         layoutContainer.append(videoContainer);
