@@ -55,13 +55,7 @@ main {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-}
-
-#openvidu-logo {
-    height: 150px;
-    width: auto;
-    margin-top: 3em;
-    margin-bottom: 3em;
+    height: 100%;
 }
 
 #join-dialog {
@@ -69,7 +63,6 @@ main {
     max-width: 900px;
     padding: 60px;
     border-radius: 6px;
-    text-align: center;
     background-color: #f0f0f0;
 }
 
@@ -139,6 +132,7 @@ main {
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    max-width: 1000px;
     padding: 0 20px;
     margin-bottom: 20px;
 }
@@ -151,12 +145,12 @@ main {
 
 #layout-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 10px;
     justify-content: center;
     align-items: center;
     width: 100%;
-    max-width: 1250px;
+    max-width: 1000px;
     height: 100%;
 }
 
@@ -213,7 +207,7 @@ footer .text span {
     font-weight: bold;
 }
 
-#openvidu-isotype {
+#openvidu-logo {
     height: 35px;
     -webkit-transition: all 0.1s ease-in-out;
     -moz-transition: all 0.1s ease-in-out;
@@ -221,7 +215,7 @@ footer .text span {
     transition: all 0.1s ease-in-out;
 }
 
-#openvidu-isotype:hover {
+#openvidu-logo:hover {
     -webkit-filter: grayscale(0.5);
     filter: grayscale(0.5);
 }
@@ -232,23 +226,17 @@ footer .text span {
         padding: 10px 15px;
     }
 
-    #openvidu-logo {
-        height: 100px;
-        margin-top: 2em;
-        margin-bottom: 2em;
-    }
-
     #join-dialog {
         width: 90%;
         padding: 30px;
     }
 
     #join-dialog h2 {
-        font-size: 40px;
+        font-size: 50px;
     }
 
     #layout-container {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     }
 
     footer {
@@ -267,7 +255,7 @@ footer .text span {
     }
 
     #join-dialog h2 {
-        font-size: 30px;
+        font-size: 40px;
     }
 
     #layout-container {

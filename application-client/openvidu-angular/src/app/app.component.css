@@ -3,13 +3,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-}
-
-#openvidu-logo {
-    height: 150px;
-    width: auto;
-    margin-top: 3em;
-    margin-bottom: 3em;
+    height: 100%;
 }
 
 #join-dialog {
@@ -17,7 +11,6 @@
     max-width: 900px;
     padding: 60px;
     border-radius: 6px;
-    text-align: center;
     background-color: #f0f0f0;
 }
 
@@ -87,6 +80,7 @@
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    max-width: 1000px;
     padding: 0 20px;
     margin-bottom: 20px;
 }
@@ -99,36 +93,29 @@
 
 #layout-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 10px;
     justify-content: center;
     align-items: center;
     width: 100%;
-    max-width: 1250px;
+    max-width: 1000px;
     height: 100%;
 }
 
 /* Media Queries */
 @media screen and (max-width: 768px) {
-    #openvidu-logo {
-        height: 100px;
-        margin-top: 2em;
-        margin-bottom: 2em;
-    }
-
     #join-dialog {
         width: 90%;
         padding: 30px;
     }
 
     #join-dialog h2 {
-        font-size: 40px;
+        font-size: 50px;
     }
 
     #layout-container {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     }
-
 }
 
 @media screen and (max-width: 480px) {
@@ -138,7 +125,7 @@
     }
 
     #join-dialog h2 {
-        font-size: 30px;
+        font-size: 40px;
     }
 
     #layout-container {

@@ -1,8 +1,5 @@
 @if (!room) {
 <div id="join">
-    <a href="http://www.openvidu.io/" target="_blank">
-        <img id="openvidu-logo" src="assets/images/openvidu_logo.png" alt="OpenVidu logo" />
-    </a>
     <div id="join-dialog">
         <h2>Join a Video Room</h2>
         <form [formGroup]="roomForm" (ngSubmit)="joinRoom()">

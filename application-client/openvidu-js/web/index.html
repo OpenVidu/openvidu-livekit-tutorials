@@ -38,14 +38,14 @@
             <a href="/" title="Home"><h1>Basic JavaScript</h1></a>
             <div id="links">
                 <a
-                    href="https://github.com/OpenVidu/openvidu-livekit-tutorials/tree/master/basic/frontend/javascript"
+                    href="https://github.com/OpenVidu/openvidu-livekit-tutorials/tree/master/application-client/openvidu-js"
                     title="GitHub Repository"
                     target="_blank"
                 >
                     <i class="fa-brands fa-github"></i>
                 </a>
                 <a
-                    href="https://livekit-tutorials.openvidu.io/basic/frontend/javascript"
+                    href="https://livekit-tutorials.openvidu.io/tutorials/application-client/javascript/"
                     title="Documentation"
                     target="_blank"
                 >
@@ -56,9 +56,6 @@
 
         <main>
             <div id="join">
-                <a href="http://www.openvidu.io/" target="_blank">
-                    <img id="openvidu-logo" src="resources/images/openvidu_logo.png" alt="OpenVidu logo" />
-                </a>
                 <div id="join-dialog">
                     <h2>Join a Video Room</h2>
                     <form onsubmit="joinRoom(); return false">
@@ -78,9 +75,7 @@
             <div id="room" hidden>
                 <div id="room-header">
                     <h2 id="room-title"></h2>
-                    <button class="btn btn-danger" id="leave-room-button" onclick="leaveRoom()">
-                        Leave Room
-                    </button>
+                    <button class="btn btn-danger" id="leave-room-button" onclick="leaveRoom()">Leave Room</button>
                 </div>
                 <div id="layout-container"></div>
             </div>
@@ -89,7 +84,7 @@
         <footer>
             <p class="text">Made with love by <span>OpenVidu Team</span></p>
             <a href="http://www.openvidu.io/" target="_blank">
-                <img id="openvidu-isotype" src="resources/images/openvidu_isotype.png" alt="OpenVidu isotype" />
+                <img id="openvidu-logo" src="resources/images/openvidu_logo.png" alt="OpenVidu logo" />
             </a>
         </footer>
     </body>

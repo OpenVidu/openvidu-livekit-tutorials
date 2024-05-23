@@ -75,7 +75,7 @@ footer .text span {
     font-weight: bold;
 }
 
-#openvidu-isotype {
+#openvidu-logo {
     height: 35px;
     -webkit-transition: all 0.1s ease-in-out;
     -moz-transition: all 0.1s ease-in-out;
@@ -83,7 +83,7 @@ footer .text span {
     transition: all 0.1s ease-in-out;
 }
 
-#openvidu-isotype:hover {
+#openvidu-logo:hover {
     -webkit-filter: grayscale(0.5);
     filter: grayscale(0.5);
 }
