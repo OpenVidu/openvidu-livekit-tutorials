@@ -8,18 +8,16 @@ use livekit_api::access_token::AccessToken;
 use livekit_api::access_token::TokenVerifier;
 use livekit_api::access_token::VideoGrants;
 use livekit_api::webhooks::WebhookReceiver;
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::env;
+use tokio::net::TcpListener;
 use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() {
     dotenv().ok(); // Load environment variables from .env
 
-    // Check that required environment variables are set
-    let server_port = env::var("SERVER_PORT").unwrap_or("6080".to_string());
-    env::var("LIVEKIT_API_KEY").expect("LIVEKIT_API_KEY is not set");
-    env::var("LIVEKIT_API_SECRET").expect("LIVEKIT_API_SECRET is not set");
+    let server_port = env::var("SERVER_PORT").unwrap_or("6081".to_string());
 
     let cors = CorsLayer::new()
         .allow_methods([Method::POST])
@@ -31,24 +29,37 @@ async fn main() {
         .route("/webhook", post(receive_webhook))
         .layer(cors);
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:".to_string() + &server_port)
+    let listener = TcpListener::bind("0.0.0.0:".to_string() + &server_port)
         .await
         .unwrap();
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn create_token(payload: Option<Json<Value>>) -> (StatusCode, Json<String>) {
+async fn create_token(payload: Option<Json<Value>>) -> (StatusCode, Json<Value>) {
     if let Some(payload) = payload {
-        let livekit_api_key = env::var("LIVEKIT_API_KEY").expect("LIVEKIT_API_KEY is not set");
-        let livekit_api_secret =
-            env::var("LIVEKIT_API_SECRET").expect("LIVEKIT_API_SECRET is not set");
+        let livekit_api_key = env::var("LIVEKIT_API_KEY").unwrap_or("devkey".to_string());
+        let livekit_api_secret = env::var("LIVEKIT_API_SECRET").unwrap_or("secret".to_string());
 
-        let room_name = payload.get("roomName").expect("roomName is required");
-        let participant_name = payload
-            .get("participantName")
-            .expect("participantName is required");
+        let room_name = match payload.get("roomName") {
+            Some(value) => value,
+            None => {
+                return (
+                    StatusCode::BAD_REQUEST,
+                    Json(json!({ "errorMessage": "roomName is required" })),
+                );
+            }
+        };
+        let participant_name = match payload.get("participantName") {
+            Some(value) => value,
+            None => {
+                return (
+                    StatusCode::BAD_REQUEST,
+                    Json(json!({ "errorMessage": "participantName is required" })),
+                );
+            }
+        };
 
-        let token = AccessToken::with_api_key(&livekit_api_key, &livekit_api_secret)
+        let token = match AccessToken::with_api_key(&livekit_api_key, &livekit_api_secret)
             .with_identity(&participant_name.to_string())
             .with_name(&participant_name.to_string())
             .with_grants(VideoGrants {
@@ -57,41 +68,59 @@ async fn create_token(payload: Option<Json<Value>>) -> (StatusCode, Json<String>
                 ..Default::default()
             })
             .to_jwt()
-            .unwrap();
+        {
+            Ok(token) => token,
+            Err(_) => {
+                return (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(json!({ "errorMessage": "Error creating token" })),
+                );
+            }
+        };
 
-        println!(
-            "Sending token for room {} to participant {}",
-            room_name, participant_name
-        );
-
-        return (StatusCode::OK, Json(token));
+        return (StatusCode::OK, Json(json!({ "token": token })));
     } else {
         return (
             StatusCode::BAD_REQUEST,
-            Json("roomName and participantName are required".to_string()),
+            Json(json!({ "errorMessage": "roomName and participantName are required" })),
         );
     }
 }
 
-async fn receive_webhook(headers: HeaderMap, body: String) -> StatusCode {
-    let livekit_api_key = env::var("LIVEKIT_API_KEY").expect("LIVEKIT_API_KEY is not set");
-    let livekit_api_secret = env::var("LIVEKIT_API_SECRET").expect("LIVEKIT_API_SECRET is not set");
+async fn receive_webhook(headers: HeaderMap, body: String) -> (StatusCode, String) {
+    let livekit_api_key = env::var("LIVEKIT_API_KEY").unwrap_or("devkey".to_string());
+    let livekit_api_secret = env::var("LIVEKIT_API_SECRET").unwrap_or("secret".to_string());
     let token_verifier = TokenVerifier::with_api_key(&livekit_api_key, &livekit_api_secret);
     let webhook_receiver = WebhookReceiver::new(token_verifier);
 
-    let auth_header: &str = headers
-        .get("Authorization")
-        .expect("Authorization header is required")
-        .to_str()
-        .unwrap();
+    let auth_header = match headers.get("Authorization") {
+        Some(header_value) => match header_value.to_str() {
+            Ok(header_str) => header_str,
+            Err(_) => {
+                return (
+                    StatusCode::BAD_REQUEST,
+                    "Invalid Authorization header format".to_string(),
+                );
+            }
+        },
+        None => {
+            return (
+                StatusCode::BAD_REQUEST,
+                "Authorization header is required".to_string(),
+            );
+        }
+    };
 
-    let res = webhook_receiver.receive(&body, auth_header);
-
-    if let Ok(event) = res {
-        println!("LiveKit WebHook: {:?}", event);
-        return StatusCode::OK;
-    } else {
-        println!("Error validating webhook event: {:?}", res);
-        return StatusCode::UNAUTHORIZED;
+    match webhook_receiver.receive(&body, auth_header) {
+        Ok(event) => {
+            println!("LiveKit WebHook: {:?}", event);
+            return (StatusCode::OK, "ok".to_string());
+        }
+        Err(_) => {
+            return (
+                StatusCode::UNAUTHORIZED,
+                "Error validating webhook event".to_string(),
+            );
+        }
     }
 }

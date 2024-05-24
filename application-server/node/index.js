@@ -18,7 +18,7 @@ app.post("/token", async (req, res) => {
   const participantName = req.body.participantName;
 
   if (!roomName || !participantName) {
-    res.status(400).json("roomName and participantName are required");
+    res.status(400).json({ errorMessage: "roomName and participantName are required" });
     return;
   }
 
@@ -27,7 +27,7 @@ app.post("/token", async (req, res) => {
   });
   at.addGrant({ roomJoin: true, room: roomName });
   const token = await at.toJwt();
-  res.json(token);
+  res.json({ token });
 });
 
 const webhookReceiver = new WebhookReceiver(

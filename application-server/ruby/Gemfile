@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'sinatra'
 gem 'sinatra-cors'
+gem 'sinatra-contrib'
 gem "rackup", "~> 2.1"
 gem 'puma'
 gem 'livekit-server-sdk'

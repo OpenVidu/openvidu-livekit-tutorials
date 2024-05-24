@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'sinatra/json'
 require 'sinatra/cors'
 require 'livekit'
 require './env.rb'
@@ -22,14 +23,14 @@ post '/token' do
 
   if room_name.nil? || participant_name.nil?
     status 400
-    return JSON.generate('roomName and participantName are required')
+    return json({errorMessage: 'roomName and participantName are required'})
   end
 
   token = LiveKit::AccessToken.new(api_key: LIVEKIT_API_KEY, api_secret: LIVEKIT_API_SECRET)
   token.identity = participant_name
   token.add_grant(roomJoin: true, room: room_name)
 
-  return JSON.generate(token.to_jwt)
+  return json({token: token.to_jwt})
 end
 
 post '/webhook' do
@@ -39,7 +40,7 @@ post '/webhook' do
     token_verifier.verify(auth_header)
     body = JSON.parse(request.body.read)
     puts "LiveKit Webhook: #{body}"
-    return JSON.generate('ok')
+    return
   rescue => e
     puts "Authorization header is not valid: #{e}"
   end

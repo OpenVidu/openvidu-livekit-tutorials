@@ -1,17 +1,23 @@
-#### Prerequisites
+# Basic PHP
 
-To run this application you will need **Rust**:
+Basic server application built for Rust with Axum. It internally uses [livekit-sdk-rust](https://crates.io/crates/livekit).
 
-- [Rust](https://www.rust-lang.org/tools/install){:target="\_blank"}
+For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/tutorials/application-server/rust/).
 
-#### Download repository
+## Prerequisites
+
+-   [Rust](https://www.rust-lang.org/tools/install)
+
+## Run
+
+1. Download repository
 
 ```bash
 git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
 cd openvidu-livekit-tutorials/application-server/rust
 ```
 
-#### Run application
+2. Run the application
 
 ```bash
 cargo run

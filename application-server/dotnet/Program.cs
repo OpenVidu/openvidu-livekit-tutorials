@@ -45,11 +45,11 @@ app.MapPost("/token", async (HttpRequest request) =>
     if (bodyParams.TryGetValue("roomName", out var roomName) && bodyParams.TryGetValue("participantName", out var participantName))
     {
         var token = CreateLiveKitJWT(roomName.ToString(), participantName.ToString());
-        return Results.Json(token);
+        return Results.Json(new { token });
     }
     else
     {
-        return Results.BadRequest("\"roomName\" and \"participantName\" are required");
+        return Results.BadRequest(new { errorMessage = "roomName and participantName are required" });
     }
 });
 
@@ -66,7 +66,6 @@ app.MapPost("/webhook", async (HttpRequest request) =>
     try
     {
         VerifyWebhookEvent(authHeader.First(), postData);
-
     }
     catch (Exception e)
     {

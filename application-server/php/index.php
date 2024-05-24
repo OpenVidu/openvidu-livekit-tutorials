@@ -11,11 +11,12 @@ Dotenv::createImmutable(__DIR__)->safeLoad();
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Content-type: application/json");
 
 $LIVEKIT_API_KEY = $_ENV["LIVEKIT_API_KEY"] ?? "devkey";
 $LIVEKIT_API_SECRET = $_ENV["LIVEKIT_API_SECRET"] ?? "secret";
 
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER["REQUEST_METHOD"] === "POST" && $_SERVER["PATH_INFO"] === "/token") {
+if (isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"] === "POST" && $_SERVER["PATH_INFO"] === "/token") {
     $data = json_decode(file_get_contents("php://input"), true);
 
     $roomName = $data["roomName"] ?? null;
@@ -23,7 +24,7 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER["REQUEST_METHOD"] === "POST" &
 
     if (!$roomName || !$participantName) {
         http_response_code(400);
-        echo json_encode("roomName and participantName are required");
+        echo json_encode(["errorMessage" => "roomName and participantName are required"]);
         exit();
     }
 
@@ -37,19 +38,19 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER["REQUEST_METHOD"] === "POST" &
         ->setGrant($videoGrant)
         ->toJwt();
 
-    echo json_encode($token);
+    echo json_encode(["token" => $token]);
     exit();
 }
 
 $webhookReceiver = (new WebhookReceiver($LIVEKIT_API_KEY, $LIVEKIT_API_SECRET));
 
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER["REQUEST_METHOD"] === "POST" && $_SERVER["PATH_INFO"] === "/webhook") {
+if (isset($_SERVER["REQUEST_METHOD"]) && $_SERVER["REQUEST_METHOD"] === "POST" && $_SERVER["PATH_INFO"] === "/webhook") {
     $headers = getallheaders();
-    $authHeader = $headers['Authorization'];
+    $authHeader = $headers["Authorization"];
     $body = file_get_contents("php://input");
     try {
         $event = $webhookReceiver->receive($body, $authHeader);
-        error_log('LiveKit Webhook:');
+        error_log("LiveKit Webhook:");
         error_log(print_r($event->getEvent(), true));
         exit();
     } catch (Exception $e) {
@@ -60,5 +61,5 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER["REQUEST_METHOD"] === "POST" &
     }
 }
 
-echo json_encode("Unsupported endpoint or method");
+echo json_encode(["errorMessage" => "Unsupported endpoint or method"]);
 exit();

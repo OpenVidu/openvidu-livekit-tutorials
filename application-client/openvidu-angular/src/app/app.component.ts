@@ -68,7 +68,8 @@ export class AppComponent implements OnDestroy {
             // Publish your camera and microphone
             await this.room.localParticipant.enableCameraAndMicrophone();
         } catch (error: any) {
-            console.log('There was an error connecting to the room:', error?.message);
+            console.log('There was an error connecting to the room:', error?.error?.errorMessage || error?.message || error);
+            await this.leaveRoom();
         }
     }
 
@@ -98,8 +99,9 @@ export class AppComponent implements OnDestroy {
      * access to the endpoints.
      */
     async getToken(roomName: string, participantName: string): Promise<string> {
-        return lastValueFrom(
-            this.httpClient.post<string>(APPLICATION_SERVER_URL + 'token', { roomName, participantName })
+        const response = await lastValueFrom(
+            this.httpClient.post<{ token: string }>(APPLICATION_SERVER_URL + 'token', { roomName, participantName })
         );
+        return response.token;
     }
 }

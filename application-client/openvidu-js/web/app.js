@@ -69,6 +69,7 @@ async function joinRoom() {
         addTrack(localVideoTrack, userName, true);
     } catch (error) {
         console.log("There was an error connecting to the room:", error.message);
+        await leaveRoom();
     }
 }
 
@@ -170,9 +171,10 @@ async function getToken(roomName, participantName) {
     });
 
     if (!response.ok) {
-        throw new Error("Failed to get token");
+        const error = await response.json();
+        throw new Error(`Failed to get token: ${error.errorMessage}`);
     }
 
     const token = await response.json();
-    return token;
+    return token.token;
 }
