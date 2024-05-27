@@ -106,6 +106,19 @@ onUnmounted(() => {
     leaveRoom();
 });
 
+/**
+ * --------------------------------------------
+ * GETTING A TOKEN FROM YOUR APPLICATION SERVER
+ * --------------------------------------------
+ * The method below request the creation of a token to
+ * your application server. This prevents the need to expose
+ * your LiveKit API key and secret to the client side.
+ *
+ * In this sample code, there is no user control at all. Anybody could
+ * access your application server endpoints. In a real production
+ * environment, your application server must identify the user to allow
+ * access to the endpoints.
+ */
 async function getToken(roomName: string, participantName: string) {
     const response = await fetch(APPLICATION_SERVER_URL + 'token', {
         method: 'POST',
