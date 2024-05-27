@@ -14,7 +14,7 @@ For further information, check the [tutorial documentation](https://livekit-tuto
 
 ```bash
 git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
-cd openvidu-livekit-tutorials/application-client/angular
+cd openvidu-livekit-tutorials/application-client/openvidu-angular
 ```
 
 2. Install dependencies

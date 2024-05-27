@@ -1,0 +1,110 @@
+html {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    padding-top: 50px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+header {
+    height: 50px;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 30px;
+    background-color: #4d4d4d;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+header a {
+    color: #ccc;
+    text-decoration: none;
+}
+
+header a:hover {
+    color: #a9a9a9;
+}
+
+header i {
+    padding: 5px 5px;
+    font-size: 2em;
+}
+
+main {
+    flex: 1;
+    padding: 20px;
+}
+
+footer {
+    height: 60px;
+    width: 100%;
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #4d4d4d;
+}
+
+footer a {
+    color: #ffffff;
+    text-decoration: none;
+}
+
+footer .text {
+    color: #ccc;
+    margin: 0;
+}
+
+footer .text span {
+    color: white;
+    font-weight: bold;
+}
+
+#openvidu-logo {
+    height: 35px;
+    -webkit-transition: all 0.1s ease-in-out;
+    -moz-transition: all 0.1s ease-in-out;
+    -o-transition: all 0.1s ease-in-out;
+    transition: all 0.1s ease-in-out;
+}
+
+#openvidu-logo:hover {
+    -webkit-filter: grayscale(0.5);
+    filter: grayscale(0.5);
+}
+
+/* Media Queries */
+@media screen and (max-width: 768px) {
+    header {
+        padding: 10px 15px;
+    }
+
+    footer {
+        padding: 10px 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    header {
+        padding: 10px;
+    }
+
+    footer {
+        padding: 10px;
+    }
+}
