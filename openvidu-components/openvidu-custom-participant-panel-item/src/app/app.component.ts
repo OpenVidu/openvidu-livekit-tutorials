@@ -3,10 +3,14 @@ import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
 import { environment } from 'src/environments/environment';
+import { MatIcon } from "@angular/material/icon";
+import { MatMenuTrigger, MatMenu, MatMenuItem } from "@angular/material/menu";
+import { MatIconButton } from "@angular/material/button";
+import { OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
 
 @Component({
-	selector: 'app-root',
-	template: `
+    selector: 'app-root',
+    template: `
 		<!-- OpenVidu Video Conference Component -->
 		<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)">
 			<!-- Participant Panel Items -->
@@ -24,7 +28,9 @@ import { environment } from 'src/environments/environment';
 			</div>
 		</ov-videoconference>
   `,
-	styles: []
+    styles: [],
+    standalone: true,
+    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem]
 })
 export class AppComponent {
 	// Define the URL of the application server

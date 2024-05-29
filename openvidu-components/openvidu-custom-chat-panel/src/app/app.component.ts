@@ -2,33 +2,42 @@ import { HttpClient } from "@angular/common/http";
 import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
-import { DataPacket_Kind, DataPublishOptions, DataTopic, ParticipantService, RemoteParticipant, Room, RoomEvent } from "openvidu-angular";
+import { DataPacket_Kind, DataPublishOptions, DataTopic, ParticipantService, RemoteParticipant, Room, RoomEvent, OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
 import { environment } from 'src/environments/environment';
 
+
 @Component({
-	selector: 'app-root',
-	template: `
+    selector: 'app-root',
+    template: `
 		<!-- OpenVidu Video Conference Component -->
 		<ov-videoconference
-			(onRoomCreated)="onRoomCreated($event)"
-			[token]="token"
-			[toolbarDisplaySessionName]="false"
-			(onTokenRequested)="onTokenRequested($event)"
-		>
-			<!-- Chat Panel -->
-			<div *ovChatPanel id="my-panel">
-			<h3>Chat</h3>
-			<div>
-				<ul>
-				<li *ngFor="let msg of messages">{{ msg }}</li>
-				</ul>
-			</div>
-			<input value="Hello" #input />
-			<button (click)="send(input.value)">Send</button>
-			</div>
+		  (onRoomCreated)="onRoomCreated($event)"
+		  [token]="token"
+		  [toolbarDisplaySessionName]="false"
+		  (onTokenRequested)="onTokenRequested($event)"
+		  >
+		  <!-- Chat Panel -->
+		  <div *ovChatPanel id="my-panel">
+		    <h3>Chat</h3>
+		    <div>
+		      <ul>
+		        @for (msg of messages; track msg) {
+		          <li>{{ msg }}</li>
+		        }
+		      </ul>
+		    </div>
+		    <input value="Hello" #input />
+		    <button (click)="send(input.value)">Send</button>
+		  </div>
 		</ov-videoconference>
-	`,
-	styleUrls: ['./app.component.scss'],
+		`,
+    styleUrls: ['./app.component.scss'],
+    standalone: true,
+    imports: [
+    OpenViduAngularModule,
+    ApiDirectiveModule,
+    OpenViduAngularDirectiveModule
+],
 })
 export class AppComponent {
 	// Define the URL of the application server

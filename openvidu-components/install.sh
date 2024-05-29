@@ -1,3 +1,5 @@
+#!/bin/bash
+
 TUTORIALS=(
   'openvidu-additional-panels'
   'openvidu-admin-dashboard'

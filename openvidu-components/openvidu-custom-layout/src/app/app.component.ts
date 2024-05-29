@@ -1,38 +1,50 @@
 import { HttpClient } from "@angular/common/http";
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { lastValueFrom, Subscription } from "rxjs";
-import { ParticipantModel, ParticipantService } from "openvidu-angular";
+import { ParticipantModel, ParticipantService, OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
 import { environment } from 'src/environments/environment';
+import { NgClass } from "@angular/common";
 
 @Component({
-	selector: 'app-root',
-	template: `
+    selector: 'app-root',
+    template: `
 		<!-- OpenVidu Video Conference Component -->
 		<ov-videoconference
-			[token]="token"
-			(onTokenRequested)="onTokenRequested($event)"
-		>
-			<!-- Custom Layout for Video Streams -->
-			<div *ovLayout>
-				<div class="container">
-					<!-- Local Participant's Tracks -->
-					<div *ngFor="let track of localParticipant.tracks" class="item"
-					[ngClass]="{'hidden': track.isAudioTrack && !track.participant.onlyHasAudioTracks}"
-					>
-						<ov-stream [track]="track"></ov-stream>
-					</div>
-
-					<!-- Remote Participants' Tracks -->
-					<div *ngFor="let track of remoteParticipants | tracks" class="item"
-					[ngClass]="{'hidden': track.isAudioTrack && !track.participant.onlyHasAudioTracks}"
-					>
-						<ov-stream [track]="track"></ov-stream>
-					</div>
-				</div>
-			</div>
+		  [token]="token"
+		  (onTokenRequested)="onTokenRequested($event)"
+		  >
+		  <!-- Custom Layout for Video Streams -->
+		  <div *ovLayout>
+		    <div class="container">
+		      <!-- Local Participant's Tracks -->
+		      @for (track of localParticipant.tracks; track track) {
+		        <div class="item"
+		          [ngClass]="{'hidden': track.isAudioTrack && !track.participant.onlyHasAudioTracks}"
+		          >
+		          <ov-stream [track]="track"></ov-stream>
+		        </div>
+		      }
+		
+		      <!-- Remote Participants' Tracks -->
+		      @for (track of remoteParticipants | tracks; track track) {
+		        <div class="item"
+		          [ngClass]="{'hidden': track.isAudioTrack && !track.participant.onlyHasAudioTracks}"
+		          >
+		          <ov-stream [track]="track"></ov-stream>
+		        </div>
+		      }
+		    </div>
+		  </div>
 		</ov-videoconference>
-	`,
-	styleUrls: ['./app.component.scss'],
+		`,
+    styleUrls: ['./app.component.scss'],
+    standalone: true,
+    imports: [
+    OpenViduAngularModule,
+    ApiDirectiveModule,
+    OpenViduAngularDirectiveModule,
+    NgClass
+],
 })
 export class AppComponent implements OnInit, OnDestroy {
 	// Define the URL of the application server

@@ -3,11 +3,14 @@ import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
 import { environment } from 'src/environments/environment';
+import { OpenViduAngularModule, ApiDirectiveModule } from "openvidu-angular";
 
 @Component({
-  selector: 'app-root',
-  template: '<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)"></ov-videoconference>',
-  styles: ['']
+    selector: 'app-root',
+    template: '<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)"></ov-videoconference>',
+    styles: [''],
+    standalone: true,
+    imports: [OpenViduAngularModule, ApiDirectiveModule]
 })
 export class AppComponent {
 

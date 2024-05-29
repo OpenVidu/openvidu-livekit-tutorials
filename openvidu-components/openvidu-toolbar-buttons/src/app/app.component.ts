@@ -2,12 +2,14 @@ import { HttpClient } from "@angular/common/http";
 import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
-import { ParticipantService } from "openvidu-angular";
+import { ParticipantService, OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
 import { environment } from 'src/environments/environment';
+import { MatIcon } from "@angular/material/icon";
+import { MatIconButton } from "@angular/material/button";
 
 @Component({
-	selector: 'app-root',
-	template: `
+    selector: 'app-root',
+    template: `
     	<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)">
 			<div *ovToolbarAdditionalButtons style="text-align: center;">
 				<button mat-icon-button (click)="toggleVideo()">
@@ -19,7 +21,9 @@ import { environment } from 'src/environments/environment';
 			</div>
 		</ov-videoconference>
   `,
-	styles: []
+    styles: [],
+    standalone: true,
+    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule, MatIconButton, MatIcon]
 })
 export class AppComponent {
 

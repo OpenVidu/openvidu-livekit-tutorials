@@ -3,31 +3,36 @@ import { HttpClient } from "@angular/common/http";
 import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
-import { DataPacket_Kind, DataPublishOptions, ParticipantService, RemoteParticipant, Room, RoomEvent } from "openvidu-angular";
+import { DataPacket_Kind, DataPublishOptions, ParticipantService, RemoteParticipant, Room, RoomEvent, OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
 import { ParticipantAppModel } from "./models/participant-app.model";
 
 import { environment } from 'src/environments/environment';
+
+import { MatIcon } from "@angular/material/icon";
+import { MatIconButton } from "@angular/material/button";
 
 enum DataTopicApp {
 	HAND_TOGGLE = 'handToggle'
 }
 
 @Component({
-	selector: 'app-root',
-	templateUrl: './app.component.html',
-	styleUrls: ['./app.component.css'],
-	animations: [
-		trigger('inOutHandAnimation', [
-			transition(':enter', [
-				style({ opacity: 0, transform: 'translateY(-100%)' }),
-				animate('300ms ease-in-out', style({ opacity: 1, transform: 'translateY(0)' }))
-			]),
-			transition(':leave', [
-				style({ opacity: 1, transform: 'translateY(0)' }),
-				animate('300ms ease-in-out', style({ opacity: 0, transform: 'translateY(-100%)' }))
-			])
-		])
-	]
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.css'],
+    animations: [
+        trigger('inOutHandAnimation', [
+            transition(':enter', [
+                style({ opacity: 0, transform: 'translateY(-100%)' }),
+                animate('300ms ease-in-out', style({ opacity: 1, transform: 'translateY(0)' }))
+            ]),
+            transition(':leave', [
+                style({ opacity: 1, transform: 'translateY(0)' }),
+                animate('300ms ease-in-out', style({ opacity: 0, transform: 'translateY(-100%)' }))
+            ])
+        ])
+    ],
+    standalone: true,
+    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule, MatIconButton, MatIcon]
 })
 export class AppComponent {
 

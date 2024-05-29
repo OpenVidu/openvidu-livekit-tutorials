@@ -2,32 +2,40 @@ import { HttpClient } from "@angular/common/http";
 import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
-import { OpenViduService } from "openvidu-angular";
+import { OpenViduService, OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
 import { environment } from 'src/environments/environment';
 
-@Component({
-	selector: "app-root",
-	template: `
-		<!-- OpenVidu Video Conference Component -->
-		<ov-videoconference
-			*ngIf="connected"
-			[token]="token"
-			[toolbarDisplaySessionName]="false"
-			(onTokenRequested)="onTokenRequested($event)"
-		>
-			<!-- Participant Panel Item Elements -->
-			<div *ovParticipantPanelItemElements="let participant">
-				<!-- Leave Button for Local Participant -->
-				<button *ngIf="participant.isLocal" (click)="leaveSession()">
-					Leave
-				</button>
-			</div>
-		</ov-videoconference>
 
+@Component({
+    selector: "app-root",
+    template: `
+		<!-- OpenVidu Video Conference Component -->
+		@if (connected) {
+		  <ov-videoconference
+		    [token]="token"
+		    [toolbarDisplaySessionName]="false"
+		    (onTokenRequested)="onTokenRequested($event)"
+		    >
+		    <!-- Participant Panel Item Elements -->
+		    <div *ovParticipantPanelItemElements="let participant">
+		      <!-- Leave Button for Local Participant -->
+		      @if (participant.isLocal) {
+		        <button (click)="leaveSession()">
+		          Leave
+		        </button>
+		      }
+		    </div>
+		  </ov-videoconference>
+		}
+		
 		<!-- Session Disconnected Message -->
-		<div *ngIf="!connected" style="text-align: center;">Session disconnected</div>
-	`,
-	styles: []
+		@if (!connected) {
+		  <div style="text-align: center;">Session disconnected</div>
+		}
+		`,
+    styles: [],
+    standalone: true,
+    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule]
 })
 export class AppComponent {
 	// Define the URL of the application server

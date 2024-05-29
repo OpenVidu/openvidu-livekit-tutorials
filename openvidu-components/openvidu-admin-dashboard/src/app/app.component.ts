@@ -1,24 +1,29 @@
 import { Component } from "@angular/core";
-import { RecordingInfo } from "openvidu-angular";
+import { RecordingInfo, OpenViduAngularModule, ApiDirectiveModule } from "openvidu-angular";
+
 
 @Component({
-	selector: "app-root",
-	template: `
+    selector: "app-root",
+    template: `
 		<!-- Reference documentation: https://docs.openvidu.io/en/stable/api/openvidu-angular/components/AdminLoginComponent.html -->
-		<ov-admin-login
-			*ngIf="!logged"
-			(onLoginButtonClicked)="onLoginClicked($event)"
-		></ov-admin-login>
-
+		@if (!logged) {
+		  <ov-admin-login
+		    (onLoginButtonClicked)="onLoginClicked($event)"
+		  ></ov-admin-login>
+		}
+		
 		<!-- Reference documentation: https://docs.openvidu.io/en/stable/api/openvidu-angular/components/AdminDashboardComponent.html -->
-		<ov-admin-dashboard
-			*ngIf="logged"
-			[recordingsList]="recordings"
-			(onLogoutClicked)="onLogoutClicked()"
-			(onRefreshRecordingsClicked)="onRefreshRecordingsClicked()"
-			(onDeleteRecordingClicked)="onDeleteRecordingClicked($event)"
-		></ov-admin-dashboard>
-	`
+		@if (logged) {
+		  <ov-admin-dashboard
+		    [recordingsList]="recordings"
+		    (onLogoutClicked)="onLogoutClicked()"
+		    (onRefreshRecordingsClicked)="onRefreshRecordingsClicked()"
+		    (onDeleteRecordingClicked)="onDeleteRecordingClicked($event)"
+		  ></ov-admin-dashboard>
+		}
+		`,
+    standalone: true,
+    imports: [OpenViduAngularModule, ApiDirectiveModule]
 })
 export class AppComponent {
 	title = "openvidu-admin-dashboard";

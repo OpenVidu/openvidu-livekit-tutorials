@@ -2,19 +2,21 @@ import { HttpClient } from "@angular/common/http";
 import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
-import { ParticipantService } from "openvidu-angular";
+import { ParticipantService, OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
 import { environment } from 'src/environments/environment';
 
 @Component({
-	selector: 'app-root',
-	template: `
+    selector: 'app-root',
+    template: `
 		<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)">
 			<div *ovToolbar style="text-align: center;">
 				<button (click)="toggleVideo()">Toggle Video</button>
 				<button (click)="toggleAudio()">Toggle Audio</button>
 			</div>
 		</ov-videoconference>
-	`
+	`,
+    standalone: true,
+    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule]
 })
 export class AppComponent {
 

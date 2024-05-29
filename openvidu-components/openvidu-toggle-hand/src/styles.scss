@@ -10,7 +10,7 @@
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$openvidu-components-primary: mat-palette($mat-blue-grey, 50, 300);
+$openvidu-components-primary: mat-palette($mat-blue-grey, 500, 300);
 $openvidu-components-accent: mat-palette($mat-amber, 500, 700, A100);
 
 // The warn palette is optional (defaults to red).

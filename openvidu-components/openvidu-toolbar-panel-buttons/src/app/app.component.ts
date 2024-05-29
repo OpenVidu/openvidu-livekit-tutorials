@@ -3,17 +3,20 @@ import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 
 import { environment } from 'src/environments/environment';
+import { OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
 
 @Component({
-  selector: "app-root",
-  template: `
+    selector: "app-root",
+    template: `
 		<ov-videoconference [token]="token" [toolbarDisplaySessionName]="false" (onTokenRequested)="onTokenRequested($event)">
 			<div *ovToolbarAdditionalPanelButtons style="text-align: center;">
 				<button (click)="onButtonClicked()">MY PANEL</button>
 			</div>
 		</ov-videoconference>
 	`,
-  styles: []
+    styles: [],
+    standalone: true,
+    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule]
 })
 export class AppComponent {
 

@@ -2,10 +2,11 @@ import { HttpClient } from "@angular/common/http";
 import { Component } from "@angular/core";
 import { lastValueFrom } from "rxjs";
 import { environment } from 'src/environments/environment';
+import { OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
 
 @Component({
-	selector: "app-root",
-	template: `
+    selector: "app-root",
+    template: `
 		<ov-videoconference
 			[token]="token"
 			[toolbarRecordingButton]="false"
@@ -21,7 +22,9 @@ import { environment } from 'src/environments/environment';
 			</div>
 		</ov-videoconference>
 	`,
-	styleUrls: ['./app.component.scss']
+    styleUrls: ['./app.component.scss'],
+    standalone: true,
+    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule]
 })
 export class AppComponent {
 

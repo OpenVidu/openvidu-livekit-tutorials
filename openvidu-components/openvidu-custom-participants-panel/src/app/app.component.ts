@@ -2,28 +2,33 @@ import { HttpClient } from "@angular/common/http";
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { lastValueFrom, Subscription } from "rxjs";
 
-import { ParticipantModel, ParticipantService } from "openvidu-angular";
+import { ParticipantModel, ParticipantService, OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
 import { environment } from 'src/environments/environment';
 
+
 @Component({
-	selector: 'app-root',
-	template: `
+    selector: 'app-root',
+    template: `
 		<!-- OpenVidu Video Conference Component -->
 		<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)">
-
-			<!-- Custom Participants Panel -->
-			<div *ovParticipantsPanel id="my-panel">
-				<ul id="local">
-					<li>{{localParticipant.name}}</li>
-				</ul>
-				<ul id="remote">
-					<li *ngFor="let p of remoteParticipants">{{p.name}}</li>
-				</ul>
-			</div>
-
+		
+		  <!-- Custom Participants Panel -->
+		  <div *ovParticipantsPanel id="my-panel">
+		    <ul id="local">
+		      <li>{{localParticipant.name}}</li>
+		    </ul>
+		    <ul id="remote">
+		      @for (p of remoteParticipants; track p) {
+		        <li>{{p.name}}</li>
+		      }
+		    </ul>
+		  </div>
+		
 		</ov-videoconference>
-  `,
-	styleUrls: ['./app.component.scss']
+		`,
+    styleUrls: ['./app.component.scss'],
+    standalone: true,
+    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule]
 })
 export class AppComponent implements OnInit, OnDestroy {
 	// Define the URL of the application server
