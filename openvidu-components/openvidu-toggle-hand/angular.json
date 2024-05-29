@@ -72,21 +72,21 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "openvidu-toggle-hand:build"
+            "buildTarget": "openvidu-toggle-hand:build"
           },
           "configurations": {
             "development": {
-              "browserTarget": "openvidu-toggle-hand:build:development"
+              "buildTarget": "openvidu-toggle-hand:build:development"
             },
             "production": {
-              "browserTarget": "openvidu-toggle-hand:build:production"
+              "buildTarget": "openvidu-toggle-hand:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "openvidu-toggle-hand:build"
+            "buildTarget": "openvidu-toggle-hand:build"
           }
         },
         "test": {
