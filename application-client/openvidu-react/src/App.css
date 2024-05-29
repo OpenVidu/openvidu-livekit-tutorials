@@ -1,47 +1,134 @@
-.stream-container {
-	padding: 0;
+#join {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
 }
-#join-dialog,
+
+#join-dialog {
+    width: 70%;
+    max-width: 900px;
+    padding: 60px;
+    border-radius: 6px;
+    background-color: #f0f0f0;
+}
+
+#join-dialog h2 {
+    color: #4d4d4d;
+    font-size: 60px;
+    font-weight: bold;
+    text-align: center;
+}
+
+#join-dialog form {
+    text-align: left;
+}
+
+#join-dialog label {
+    display: block;
+    margin-bottom: 10px;
+    color: #0088aa;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    color: #0088aa;
+    font-weight: bold;
+}
+
+.form-control:focus {
+    color: #0088aa;
+    border-color: #0088aa;
+    -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(0, 136, 170, 0.6);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(0, 136, 170, 0.6);
+}
+
+#join-dialog button {
+    display: block;
+    margin: 20px auto 0;
+}
+
+.btn {
+    font-weight: bold;
+}
+
+.btn-success {
+    background-color: #06d362;
+    border-color: #06d362;
+}
+
+.btn-success:hover {
+    background-color: #1abd61;
+    border-color: #1abd61;
+}
+
 #room {
-	padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-video {
-	width: 100%;
-	height: auto;
-	float: left;
-	cursor: pointer;
-}
-.participant-name {
-	position: absolute;
-	background: #f8f8f8;
-	padding-left: 5px;
-	padding-right: 5px;
-	color: #777777;
-	font-weight: bold;
-	border-bottom-right-radius: 4px;
-	z-index: 1000;
-}
-p {
-	margin: 0;
-}
-
-.hidden {
-	display: none;
-}
-
-/* Estilos para el encabezado de la sala */
 #room-header {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-
-	padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    padding: 0 20px;
+    margin-bottom: 20px;
 }
 
-/* Estilos para el título de la sala */
 #room-title {
-	font-size: 24px;
+    font-size: 2em;
+    font-weight: bold;
+    margin: 0;
 }
 
-/* Contenedor de botones */
+#layout-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    height: 100%;
+}
+
+/* Media Queries */
+@media screen and (max-width: 768px) {
+    #join-dialog {
+        width: 90%;
+        padding: 30px;
+    }
+
+    #join-dialog h2 {
+        font-size: 50px;
+    }
+
+    #layout-container {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+
+@media screen and (max-width: 480px) {
+    #join-dialog {
+        width: 100%;
+        padding: 20px;
+    }
+
+    #join-dialog h2 {
+        font-size: 40px;
+    }
+
+    #layout-container {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}
