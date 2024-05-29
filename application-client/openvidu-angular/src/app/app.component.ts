@@ -111,6 +111,8 @@ export class AppComponent implements OnDestroy {
     async leaveRoom() {
         // Leave the room by calling 'disconnect' method over the Room object
         await this.room?.disconnect();
+
+        // Reset all variables
         delete this.room;
         delete this.localTrack;
         this.remoteTracksMap.clear();
