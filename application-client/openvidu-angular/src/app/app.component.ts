@@ -1,10 +1,22 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Room } from 'livekit-client';
+import {
+    LocalVideoTrack,
+    RemoteParticipant,
+    RemoteTrack,
+    RemoteTrackPublication,
+    Room,
+    RoomEvent,
+} from 'livekit-client';
 import { VideoComponent } from './video/video.component';
 import { AudioComponent } from './audio/audio.component';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
+
+type TrackInfo = {
+    trackPublication: RemoteTrackPublication;
+    participantIdentity: string;
+};
 
 // For local development, leave these variables empty
 // For production, configure them with correct URLs depending on your deployment
@@ -25,6 +37,8 @@ export class AppComponent implements OnDestroy {
     });
 
     room?: Room;
+    localTrack?: LocalVideoTrack;
+    remoteTracksMap: Map<string, TrackInfo> = new Map();
 
     constructor(private httpClient: HttpClient) {
         this.configureUrls();
@@ -54,6 +68,23 @@ export class AppComponent implements OnDestroy {
         // Initialize a new Room object
         this.room = new Room();
 
+        // Specify the actions when events take place in the room
+        // On every new Track received...
+        this.room.on(
+            RoomEvent.TrackSubscribed,
+            (_track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
+                this.remoteTracksMap.set(publication.trackSid, {
+                    trackPublication: publication,
+                    participantIdentity: participant.identity,
+                });
+            }
+        );
+
+        // On every new Track destroyed...
+        this.room.on(RoomEvent.TrackUnsubscribed, (_track: RemoteTrack, publication: RemoteTrackPublication) => {
+            this.remoteTracksMap.delete(publication.trackSid);
+        });
+
         try {
             // Get the room name and participant name from the form
             const roomName = this.roomForm.value.roomName!;
@@ -67,8 +98,12 @@ export class AppComponent implements OnDestroy {
 
             // Publish your camera and microphone
             await this.room.localParticipant.enableCameraAndMicrophone();
+            this.localTrack = this.room.localParticipant.videoTrackPublications.values().next().value.videoTrack;
         } catch (error: any) {
-            console.log('There was an error connecting to the room:', error?.error?.errorMessage || error?.message || error);
+            console.log(
+                'There was an error connecting to the room:',
+                error?.error?.errorMessage || error?.message || error
+            );
             await this.leaveRoom();
         }
     }
@@ -77,6 +112,8 @@ export class AppComponent implements OnDestroy {
         // Leave the room by calling 'disconnect' method over the Room object
         await this.room?.disconnect();
         delete this.room;
+        delete this.localTrack;
+        this.remoteTracksMap.clear();
     }
 
     @HostListener('window:beforeunload')

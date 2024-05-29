@@ -22,25 +22,21 @@
         <button class="btn btn-danger" id="leave-room-button" (click)="leaveRoom()">Leave Room</button>
     </div>
     <div id="layout-container">
-        @if (room.localParticipant) {
-            @for (trackPublication of room.localParticipant.videoTrackPublications.values(); track trackPublication.trackSid) {
-            <video-component
-                [track]="trackPublication.videoTrack!"
-                [participantIdentity]="room.localParticipant.identity"
-                [local]="true"
-            ></video-component>
-            }
+        @if (localTrack) {
+        <video-component
+            [track]="localTrack"
+            [participantIdentity]="roomForm.value.participantName!"
+            [local]="true"
+        ></video-component>
         }
-        @for (participant of room.remoteParticipants.values(); track participant.identity) {
-            @for (trackPublication of participant.trackPublications.values(); track trackPublication.trackSid) {
-                @if (trackPublication.kind === 'video') {
-                <video-component
-                    [track]="trackPublication.videoTrack!"
-                    [participantIdentity]="participant.identity"
-                ></video-component>
-                } @else {
-                <audio-component [track]="trackPublication.audioTrack!" hidden></audio-component>
-                }
+        @for (remoteTrack of remoteTracksMap.values(); track remoteTrack.trackPublication.trackSid) {
+            @if (remoteTrack.trackPublication.kind === 'video') {
+            <video-component
+                [track]="remoteTrack.trackPublication.videoTrack!"
+                [participantIdentity]="remoteTrack.participantIdentity"
+            ></video-component>
+            } @else {
+            <audio-component [track]="remoteTrack.trackPublication.audioTrack!" hidden></audio-component>
             }
         }
     </div>
