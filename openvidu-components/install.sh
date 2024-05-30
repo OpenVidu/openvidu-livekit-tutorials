@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 TUTORIALS=(
   'openvidu-additional-panels'
   'openvidu-admin-dashboard'
@@ -21,7 +22,9 @@ TUTORIALS=(
 for tutorial in "${TUTORIALS[@]}"
 do
   echo "Installing modules in $tutorial, please wait ..."
+
   cd $tutorial
   rm package-lock.json && npm install
   cd ..
+
 done

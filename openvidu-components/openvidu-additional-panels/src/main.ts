@@ -2,10 +2,7 @@ import { enableProdMode, importProvidersFrom } from '@angular/core';
 import { environment } from './environments/environment';
 import { AppComponent } from './app/app.component';
 import { OpenViduAngularModule, OpenViduAngularConfig } from 'openvidu-angular';
-import {
-	withInterceptorsFromDi,
-	provideHttpClient,
-} from '@angular/common/http';
+import { withInterceptorsFromDi, provideHttpClient } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 
