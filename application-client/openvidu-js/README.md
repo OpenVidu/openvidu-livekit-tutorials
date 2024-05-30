@@ -14,7 +14,7 @@ For further information, check the [tutorial documentation](https://livekit-tuto
 
 ```bash
 git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
-cd openvidu-livekit-tutorials/application-client/javascript
+cd openvidu-livekit-tutorials/application-client/openvidu-js
 ```
 
 2. Run the application
