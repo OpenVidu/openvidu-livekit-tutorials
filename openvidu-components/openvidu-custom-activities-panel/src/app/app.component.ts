@@ -9,8 +9,9 @@ import { OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModu
     template: `
 		<ov-videoconference
 			[token]="token"
+			[livekitUrl]="LIVEKIT_URL"
 			[toolbarRecordingButton]="false"
-			[toolbarDisplaySessionName]="false"
+			[toolbarDisplayRoomName]="false"
 			(onTokenRequested)="onTokenRequested($event)">
 
 			<!-- Custom activities panel -->
@@ -29,6 +30,7 @@ import { OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModu
 export class AppComponent {
 
 	APPLICATION_SERVER_URL = environment.applicationServerUrl;
+	LIVEKIT_URL = environment.livekitUrl;
 	roomName = "custom-activities-panel";
 	token!: string;
 
@@ -41,7 +43,7 @@ export class AppComponent {
 
 	getToken(roomName: string, participantName: string): Promise<any> {
 		try {
-			return lastValueFrom(this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'api/sessions', { roomName, participantName }));
+			return lastValueFrom(this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'token', { roomName, participantName }));
 		} catch (error: any) {
 			if (error.status === 404) {
 				throw { status: error.status, message: 'Cannot connect with backend. ' + error.url + ' not found' };

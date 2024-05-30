@@ -1,61 +1,49 @@
-
-// Custom Theming for Angular Material
-// For more information: https://material.angular.io/guide/theming
 @use '@angular/material' as mat;
-@import '@angular/material/theming';
 
-@include mat.all-component-typographies();
 @include mat.core();
 
-// Define the palettes for your theme using the Material Design palettes available in palette.scss
-// (imported above). For each palette, you can optionally specify a default, lighter, and darker
-// hue. Available color palettes: https://material.io/design/color/
-$openvidu-components-primary: mat-palette($mat-blue-grey, 500, 300);
-$openvidu-components-accent: mat-palette($mat-amber, 500, 700, A100);
+// Define the theme
+$openvidu-theme: mat.define-theme();
 
-// The warn palette is optional (defaults to red).
-$openvidu-components-warn: mat.define-palette(mat.$red-palette);
-
-// Create the theme object. A theme consists of configurations for individual
-// theming systems such as "color" or "typography".
-$openvidu-components-theme: mat.define-light-theme((
-  color: (
-    primary: $openvidu-components-primary,
-    accent: $openvidu-components-accent,
-    warn: $openvidu-components-warn,
-  )
-));
-
-// Include theme styles for core and each component used in your app.
-// Alternatively, you can import and @include the theme mixins for each component
-// that you are using.
-@include mat.all-component-themes($openvidu-components-theme);
-
-
-:root {
-  --ov-primary-color: #303030;
-  --ov-secondary-color: #3e3f3f;
-  --ov-tertiary-color: #598eff;
-  --ov-warn-color: #EB5144;
-  --ov-accent-color: #ffae35;
-  --ov-light-color: #e6e6e6;
-
-  --ov-logo-background-color: #3a3d3d;
-
-  --ov-text-color: #ffffff;
-
-  --ov-panel-text-color: #1d1d1d;
-  --ov-panel-background: #ffffff;
-
-  --ov-buttons-radius: 50%; // border-radius property
-  --ov-leave-button-radius: 10px;
-  --ov-video-radius: 5px;
-  --ov-panel-radius: 5px;
+html {
+	// Emit theme-dependent styles for common features used across multiple components.
+	@include mat.core-theme($openvidu-theme);
+	// @include mat.button-theme($theme);
+	@include mat.all-component-bases($openvidu-theme);
+	@include mat.all-component-colors($openvidu-theme);
+	@include mat.all-component-typographies($openvidu-theme);
+	@include mat.all-component-densities($openvidu-theme);
 }
 
+:root {
+	--ov-primary-color: #303030;
+	--ov-secondary-color: #3e3f3f;
+	--ov-tertiary-color: #598eff;
+	--ov-warn-color: #eb5144;
+	--ov-accent-color: #ffae35;
+	--ov-light-color: #e6e6e6;
 
+	--ov-logo-background-color: #3a3d3d;
+
+	--ov-text-color: #ffffff;
+
+	--ov-panel-text-color: #1d1d1d;
+	--ov-panel-background: #ffffff;
+
+	--ov-buttons-radius: 50%; // border-radius property
+	--ov-leave-button-radius: 10px;
+	--ov-video-radius: 5px;
+	--ov-panel-radius: 5px;
+}
 
 /* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; overflow: hidden;}
-body { margin: 0; font-family: 'Roboto','RobotoDraft',Helvetica,Arial,sans-serif;}
+html,
+body {
+	height: 100%;
+	overflow: hidden;
+}
+body {
+	margin: 0;
+	font-family: 'Roboto', 'RobotoDraft', Helvetica, Arial, sans-serif;
+}

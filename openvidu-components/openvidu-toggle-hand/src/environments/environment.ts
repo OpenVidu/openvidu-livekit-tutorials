@@ -3,8 +3,9 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false,
-  applicationServerUrl: 'http://localhost:5000/',
+	production: false,
+	applicationServerUrl: 'http://localhost:6080/',
+	livekitUrl: 'http://localhost:7880/'
 };
 
 /*

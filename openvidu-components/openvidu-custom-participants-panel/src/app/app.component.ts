@@ -1,38 +1,51 @@
-import { HttpClient } from "@angular/common/http";
-import { Component, OnDestroy, OnInit } from "@angular/core";
-import { lastValueFrom, Subscription } from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { lastValueFrom, Subscription } from 'rxjs';
 
-import { ParticipantModel, ParticipantService, OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
+import {
+	ParticipantModel,
+	ParticipantService,
+	OpenViduAngularModule,
+	ApiDirectiveModule,
+	OpenViduAngularDirectiveModule,
+} from 'openvidu-angular';
 import { environment } from 'src/environments/environment';
 
-
 @Component({
-    selector: 'app-root',
-    template: `
+	selector: 'app-root',
+	template: `
 		<!-- OpenVidu Video Conference Component -->
-		<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)">
-		
-		  <!-- Custom Participants Panel -->
-		  <div *ovParticipantsPanel id="my-panel">
-		    <ul id="local">
-		      <li>{{localParticipant.name}}</li>
-		    </ul>
-		    <ul id="remote">
-		      @for (p of remoteParticipants; track p) {
-		        <li>{{p.name}}</li>
-		      }
-		    </ul>
-		  </div>
-		
+		<ov-videoconference
+			[token]="token"
+			[livekitUrl]="LIVEKIT_URL"
+			(onTokenRequested)="onTokenRequested($event)"
+		>
+			<!-- Custom Participants Panel -->
+			<div *ovParticipantsPanel id="my-panel">
+				<ul id="local">
+					<li>{{ localParticipant.name }}</li>
+				</ul>
+				<ul id="remote">
+					@for (p of remoteParticipants; track p) {
+					<li>{{ p.name }}</li>
+					}
+				</ul>
+			</div>
 		</ov-videoconference>
-		`,
-    styleUrls: ['./app.component.scss'],
-    standalone: true,
-    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule]
+	`,
+	styleUrls: ['./app.component.scss'],
+	standalone: true,
+	imports: [
+		OpenViduAngularModule,
+		ApiDirectiveModule,
+		OpenViduAngularDirectiveModule,
+	],
 })
 export class AppComponent implements OnInit, OnDestroy {
 	// Define the URL of the application server
 	APPLICATION_SERVER_URL = environment.applicationServerUrl;
+	LIVEKIT_URL = environment.livekitUrl;
+
 	// Define the name of the room and initialize the token variable
 	roomName = 'custom-participants-panel';
 	token!: string;
@@ -43,7 +56,10 @@ export class AppComponent implements OnInit, OnDestroy {
 	localParticipantSubs!: Subscription;
 	remoteParticipantsSubs!: Subscription;
 
-	constructor(private httpClient: HttpClient, private participantService: ParticipantService) { }
+	constructor(
+		private httpClient: HttpClient,
+		private participantService: ParticipantService
+	) {}
 
 	// Subscribes to updates for local and remote participants.
 	ngOnInit() {
@@ -64,15 +80,17 @@ export class AppComponent implements OnInit, OnDestroy {
 
 	// Subscribes to updates for local and remote participants.
 	subscribeToParticipants() {
-		this.localParticipantSubs = this.participantService.localParticipantObs.subscribe((p) => {
-			if (p) this.localParticipant = p;
-		});
+		this.localParticipantSubs =
+			this.participantService.localParticipantObs.subscribe((p) => {
+				if (p) this.localParticipant = p;
+			});
 
-		this.remoteParticipantsSubs = this.participantService.remoteParticipantsObs.subscribe(
-			(participants) => {
-				this.remoteParticipants = participants;
-			}
-		);
+		this.remoteParticipantsSubs =
+			this.participantService.remoteParticipantsObs.subscribe(
+				(participants) => {
+					this.remoteParticipants = participants;
+				}
+			);
 	}
 
 	// Sends a request to the server to obtain a token for a participant.
@@ -80,7 +98,7 @@ export class AppComponent implements OnInit, OnDestroy {
 		try {
 			// Send a POST request to the server to obtain a token
 			return lastValueFrom(
-				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'api/sessions', {
+				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'token', {
 					roomName,
 					participantName,
 				})
@@ -90,7 +108,8 @@ export class AppComponent implements OnInit, OnDestroy {
 			if (error.status === 404) {
 				throw {
 					status: error.status,
-					message: 'Cannot connect with the backend. ' + error.url + ' not found',
+					message:
+						'Cannot connect with the backend. ' + error.url + ' not found',
 				};
 			}
 			throw error;

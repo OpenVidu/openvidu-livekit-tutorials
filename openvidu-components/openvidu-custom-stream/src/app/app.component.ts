@@ -1,41 +1,51 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
-import { lastValueFrom } from "rxjs";
+import { lastValueFrom } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
-import { OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
+import {
+	OpenViduAngularModule,
+	ApiDirectiveModule,
+	OpenViduAngularDirectiveModule,
+} from 'openvidu-angular';
 
 @Component({
-    selector: 'app-root',
-    template: `
+	selector: 'app-root',
+	template: `
 		<!-- OpenVidu Video Conference Component -->
-    	<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)">
-
+		<ov-videoconference
+			[token]="token"
+			[livekitUrl]="LIVEKIT_URL"
+			(onTokenRequested)="onTokenRequested($event)"
+		>
 			<!-- Display Video Streams -->
 			<div *ovStream="let track">
-
 				<!-- Video Stream Component -->
 				<ov-stream [track]="track" [displayParticipantName]="false"></ov-stream>
 
 				<!-- Display Participant's Name -->
 				<p>{{ track.participant.name }}</p>
-
 			</div>
-
 		</ov-videoconference>
-  `,
-    styleUrls: ['./app.component.scss'],
-    standalone: true,
-    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule]
+	`,
+	styleUrls: ['./app.component.scss'],
+	standalone: true,
+	imports: [
+		OpenViduAngularModule,
+		ApiDirectiveModule,
+		OpenViduAngularDirectiveModule,
+	],
 })
 export class AppComponent {
 	// Define the URL of the application server
 	APPLICATION_SERVER_URL = environment.applicationServerUrl;
+	LIVEKIT_URL = environment.livekitUrl;
+
 	// Define the name of the room and initialize the token variable
 	roomName = 'custom-stream';
 	token!: string;
 
-	constructor(private httpClient: HttpClient) { }
+	constructor(private httpClient: HttpClient) {}
 
 	// Function to request a token when a participant joins the room
 	async onTokenRequested(participantName: string) {
@@ -48,7 +58,7 @@ export class AppComponent {
 		try {
 			// Send a POST request to the server to obtain a token
 			return lastValueFrom(
-				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'api/sessions', {
+				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'token', {
 					roomName,
 					participantName,
 				})
@@ -58,7 +68,8 @@ export class AppComponent {
 			if (error.status === 404) {
 				throw {
 					status: error.status,
-					message: 'Cannot connect with the backend. ' + error.url + ' not found',
+					message:
+						'Cannot connect with the backend. ' + error.url + ' not found',
 				};
 			}
 			throw error;

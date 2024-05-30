@@ -4,7 +4,8 @@
 
 export const environment = {
   production: false,
-  applicationServerUrl: 'http://localhost:5000/',
+  applicationServerUrl: 'http://localhost:6080/',
+  livekitUrl: 'http://localhost:7880/',
 };
 
 /*

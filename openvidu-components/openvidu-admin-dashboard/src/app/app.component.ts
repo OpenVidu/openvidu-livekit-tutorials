@@ -1,39 +1,60 @@
-import { Component } from "@angular/core";
-import { RecordingInfo, OpenViduAngularModule, ApiDirectiveModule } from "openvidu-angular";
-
+import { Component } from '@angular/core';
+import {
+	RecordingInfo,
+	OpenViduAngularModule,
+	ApiDirectiveModule,
+	RecordingStatus,
+	RecordingOutputMode,
+	RecordingDeleteRequestedEvent,
+} from 'openvidu-angular';
 
 @Component({
-    selector: "app-root",
-    template: `
+	selector: 'app-root',
+	template: `
 		<!-- Reference documentation: https://docs.openvidu.io/en/stable/api/openvidu-angular/components/AdminLoginComponent.html -->
 		@if (!logged) {
-		  <ov-admin-login
-		    (onLoginButtonClicked)="onLoginClicked($event)"
-		  ></ov-admin-login>
+		<ov-admin-login
+			(onLoginRequested)="onLoginClicked($event)"
+		></ov-admin-login>
 		}
-		
+
 		<!-- Reference documentation: https://docs.openvidu.io/en/stable/api/openvidu-angular/components/AdminDashboardComponent.html -->
 		@if (logged) {
-		  <ov-admin-dashboard
-		    [recordingsList]="recordings"
-		    (onLogoutClicked)="onLogoutClicked()"
-		    (onRefreshRecordingsClicked)="onRefreshRecordingsClicked()"
-		    (onDeleteRecordingClicked)="onDeleteRecordingClicked($event)"
-		  ></ov-admin-dashboard>
+		<ov-admin-dashboard
+			[recordingsList]="recordings"
+			(onLogoutRequested)="onLogoutClicked()"
+			(onRefreshRecordingsRequested)="onRefreshRecordingsClicked()"
+			(onLoadMoreRecordingsRequested)="onLoadMoreRecordingsRequested()"
+			(onRecordingDeleteRequested)="onDeleteRecordingClicked($event)"
+		></ov-admin-dashboard>
 		}
-		`,
-    standalone: true,
-    imports: [OpenViduAngularModule, ApiDirectiveModule]
+	`,
+	standalone: true,
+	imports: [OpenViduAngularModule, ApiDirectiveModule],
 })
 export class AppComponent {
-	title = "openvidu-admin-dashboard";
+	title = 'openvidu-admin-dashboard';
 	logged: boolean = false;
-	recordings: RecordingInfo[] = [];
+	recordings: RecordingInfo[] = [
+		{
+			id: 'recording1',
+			roomName: this.title,
+			roomId: 'roomId1',
+			outputMode: RecordingOutputMode.COMPOSED,
+			status: RecordingStatus.READY,
+			filename: 'sampleRecording.mp4',
+			startedAt: new Date().getTime(),
+			endedAt: new Date().getTime(),
+			duration: 0,
+			size: 100,
+			location: 'http://localhost:8080/recordings/recording1',
+		},
+	];
 
 	constructor() {}
 
-	onLoginClicked(password: string) {
-		console.log(`Loggin button clicked ${password}`);
+	onLoginClicked(credentials: { username: string; password: string }) {
+		console.log(`Loggin button clicked ${credentials}`);
 		/**
 		 * WARNING! This code is developed for didactic purposes only.
 		 * The authentication process should be done in the server side.
@@ -42,7 +63,7 @@ export class AppComponent {
 	}
 
 	onLogoutClicked() {
-		console.log("Logout button clicked");
+		console.log('Logout button clicked');
 		/**
 		 * WARNING! This code is developed for didactic purposes only.
 		 * The authentication process should be done in the server side.
@@ -51,10 +72,34 @@ export class AppComponent {
 	}
 
 	onRefreshRecordingsClicked() {
-		console.log("Refresh recording clicked");
+		console.log('Refresh recording clicked');
+		/**
+		 * WARNING! This code is developed for didactic purposes only.
+		 * The authentication process should be done in the server side.
+		 **/
+		// Getting the recordings from the server
+		this.recordings = [
+			{
+				id: 'recording2',
+				roomName: this.title,
+				roomId: 'roomId2',
+				outputMode: RecordingOutputMode.COMPOSED,
+				status: RecordingStatus.READY,
+				filename: 'sampleRecording2.mp4',
+				startedAt: new Date().getTime(),
+				endedAt: new Date().getTime(),
+				duration: 0,
+				size: 100,
+				location: 'http://localhost:8080/recordings/recording2',
+			},
+		];
 	}
 
-	onDeleteRecordingClicked(recordingId: string) {
-		console.log(`Delete recording clicked ${recordingId}`);
+	onLoadMoreRecordingsRequested() {
+		console.log('Load more recordings clicked');
+	}
+
+	onDeleteRecordingClicked(recording: RecordingDeleteRequestedEvent) {
+		console.log(`Delete recording clicked ${recording.recordingId}`);
 	}
 }

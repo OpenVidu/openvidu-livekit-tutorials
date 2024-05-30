@@ -1,22 +1,26 @@
-<ov-videoconference (onRoomCreated)="handleRemoteHand($event)" [prejoin]="true" [token]="token" (onTokenRequested)="onTokenRequested($event)">
+<ov-videoconference
+	[prejoin]="true"
+	[token]="token"
+	[livekitUrl]="LIVEKIT_URL"
+	(onTokenRequested)="onTokenRequested($event)"
+	(onRoomCreated)="handleRemoteHand($event)"
+>
+	<div *ovToolbarAdditionalButtons>
+		<button toolbar-btn mat-icon-button (click)="handleLocalHand()" [class.active-btn]="hasHandRaised">
+			<mat-icon matTooltip="Toggle hand">front_hand</mat-icon>
+		</button>
+	</div>
 
-  <div *ovToolbarAdditionalButtons>
-    <button toolbar-btn mat-icon-button (click)="handleLocalHand()" [class.active-btn]="hasHandRaised">
-      <mat-icon matTooltip="Toggle hand">front_hand</mat-icon>
-    </button>
-  </div>
+	<div *ovStream="let track" style="height: 100%">
+		<ov-stream [track]="track"></ov-stream>
+		@if (track.participant.hasHandRaised) {
+		<mat-icon @inOutHandAnimation id="hand-notification">front_hand</mat-icon>
+		}
+	</div>
 
-  <div *ovStream="let track" style="height: 100%">
-    <ov-stream [track]="track"></ov-stream>
-    @if (track.participant.hasHandRaised) {
-      <mat-icon @inOutHandAnimation id="hand-notification">front_hand</mat-icon>
-    }
-  </div>
-
-  <div *ovParticipantPanelItemElements="let participant">
-    @if (participant.hasHandRaised) {
-      <mat-icon>front_hand</mat-icon>
-    }
-  </div>
-
+	<div *ovParticipantPanelItemElements="let participant">
+		@if (participant.hasHandRaised) {
+		<mat-icon>front_hand</mat-icon>
+		}
+	</div>
 </ov-videoconference>

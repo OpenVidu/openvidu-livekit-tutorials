@@ -1,21 +1,22 @@
-import { HttpClient } from "@angular/common/http";
-import { Component } from "@angular/core";
-import { lastValueFrom } from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { Component } from '@angular/core';
+import { lastValueFrom } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
-import { OpenViduAngularModule, ApiDirectiveModule } from "openvidu-angular";
+import { OpenViduAngularModule, ApiDirectiveModule } from 'openvidu-angular';
 
 @Component({
-    selector: 'app-root',
-    template: '<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)"></ov-videoconference>',
-    styles: [''],
-    standalone: true,
-    imports: [OpenViduAngularModule, ApiDirectiveModule]
+  selector: 'app-root',
+  template:
+    '<ov-videoconference [token]="token" [livekitUrl]="LIVEKIT_URL" (onTokenRequested)="onTokenRequested($event)"></ov-videoconference>',
+  styles: [''],
+  standalone: true,
+  imports: [OpenViduAngularModule, ApiDirectiveModule],
 })
 export class AppComponent {
-
   // The URL of the application server.
   APPLICATION_SERVER_URL = environment.applicationServerUrl;
+  LIVEKIT_URL = environment.livekitUrl;
 
   // The name of the room to join.
   roomName = 'openvidu-custom-ui';
@@ -24,7 +25,7 @@ export class AppComponent {
   token!: string;
 
   // Creates a new instance of the AppComponent class.
-  constructor(private httpClient: HttpClient) { }
+  constructor(private httpClient: HttpClient) {}
 
   // Requests a token to join the room with the given participant name.
   async onTokenRequested(participantName: string) {
@@ -35,10 +36,18 @@ export class AppComponent {
   // Retrieves a token to join the room with the given name and participant name.
   getToken(roomName: string, participantName: string): Promise<any> {
     try {
-      return lastValueFrom(this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'api/sessions', { roomName, participantName }));
+      return lastValueFrom(
+        this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'token', {
+          roomName,
+          participantName,
+        })
+      );
     } catch (error: any) {
       if (error.status === 404) {
-        throw { status: error.status, message: 'Cannot connect with backend. ' + error.url + ' not found' };
+        throw {
+          status: error.status,
+          message: 'Cannot connect with backend. ' + error.url + ' not found',
+        };
       }
       throw error;
     }

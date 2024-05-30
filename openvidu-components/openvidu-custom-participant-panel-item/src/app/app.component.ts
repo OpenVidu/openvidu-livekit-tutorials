@@ -1,24 +1,34 @@
-import { HttpClient } from "@angular/common/http";
-import { Component } from "@angular/core";
-import { lastValueFrom } from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { Component } from '@angular/core';
+import { lastValueFrom } from 'rxjs';
 
 import { environment } from 'src/environments/environment';
-import { MatIcon } from "@angular/material/icon";
-import { MatMenuTrigger, MatMenu, MatMenuItem } from "@angular/material/menu";
-import { MatIconButton } from "@angular/material/button";
-import { OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
+import { MatIcon } from '@angular/material/icon';
+import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
+import { MatIconButton } from '@angular/material/button';
+import {
+	OpenViduAngularModule,
+	ApiDirectiveModule,
+	OpenViduAngularDirectiveModule,
+} from 'openvidu-angular';
 
 @Component({
-    selector: 'app-root',
-    template: `
+	selector: 'app-root',
+	template: `
 		<!-- OpenVidu Video Conference Component -->
-		<ov-videoconference [token]="token" (onTokenRequested)="onTokenRequested($event)">
+		<ov-videoconference
+			[token]="token"
+			[livekitUrl]="LIVEKIT_URL"
+			(onTokenRequested)="onTokenRequested($event)"
+		>
 			<!-- Participant Panel Items -->
 			<div *ovParticipantPanelItem="let participant" style="display: flex">
 				<p>{{ participant.name }}</p>
 
 				<!-- More Options Menu -->
-				<button mat-icon-button [matMenuTriggerFor]="menu"><mat-icon>more_vert</mat-icon></button>
+				<button mat-icon-button [matMenuTriggerFor]="menu">
+					<mat-icon>more_vert</mat-icon>
+				</button>
 
 				<!-- Menu Content -->
 				<mat-menu #menu="matMenu">
@@ -27,19 +37,30 @@ import { OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModu
 				</mat-menu>
 			</div>
 		</ov-videoconference>
-  `,
-    styles: [],
-    standalone: true,
-    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule, MatIconButton, MatMenuTrigger, MatIcon, MatMenu, MatMenuItem]
+	`,
+	styles: [],
+	standalone: true,
+	imports: [
+		OpenViduAngularModule,
+		ApiDirectiveModule,
+		OpenViduAngularDirectiveModule,
+		MatIconButton,
+		MatMenuTrigger,
+		MatIcon,
+		MatMenu,
+		MatMenuItem,
+	],
 })
 export class AppComponent {
 	// Define the URL of the application server
 	APPLICATION_SERVER_URL = environment.applicationServerUrl;
+	LIVEKIT_URL = environment.livekitUrl;
+
 	// Define the name of the room and initialize the token variable
 	roomName = 'participant-panel-item';
 	token!: string;
 
-	constructor(private httpClient: HttpClient) { }
+	constructor(private httpClient: HttpClient) {}
 
 	// Function to request a token when a participant joins the room
 	async onTokenRequested(participantName: string) {
@@ -52,7 +73,7 @@ export class AppComponent {
 		try {
 			// Send a POST request to the server to obtain a token
 			return lastValueFrom(
-				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'api/sessions', {
+				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'token', {
 					roomName,
 					participantName,
 				})
@@ -62,7 +83,8 @@ export class AppComponent {
 			if (error.status === 404) {
 				throw {
 					status: error.status,
-					message: 'Cannot connect with the backend. ' + error.url + ' not found',
+					message:
+						'Cannot connect with the backend. ' + error.url + ' not found',
 				};
 			}
 			throw error;

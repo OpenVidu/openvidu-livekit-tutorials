@@ -1,45 +1,53 @@
-import { HttpClient } from "@angular/common/http";
-import { Component } from "@angular/core";
-import { lastValueFrom } from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { Component } from '@angular/core';
+import { lastValueFrom } from 'rxjs';
 
-import { OpenViduService, OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule } from "openvidu-angular";
+import {
+	OpenViduService,
+	OpenViduAngularModule,
+	ApiDirectiveModule,
+	OpenViduAngularDirectiveModule,
+} from 'openvidu-angular';
 import { environment } from 'src/environments/environment';
 
-
 @Component({
-    selector: "app-root",
-    template: `
+	selector: 'app-root',
+	template: `
 		<!-- OpenVidu Video Conference Component -->
 		@if (connected) {
-		  <ov-videoconference
-		    [token]="token"
-		    [toolbarDisplaySessionName]="false"
-		    (onTokenRequested)="onTokenRequested($event)"
-		    >
-		    <!-- Participant Panel Item Elements -->
-		    <div *ovParticipantPanelItemElements="let participant">
-		      <!-- Leave Button for Local Participant -->
-		      @if (participant.isLocal) {
-		        <button (click)="leaveSession()">
-		          Leave
-		        </button>
-		      }
-		    </div>
-		  </ov-videoconference>
+		<ov-videoconference
+			[token]="token"
+			[livekitUrl]="LIVEKIT_URL"
+			[toolbarDisplayRoomName]="false"
+			(onTokenRequested)="onTokenRequested($event)"
+		>
+			<!-- Participant Panel Item Elements -->
+			<div *ovParticipantPanelItemElements="let participant">
+				<!-- Leave Button for Local Participant -->
+				@if (participant.isLocal) {
+				<button (click)="leaveSession()">Leave</button>
+				}
+			</div>
+		</ov-videoconference>
 		}
-		
+
 		<!-- Session Disconnected Message -->
 		@if (!connected) {
-		  <div style="text-align: center;">Session disconnected</div>
+		<div style="text-align: center;">Session disconnected</div>
 		}
-		`,
-    styles: [],
-    standalone: true,
-    imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule]
+	`,
+	styles: [],
+	standalone: true,
+	imports: [
+		OpenViduAngularModule,
+		ApiDirectiveModule,
+		OpenViduAngularDirectiveModule,
+	],
 })
 export class AppComponent {
 	// Define the URL of the application server
 	APPLICATION_SERVER_URL = environment.applicationServerUrl;
+	LIVEKIT_URL = environment.livekitUrl;
 
 	// Define the name of the room and initialize the token variable
 	roomName = 'participant-panel-item-elements';
@@ -48,7 +56,10 @@ export class AppComponent {
 	// Flag to indicate session connection status
 	connected = true;
 
-	constructor(private httpClient: HttpClient, private openviduService: OpenViduService) { }
+	constructor(
+		private httpClient: HttpClient,
+		private openviduService: OpenViduService
+	) {}
 
 	// Function to request a token when a participant joins the room
 	async onTokenRequested(participantName: string) {
@@ -67,7 +78,7 @@ export class AppComponent {
 		try {
 			// Send a POST request to the server to obtain a token
 			return lastValueFrom(
-				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'api/sessions', {
+				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'token', {
 					roomName,
 					participantName,
 				})
@@ -77,7 +88,8 @@ export class AppComponent {
 			if (error.status === 404) {
 				throw {
 					status: error.status,
-					message: 'Cannot connect with the backend. ' + error.url + ' not found',
+					message:
+						'Cannot connect with the backend. ' + error.url + ' not found',
 				};
 			}
 			throw error;

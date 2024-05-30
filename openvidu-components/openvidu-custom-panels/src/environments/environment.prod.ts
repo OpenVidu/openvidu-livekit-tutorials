@@ -1,4 +1,5 @@
 export const environment = {
-  production: true,
-  applicationServerUrl: '',
+	production: true,
+	applicationServerUrl: '',
+	livekitUrl: '',
 };
