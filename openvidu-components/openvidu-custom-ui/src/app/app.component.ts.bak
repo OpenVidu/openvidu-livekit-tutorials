@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 
+import { environment } from 'src/environments/environment';
 import { OpenViduAngularModule, ApiDirectiveModule } from 'openvidu-angular';
 
 @Component({
@@ -13,11 +14,9 @@ import { OpenViduAngularModule, ApiDirectiveModule } from 'openvidu-angular';
   imports: [OpenViduAngularModule, ApiDirectiveModule],
 })
 export class AppComponent {
-  // For local development, leave these variables empty
-  // For production, configure them with correct URLs depending on your deployment
-
+  // The URL of the application server.
   APPLICATION_SERVER_URL = '';
-  LIVEKIT_URL = '';
+  LIVEKIT_URL = environment.livekitUrl;
 
   // The name of the room to join.
   roomName = 'openvidu-custom-ui';
@@ -26,30 +25,7 @@ export class AppComponent {
   token!: string;
 
   // Creates a new instance of the AppComponent class.
-  constructor(private httpClient: HttpClient) {
-    this.configureUrls();
-  }
-
-  private configureUrls() {
-    // If APPLICATION_SERVER_URL is not configured, use default value from local development
-    if (!this.APPLICATION_SERVER_URL) {
-      if (window.location.hostname === 'localhost') {
-        this.APPLICATION_SERVER_URL = 'http://localhost:6080/';
-      } else {
-        this.APPLICATION_SERVER_URL =
-          'https://' + window.location.hostname + ':6443/';
-      }
-    }
-
-    // If LIVEKIT_URL is not configured, use default value from local development
-    if (!this.LIVEKIT_URL) {
-      if (window.location.hostname === 'localhost') {
-        this.LIVEKIT_URL = 'ws://localhost:7880/';
-      } else {
-        this.LIVEKIT_URL = 'wss://' + window.location.hostname + ':7443/';
-      }
-    }
-  }
+  constructor(private httpClient: HttpClient) {}
 
   // Requests a token to join the room with the given participant name.
   async onTokenRequested(participantName: string) {

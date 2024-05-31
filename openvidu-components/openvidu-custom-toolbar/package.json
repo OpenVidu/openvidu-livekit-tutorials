@@ -3,10 +3,10 @@
   "version": "2.27.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --port=5080 --host=0.0.0.0",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "build:prod": "./node_modules/@angular/cli/bin/ng.js build --output-path ./openvidu-basic-node/public/ --configuration production"
+    "build:prod": "ng build --output-path ./openvidu-basic-node/public/ --configuration production"
   },
   "private": true,
   "dependencies": {

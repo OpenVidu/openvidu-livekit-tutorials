@@ -14,7 +14,7 @@ import {
 	template: `
 		<ov-videoconference
 			[token]="token"
-      [livekitUrl]="LIVEKIT_URL"
+			[livekitUrl]="LIVEKIT_URL"
 			[toolbarDisplayRoomName]="false"
 			(onTokenRequested)="onTokenRequested($event)"
 		>
@@ -32,9 +32,11 @@ import {
 	],
 })
 export class AppComponent {
-	// Set the application server URL from the environment variables
-	APPLICATION_SERVER_URL = environment.applicationServerUrl;
-	LIVEKIT_URL = environment.livekitUrl;
+	// For local development, leave these variables empty
+	// For production, configure them with correct URLs depending on your deployment
+
+	APPLICATION_SERVER_URL = '';
+	LIVEKIT_URL = '';
 
 	// Set the room name
 	roomName = 'toolbar-additional-panel-btn';
@@ -42,7 +44,30 @@ export class AppComponent {
 	// Initialize the token variable
 	token!: string;
 
-	constructor(private httpClient: HttpClient) {}
+	constructor(private httpClient: HttpClient) {
+		this.configureUrls();
+	}
+
+	private configureUrls() {
+		// If APPLICATION_SERVER_URL is not configured, use default value from local development
+		if (!this.APPLICATION_SERVER_URL) {
+			if (window.location.hostname === 'localhost') {
+				this.APPLICATION_SERVER_URL = 'http://localhost:6080/';
+			} else {
+				this.APPLICATION_SERVER_URL =
+					'https://' + window.location.hostname + ':6443/';
+			}
+		}
+
+		// If LIVEKIT_URL is not configured, use default value from local development
+		if (!this.LIVEKIT_URL) {
+			if (window.location.hostname === 'localhost') {
+				this.LIVEKIT_URL = 'ws://localhost:7880/';
+			} else {
+				this.LIVEKIT_URL = 'wss://' + window.location.hostname + ':7443/';
+			}
+		}
+	}
 
 	// Method to request a token for a participant
 	async onTokenRequested(participantName: string) {

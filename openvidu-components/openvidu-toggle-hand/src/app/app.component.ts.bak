@@ -45,11 +45,9 @@ enum DataTopicApp {
 	imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule, MatIconButton, MatIcon]
 })
 export class AppComponent {
-	// For local development, leave these variables empty
-	// For production, configure them with correct URLs depending on your deployment
-
+	// The URL of the application server.
 	APPLICATION_SERVER_URL = '';
-	LIVEKIT_URL = '';
+	LIVEKIT_URL = environment.livekitUrl;
 
 	// The token used to connect to the OpenVidu session.
 	token!: string;
@@ -60,29 +58,7 @@ export class AppComponent {
 	// The name of the OpenVidu room.
 	private roomName = 'openvidu-toggle-hand';
 
-	constructor(private httpClient: HttpClient, private participantService: ParticipantService) {
-		this.configureUrls();
-	}
-
-	private configureUrls() {
-		// If APPLICATION_SERVER_URL is not configured, use default value from local development
-		if (!this.APPLICATION_SERVER_URL) {
-			if (window.location.hostname === 'localhost') {
-				this.APPLICATION_SERVER_URL = 'http://localhost:6080/';
-			} else {
-				this.APPLICATION_SERVER_URL = 'https://' + window.location.hostname + ':6443/';
-			}
-		}
-
-		// If LIVEKIT_URL is not configured, use default value from local development
-		if (!this.LIVEKIT_URL) {
-			if (window.location.hostname === 'localhost') {
-				this.LIVEKIT_URL = 'ws://localhost:7880/';
-			} else {
-				this.LIVEKIT_URL = 'wss://' + window.location.hostname + ':7443/';
-			}
-		}
-	}
+	constructor(private httpClient: HttpClient, private participantService: ParticipantService) {}
 
 	// Requests a token from the application server for the given participant name.
 	async onTokenRequested(participantName: string) {

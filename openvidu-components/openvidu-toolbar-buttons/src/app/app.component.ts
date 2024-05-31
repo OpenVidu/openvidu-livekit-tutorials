@@ -41,9 +41,11 @@ import { MatIconButton } from '@angular/material/button';
 	],
 })
 export class AppComponent {
-	// The URL of the application server.
-	APPLICATION_SERVER_URL = environment.applicationServerUrl;
-	LIVEKIT_URL = environment.livekitUrl;
+	// For local development, leave these variables empty
+	// For production, configure them with correct URLs depending on your deployment
+
+	APPLICATION_SERVER_URL = '';
+	LIVEKIT_URL = '';
 
 	// The name of the room for the video conference.
 	roomName = 'toolbar-additionalbtn';
@@ -54,7 +56,30 @@ export class AppComponent {
 	constructor(
 		private httpClient: HttpClient,
 		private participantService: ParticipantService
-	) {}
+	) {
+		this.configureUrls();
+	}
+
+	private configureUrls() {
+		// If APPLICATION_SERVER_URL is not configured, use default value from local development
+		if (!this.APPLICATION_SERVER_URL) {
+			if (window.location.hostname === 'localhost') {
+				this.APPLICATION_SERVER_URL = 'http://localhost:6080/';
+			} else {
+				this.APPLICATION_SERVER_URL =
+					'https://' + window.location.hostname + ':6443/';
+			}
+		}
+
+		// If LIVEKIT_URL is not configured, use default value from local development
+		if (!this.LIVEKIT_URL) {
+			if (window.location.hostname === 'localhost') {
+				this.LIVEKIT_URL = 'ws://localhost:7880/';
+			} else {
+				this.LIVEKIT_URL = 'wss://' + window.location.hostname + ':7443/';
+			}
+		}
+	}
 
 	// Called when the token is requested.
 	async onTokenRequested(participantName: string) {

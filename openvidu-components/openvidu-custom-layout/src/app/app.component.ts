@@ -62,9 +62,10 @@ import { NgClass } from '@angular/common';
 	],
 })
 export class AppComponent implements OnInit, OnDestroy {
-	// Define the URL of the application server
-	APPLICATION_SERVER_URL = environment.applicationServerUrl;
-	LIVEKIT_URL = environment.livekitUrl;
+	// For local development, leave these variables empty
+	// For production, configure them with correct URLs depending on your deployment
+	APPLICATION_SERVER_URL = '';
+	LIVEKIT_URL = '';
 
 	// Define the name of the room and initialize the token variable
 	roomName = 'custom-layout';
@@ -79,7 +80,30 @@ export class AppComponent implements OnInit, OnDestroy {
 	constructor(
 		private httpClient: HttpClient,
 		private participantService: ParticipantService
-	) {}
+	) {
+		this.configureUrls();
+	}
+
+	private configureUrls() {
+		// If APPLICATION_SERVER_URL is not configured, use default value from local development
+		if (!this.APPLICATION_SERVER_URL) {
+			if (window.location.hostname === 'localhost') {
+				this.APPLICATION_SERVER_URL = 'http://localhost:6080/';
+			} else {
+				this.APPLICATION_SERVER_URL =
+					'https://' + window.location.hostname + ':6443/';
+			}
+		}
+
+		// If LIVEKIT_URL is not configured, use default value from local development
+		if (!this.LIVEKIT_URL) {
+			if (window.location.hostname === 'localhost') {
+				this.LIVEKIT_URL = 'ws://localhost:7880/';
+			} else {
+				this.LIVEKIT_URL = 'wss://' + window.location.hostname + ':7443/';
+			}
+		}
+	}
 
 	ngOnInit() {
 		// Subscribe to participants' updates
@@ -118,13 +142,10 @@ export class AppComponent implements OnInit, OnDestroy {
 		try {
 			// Send a POST request to the server to obtain a token
 			return lastValueFrom(
-				this.httpClient.post<any>(
-					this.APPLICATION_SERVER_URL + 'token',
-					{
-						roomName,
-						participantName,
-					}
-				)
+				this.httpClient.post<any>(this.APPLICATION_SERVER_URL + 'token', {
+					roomName,
+					participantName,
+				})
 			);
 		} catch (error: any) {
 			// Handle errors, e.g., if the server is not reachable
