@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy } from '@angular/core';
+import { Component, HostListener, OnDestroy, signal } from '@angular/core';
 import { ReactiveFormsModule, FormControl, FormGroup, Validators } from '@angular/forms';
 import {
     LocalVideoTrack,
@@ -36,9 +36,9 @@ export class AppComponent implements OnDestroy {
         participantName: new FormControl('Participant' + Math.floor(Math.random() * 100), Validators.required),
     });
 
-    room?: Room;
-    localTrack?: LocalVideoTrack;
-    remoteTracksMap: Map<string, TrackInfo> = new Map();
+    room = signal<Room | undefined>(undefined);
+    localTrack = signal<LocalVideoTrack | undefined>(undefined);
+    remoteTracksMap = signal<Map<string, TrackInfo>>(new Map());
 
     constructor(private httpClient: HttpClient) {
         this.configureUrls();
@@ -66,23 +66,30 @@ export class AppComponent implements OnDestroy {
 
     async joinRoom() {
         // Initialize a new Room object
-        this.room = new Room();
+        const room = new Room();
+        this.room.set(room);
 
         // Specify the actions when events take place in the room
         // On every new Track received...
-        this.room.on(
+        room.on(
             RoomEvent.TrackSubscribed,
             (_track: RemoteTrack, publication: RemoteTrackPublication, participant: RemoteParticipant) => {
-                this.remoteTracksMap.set(publication.trackSid, {
-                    trackPublication: publication,
-                    participantIdentity: participant.identity,
+                this.remoteTracksMap.update((map) => {
+                    map.set(publication.trackSid, {
+                        trackPublication: publication,
+                        participantIdentity: participant.identity,
+                    });
+                    return map;
                 });
             }
         );
 
         // On every new Track destroyed...
-        this.room.on(RoomEvent.TrackUnsubscribed, (_track: RemoteTrack, publication: RemoteTrackPublication) => {
-            this.remoteTracksMap.delete(publication.trackSid);
+        room.on(RoomEvent.TrackUnsubscribed, (_track: RemoteTrack, publication: RemoteTrackPublication) => {
+            this.remoteTracksMap.update((map) => {
+                map.delete(publication.trackSid);
+                return map;
+            });
         });
 
         try {
@@ -94,11 +101,11 @@ export class AppComponent implements OnDestroy {
             const token = await this.getToken(roomName, participantName);
 
             // Connect to the room with the LiveKit URL and the token
-            await this.room.connect(LIVEKIT_URL, token);
+            await room.connect(LIVEKIT_URL, token);
 
             // Publish your camera and microphone
-            await this.room.localParticipant.enableCameraAndMicrophone();
-            this.localTrack = this.room.localParticipant.videoTrackPublications.values().next().value.videoTrack;
+            await room.localParticipant.enableCameraAndMicrophone();
+            this.localTrack.set(room.localParticipant.videoTrackPublications.values().next().value.videoTrack);
         } catch (error: any) {
             console.log(
                 'There was an error connecting to the room:',
@@ -110,12 +117,12 @@ export class AppComponent implements OnDestroy {
 
     async leaveRoom() {
         // Leave the room by calling 'disconnect' method over the Room object
-        await this.room?.disconnect();
+        await this.room()?.disconnect();
 
         // Reset all variables
-        delete this.room;
-        delete this.localTrack;
-        this.remoteTracksMap.clear();
+        this.room.set(undefined);
+        this.localTrack.set(undefined);
+        this.remoteTracksMap.set(new Map());
     }
 
     @HostListener('window:beforeunload')

@@ -1,4 +1,4 @@
-@if (!room) {
+@if (!room()) {
 <div id="join">
     <div id="join-dialog">
         <h2>Join a Video Room</h2>
@@ -22,14 +22,14 @@
         <button class="btn btn-danger" id="leave-room-button" (click)="leaveRoom()">Leave Room</button>
     </div>
     <div id="layout-container">
-        @if (localTrack) {
+        @if (localTrack()) {
         <video-component
-            [track]="localTrack"
+            [track]="localTrack()!"
             [participantIdentity]="roomForm.value.participantName!"
             [local]="true"
         ></video-component>
         }
-        @for (remoteTrack of remoteTracksMap.values(); track remoteTrack.trackPublication.trackSid) {
+        @for (remoteTrack of remoteTracksMap().values(); track remoteTrack.trackPublication.trackSid) {
             @if (remoteTrack.trackPublication.kind === 'video') {
             <video-component
                 [track]="remoteTrack.trackPublication.videoTrack!"

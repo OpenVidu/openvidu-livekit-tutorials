@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, input, viewChild } from '@angular/core';
 import { LocalVideoTrack, RemoteVideoTrack } from 'livekit-client';
 
 @Component({
@@ -9,32 +9,19 @@ import { LocalVideoTrack, RemoteVideoTrack } from 'livekit-client';
     styleUrl: './video.component.css',
 })
 export class VideoComponent implements AfterViewInit, OnDestroy {
-    @ViewChild('videoElement') videoElement?: ElementRef<HTMLVideoElement>;
+    videoElement = viewChild<ElementRef<HTMLVideoElement>>('videoElement');
 
-    private _track?: LocalVideoTrack | RemoteVideoTrack;
-    @Input() participantIdentity?: string;
-    @Input() local = false;
-
-    @Input()
-    set track(track: LocalVideoTrack | RemoteVideoTrack) {
-        this._track = track;
-
-        if (this.videoElement) {
-            this._track.attach(this.videoElement.nativeElement);
-        }
-    }
-
-    get track(): LocalVideoTrack | RemoteVideoTrack | undefined {
-        return this._track;
-    }
+    track = input.required<LocalVideoTrack | RemoteVideoTrack>();
+    participantIdentity = input.required<string>();
+    local = input(false);
 
     ngAfterViewInit() {
-        if (this._track && this.videoElement) {
-            this._track.attach(this.videoElement.nativeElement);
+        if (this.videoElement()) {
+            this.track().attach(this.videoElement()!.nativeElement);
         }
     }
 
     ngOnDestroy() {
-        this._track?.detach();
+        this.track().detach();
     }
 }
