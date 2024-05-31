@@ -28,5 +28,5 @@ npm install -g http-server
 After installing http-server, serve the tutorial:
 
 ```bash
-http-server -p 5080 web
+http-server -p 5080 src
 ```
