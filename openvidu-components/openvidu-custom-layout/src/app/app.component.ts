@@ -4,10 +4,10 @@ import { lastValueFrom, Subscription } from 'rxjs';
 import {
 	ParticipantModel,
 	ParticipantService,
-	OpenViduAngularModule,
+	OpenViduComponentsModule,
 	ApiDirectiveModule,
-	OpenViduAngularDirectiveModule,
-} from 'openvidu-angular';
+	OpenViduComponentsDirectiveModule,
+} from 'openvidu-components-angular';
 import { environment } from 'src/environments/environment';
 import { NgClass } from '@angular/common';
 
@@ -55,9 +55,9 @@ import { NgClass } from '@angular/common';
 	styleUrls: ['./app.component.scss'],
 	standalone: true,
 	imports: [
-		OpenViduAngularModule,
+		OpenViduComponentsModule,
 		ApiDirectiveModule,
-		OpenViduAngularDirectiveModule,
+		OpenViduComponentsDirectiveModule,
 		NgClass,
 	],
 })

@@ -2,11 +2,11 @@ import { enableProdMode, importProvidersFrom } from '@angular/core';
 
 import { environment } from './environments/environment';
 import { AppComponent } from './app/app.component';
-import { OpenViduAngularModule, OpenViduAngularConfig } from 'openvidu-angular';
+import { OpenViduComponentsModule, OpenViduComponentsConfig } from 'openvidu-components-angular';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 
-const config: OpenViduAngularConfig = {
+const config: OpenViduComponentsConfig = {
 	production: environment.production,
 };
 
@@ -16,7 +16,7 @@ if (environment.production) {
 
 bootstrapApplication(AppComponent, {
 	providers: [
-		importProvidersFrom(BrowserModule, OpenViduAngularModule.forRoot(config)),
+		importProvidersFrom(BrowserModule, OpenViduComponentsModule.forRoot(config)),
 		provideAnimations(),
 	],
 }).catch((err) => console.error(err));

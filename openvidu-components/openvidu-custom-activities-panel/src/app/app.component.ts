@@ -3,10 +3,10 @@ import { Component } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import {
-	OpenViduAngularModule,
+	OpenViduComponentsModule,
 	ApiDirectiveModule,
-	OpenViduAngularDirectiveModule,
-} from 'openvidu-angular';
+	OpenViduComponentsDirectiveModule,
+} from 'openvidu-components-angular';
 
 @Component({
 	selector: 'app-root',
@@ -28,9 +28,9 @@ import {
 	styleUrls: ['./app.component.scss'],
 	standalone: true,
 	imports: [
-		OpenViduAngularModule,
+		OpenViduComponentsModule,
 		ApiDirectiveModule,
-		OpenViduAngularDirectiveModule,
+		OpenViduComponentsDirectiveModule,
 	],
 })
 export class AppComponent {

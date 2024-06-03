@@ -10,10 +10,10 @@ import {
 	RemoteParticipant,
 	Room,
 	RoomEvent,
-	OpenViduAngularModule,
+	OpenViduComponentsModule,
 	ApiDirectiveModule,
-	OpenViduAngularDirectiveModule
-} from 'openvidu-angular';
+	OpenViduComponentsDirectiveModule
+} from 'openvidu-components-angular';
 import { ParticipantAppModel } from './models/participant-app.model';
 
 import { environment } from 'src/environments/environment';
@@ -42,7 +42,7 @@ enum DataTopicApp {
 		])
 	],
 	standalone: true,
-	imports: [OpenViduAngularModule, ApiDirectiveModule, OpenViduAngularDirectiveModule, MatIconButton, MatIcon]
+	imports: [OpenViduComponentsModule, ApiDirectiveModule, OpenViduComponentsDirectiveModule, MatIconButton, MatIcon]
 })
 export class AppComponent {
 	// For local development, leave these variables empty

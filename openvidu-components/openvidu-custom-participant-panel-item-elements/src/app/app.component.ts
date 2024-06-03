@@ -4,10 +4,10 @@ import { lastValueFrom } from 'rxjs';
 
 import {
 	OpenViduService,
-	OpenViduAngularModule,
+	OpenViduComponentsModule,
 	ApiDirectiveModule,
-	OpenViduAngularDirectiveModule,
-} from 'openvidu-angular';
+	OpenViduComponentsDirectiveModule,
+} from 'openvidu-components-angular';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -39,9 +39,9 @@ import { environment } from 'src/environments/environment';
 	styles: [],
 	standalone: true,
 	imports: [
-		OpenViduAngularModule,
+		OpenViduComponentsModule,
 		ApiDirectiveModule,
-		OpenViduAngularDirectiveModule,
+		OpenViduComponentsDirectiveModule,
 	],
 })
 export class AppComponent {

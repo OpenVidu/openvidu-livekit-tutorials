@@ -5,10 +5,10 @@ import { lastValueFrom } from 'rxjs';
 import {
 	PanelStatusInfo,
 	PanelService,
-	OpenViduAngularModule,
+	OpenViduComponentsModule,
 	ApiDirectiveModule,
-	OpenViduAngularDirectiveModule,
-} from 'openvidu-angular';
+	OpenViduComponentsDirectiveModule,
+} from 'openvidu-components-angular';
 
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
@@ -54,9 +54,9 @@ import { CommonModule } from '@angular/common';
 	standalone: true,
 	imports: [
 		CommonModule,
-		OpenViduAngularModule,
+		OpenViduComponentsModule,
 		ApiDirectiveModule,
-		OpenViduAngularDirectiveModule,
+		OpenViduComponentsDirectiveModule,
 		MatIconButton,
 		MatIcon,
 	],

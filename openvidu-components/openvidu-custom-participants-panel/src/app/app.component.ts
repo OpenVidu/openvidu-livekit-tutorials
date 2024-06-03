@@ -5,10 +5,10 @@ import { lastValueFrom, Subscription } from 'rxjs';
 import {
 	ParticipantModel,
 	ParticipantService,
-	OpenViduAngularModule,
+	OpenViduComponentsModule,
 	ApiDirectiveModule,
-	OpenViduAngularDirectiveModule,
-} from 'openvidu-angular';
+	OpenViduComponentsDirectiveModule,
+} from 'openvidu-components-angular';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -36,9 +36,9 @@ import { environment } from 'src/environments/environment';
 	styleUrls: ['./app.component.scss'],
 	standalone: true,
 	imports: [
-		OpenViduAngularModule,
+		OpenViduComponentsModule,
 		ApiDirectiveModule,
-		OpenViduAngularDirectiveModule,
+		OpenViduComponentsDirectiveModule,
 	],
 })
 export class AppComponent implements OnInit, OnDestroy {

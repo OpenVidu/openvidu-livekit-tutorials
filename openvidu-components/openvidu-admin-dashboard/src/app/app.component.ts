@@ -1,24 +1,24 @@
 import { Component } from '@angular/core';
 import {
 	RecordingInfo,
-	OpenViduAngularModule,
+	OpenViduComponentsModule,
 	ApiDirectiveModule,
 	RecordingStatus,
 	RecordingOutputMode,
 	RecordingDeleteRequestedEvent,
-} from 'openvidu-angular';
+} from 'openvidu-components-angular';
 
 @Component({
 	selector: 'app-root',
 	template: `
-		<!-- Reference documentation: https://docs.openvidu.io/en/stable/api/openvidu-angular/components/AdminLoginComponent.html -->
+		<!-- Reference documentation: https://docs.openvidu.io/en/stable/api/openvidu-components-angular/components/AdminLoginComponent.html -->
 		@if (!logged) {
 		<ov-admin-login
 			(onLoginRequested)="onLoginClicked($event)"
 		></ov-admin-login>
 		}
 
-		<!-- Reference documentation: https://docs.openvidu.io/en/stable/api/openvidu-angular/components/AdminDashboardComponent.html -->
+		<!-- Reference documentation: https://docs.openvidu.io/en/stable/api/openvidu-components-angular/components/AdminDashboardComponent.html -->
 		@if (logged) {
 		<ov-admin-dashboard
 			[recordingsList]="recordings"
@@ -30,7 +30,7 @@ import {
 		}
 	`,
 	standalone: true,
-	imports: [OpenViduAngularModule, ApiDirectiveModule],
+	imports: [OpenViduComponentsModule, ApiDirectiveModule],
 })
 export class AppComponent {
 	title = 'openvidu-admin-dashboard';

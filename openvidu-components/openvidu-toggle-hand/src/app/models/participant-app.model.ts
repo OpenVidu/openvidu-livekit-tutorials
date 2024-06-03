@@ -1,4 +1,4 @@
-import { ParticipantModel, ParticipantProperties } from 'openvidu-angular';
+import { ParticipantModel, ParticipantProperties } from 'openvidu-components-angular';
 
 // Represents a participant in the application, with the ability to raise their hand.
 export class ParticipantAppModel extends ParticipantModel {

@@ -4,10 +4,10 @@ import { lastValueFrom } from 'rxjs';
 
 import {
 	ParticipantService,
-	OpenViduAngularModule,
+	OpenViduComponentsModule,
 	ApiDirectiveModule,
-	OpenViduAngularDirectiveModule,
-} from 'openvidu-angular';
+	OpenViduComponentsDirectiveModule,
+} from 'openvidu-components-angular';
 import { environment } from 'src/environments/environment';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
@@ -33,9 +33,9 @@ import { MatIconButton } from '@angular/material/button';
 	styles: [],
 	standalone: true,
 	imports: [
-		OpenViduAngularModule,
+		OpenViduComponentsModule,
 		ApiDirectiveModule,
-		OpenViduAngularDirectiveModule,
+		OpenViduComponentsDirectiveModule,
 		MatIconButton,
 		MatIcon,
 	],

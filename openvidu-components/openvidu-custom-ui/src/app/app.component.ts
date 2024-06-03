@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 
-import { OpenViduAngularModule, ApiDirectiveModule } from 'openvidu-angular';
+import { OpenViduComponentsModule, ApiDirectiveModule } from 'openvidu-components-angular';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +10,7 @@ import { OpenViduAngularModule, ApiDirectiveModule } from 'openvidu-angular';
     '<ov-videoconference [token]="token" [livekitUrl]="LIVEKIT_URL" (onTokenRequested)="onTokenRequested($event)"></ov-videoconference>',
   styles: [''],
   standalone: true,
-  imports: [OpenViduAngularModule, ApiDirectiveModule],
+  imports: [OpenViduComponentsModule, ApiDirectiveModule],
 })
 export class AppComponent {
   // For local development, leave these variables empty
