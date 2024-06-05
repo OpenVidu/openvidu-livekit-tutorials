@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, signal } from '@angular/core';
+import { Component, OnDestroy, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
     AlertController,
@@ -68,7 +68,7 @@ var LIVEKIT_URL = '';
         IonFooter,
     ],
 })
-export class AppComponent {
+export class AppComponent implements OnDestroy {
     roomForm = new FormGroup({
         roomName: new FormControl('Test Room', Validators.required),
         participantName: new FormControl('Participant' + Math.floor(Math.random() * 100), Validators.required),
