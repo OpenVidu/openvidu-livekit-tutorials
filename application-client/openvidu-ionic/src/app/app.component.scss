@@ -1,0 +1,60 @@
+#header-title {
+    font-weight: bold;
+}
+
+#join-dialog h2 {
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 2em;
+}
+
+#join-button {
+    margin-top: 20px;
+}
+
+#room {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#room-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    padding: 0 20px;
+    margin-bottom: 20px;
+}
+
+#room-title {
+    font-size: 2em;
+    font-weight: bold;
+    margin: 0;
+}
+
+#layout-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+}
+
+#footer-title {
+    font-size: 1rem;
+
+    span {
+        font-weight: bold;
+    }
+}
+
+#openvidu-logo {
+    height: 35px;
+    margin-right: 20px;
+}

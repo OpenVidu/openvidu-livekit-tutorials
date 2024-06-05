@@ -1,0 +1,6 @@
+<div [id]="'camera-' + participantIdentity()" class="video-container">
+    <div class="participant-data">
+        <p>{{ participantIdentity() + (local() ? " (You)" : "") }}</p>
+    </div>
+    <video #videoElement [id]="track().sid"></video>
+</div>

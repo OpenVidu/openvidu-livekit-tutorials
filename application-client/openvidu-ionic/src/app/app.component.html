@@ -1,3 +1,103 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+    <ion-header [translucent]="true">
+        <ion-toolbar color="dark">
+            <ion-title id="header-title">Basic Ionic</ion-title>
+            <ion-buttons slot="primary">
+                <ion-button
+                    href="https://github.com/OpenVidu/openvidu-livekit-tutorials/tree/master/application-client/openvidu-ionic"
+                >
+                    <ion-icon slot="icon-only" name="logo-github"></ion-icon>
+                </ion-button>
+                <ion-button
+                    href="https://livekit-tutorials.openvidu.io/tutorials/application-client/ionic/"
+                >
+                    <ion-icon slot="icon-only" name="book"></ion-icon>
+                </ion-button>
+            </ion-buttons>
+        </ion-toolbar>
+    </ion-header>
+
+    @if (!room()) {
+    <ion-content [fullscreen]="true" class="ion-padding" id="join">
+        <div id="join-dialog">
+            <h2>Join a Video Room</h2>
+            <ion-list [formGroup]="roomForm">
+                <ion-item>
+                    <ion-input
+                        formControlName="participantName"
+                        label="Participant"
+                        labelPlacement="floating"
+                        id="participant-name"
+                        placeholder="Participant name"
+                        type="text"
+                        required
+                    ></ion-input>
+                </ion-item>
+                <ion-item>
+                    <ion-input
+                        formControlName="roomName"
+                        label="Room"
+                        labelPlacement="floating"
+                        id="room-name"
+                        placeholder="Room name"
+                        type="text"
+                        required
+                    ></ion-input>
+                </ion-item>
+            </ion-list>
+            <ion-button id="join-button" (click)="joinRoom()" [disabled]="!roomForm.valid" expand="block" shape="round" color="primary">
+                Join!
+            </ion-button>
+        </div>
+
+        <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+            <ion-fab-button
+                id="settings-button"
+                [disabled]="!roomForm.valid"
+                (click)="presentSettingsAlert()"
+                size="small"
+                color="dark"
+            >
+                <ion-icon name="settings"></ion-icon>
+            </ion-fab-button>
+        </ion-fab>
+    </ion-content>
+    } @else {
+    <ion-content [scrollEvents]="true" class="ion-padding" id="room">
+        <div id="room-header">
+            <h2 id="room-title">{{ roomForm.value.roomName }}</h2>
+            <ion-button id="leave-room-button" (click)="leaveRoom()" color="danger" class="action-button">
+                Leave Room
+            </ion-button>
+        </div>
+        <div id="layout-container">
+            @if (localTrack()) {
+            <video-component
+                [track]="localTrack()!"
+                [participantIdentity]="roomForm.value.participantName!"
+                [local]="true"
+            ></video-component>
+            }
+            @for (remoteTrack of remoteTracksMap().values(); track remoteTrack.trackPublication.trackSid) {
+                @if (remoteTrack.trackPublication.kind === 'video') {
+                <video-component
+                    [track]="remoteTrack.trackPublication.videoTrack!"
+                    [participantIdentity]="remoteTrack.participantIdentity"
+                ></video-component>
+                } @else {
+                <audio-component [track]="remoteTrack.trackPublication.audioTrack!" hidden></audio-component>
+                }
+            }
+        </div>
+    </ion-content>
+    }
+
+    <ion-footer>
+        <ion-toolbar color="dark">
+            <ion-title id="footer-title" slot="start">Made with love by <span>OpenVidu Team</span></ion-title>
+            <a slot="end" href="http://www.openvidu.io/" target="_blank">
+                <img id="openvidu-logo" src="assets/images/openvidu_logo.png" alt="OpenVidu logo" />
+            </a>
+        </ion-toolbar>
+    </ion-footer>
 </ion-app>

@@ -23,15 +23,17 @@ cd openvidu-livekit-tutorials/application-server/python
 python -m venv venv
 ```
 
-- Windows
-```bash
-.\venv\Scripts\activate
-```
+-   Windows
 
-- Linux/macOS
-```bash
-. ./venv/bin/activate
-```
+    ```bash
+    .\venv\Scripts\activate
+    ```
+
+-   Linux/macOS
+
+    ```bash
+    . ./venv/bin/activate
+    ```
 
 3. Install dependencies
 

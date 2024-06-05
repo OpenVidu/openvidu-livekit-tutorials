@@ -1,9 +1,9 @@
-import { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'io.ionic.starter',
-  appName: 'openvidu-ionic',
-  webDir: 'www',
+  appName: 'basic-ionic',
+  webDir: 'www'
 };
 
 export default config;
