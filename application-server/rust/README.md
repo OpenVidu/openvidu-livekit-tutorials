@@ -1,4 +1,4 @@
-# Basic PHP
+# Basic Rust
 
 Basic server application built for Rust with Axum. It internally uses [livekit-sdk-rust](https://crates.io/crates/livekit).
 

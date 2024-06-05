@@ -1,4 +1,4 @@
-# Basic PHP
+# Basic .NET
 
 Basic server application built for .NET with ASP.NET Core.
 

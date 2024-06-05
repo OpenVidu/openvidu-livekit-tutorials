@@ -1,6 +1,6 @@
 # Basic Ionic
 
-Basic client application built with Ionic and Angular. It internally uses [livekit-client-sdk-js](https://docs.livekit.io/client-sdk-js/).
+Basic client application built with Ionic, using Angular and Capacitor. It internally uses [livekit-client-sdk-js](https://docs.livekit.io/client-sdk-js/).
 
 For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/tutorials/application-client/ionic/).
 
