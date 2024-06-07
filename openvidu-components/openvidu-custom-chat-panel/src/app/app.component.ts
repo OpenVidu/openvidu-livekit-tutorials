@@ -11,10 +11,7 @@ import {
 	Room,
 	RoomEvent,
 	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule,
 } from 'openvidu-components-angular';
-import { environment } from 'src/environments/environment';
 
 @Component({
 	selector: 'app-root',
@@ -42,13 +39,16 @@ import { environment } from 'src/environments/environment';
 			</div>
 		</ov-videoconference>
 	`,
-	styleUrls: ['./app.component.scss'],
+	styles: `
+		#my-panel {
+			background: #aafffc;
+			height: 100%;
+			overflow: hidden;
+			text-align: center;
+		}
+	`,
 	standalone: true,
-	imports: [
-		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
-	],
+	imports: [OpenViduComponentsModule],
 })
 export class AppComponent {
 	// For local development, leave these variables empty

@@ -5,10 +5,7 @@ import { lastValueFrom } from 'rxjs';
 import {
 	ParticipantService,
 	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule,
 } from 'openvidu-components-angular';
-import { environment } from 'src/environments/environment';
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
 
@@ -32,13 +29,7 @@ import { MatIconButton } from '@angular/material/button';
 	`,
 	styles: [],
 	standalone: true,
-	imports: [
-		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
-		MatIconButton,
-		MatIcon,
-	],
+	imports: [OpenViduComponentsModule, MatIconButton, MatIcon],
 })
 export class AppComponent {
 	// For local development, leave these variables empty

@@ -2,6 +2,8 @@ import { animate, style, transition, trigger } from '@angular/animations';
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
+import { MatIcon } from '@angular/material/icon';
+import { MatIconButton } from '@angular/material/button';
 
 import {
 	DataPacket_Kind,
@@ -10,16 +12,9 @@ import {
 	RemoteParticipant,
 	Room,
 	RoomEvent,
-	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule
+	OpenViduComponentsModule
 } from 'openvidu-components-angular';
 import { ParticipantAppModel } from './models/participant-app.model';
-
-import { environment } from 'src/environments/environment';
-
-import { MatIcon } from '@angular/material/icon';
-import { MatIconButton } from '@angular/material/button';
 
 enum DataTopicApp {
 	HAND_TOGGLE = 'handToggle'
@@ -27,8 +22,47 @@ enum DataTopicApp {
 
 @Component({
 	selector: 'app-root',
-	templateUrl: './app.component.html',
-	styleUrls: ['./app.component.css'],
+	template: `
+		<ov-videoconference
+			[prejoin]="true"
+			[token]="token"
+			[livekitUrl]="LIVEKIT_URL"
+			(onTokenRequested)="onTokenRequested($event)"
+			(onRoomCreated)="handleRemoteHand($event)"
+		>
+			<div *ovToolbarAdditionalButtons>
+				<button toolbar-btn mat-icon-button (click)="handleLocalHand()" [class.active-btn]="hasHandRaised">
+					<mat-icon matTooltip="Toggle hand">front_hand</mat-icon>
+				</button>
+			</div>
+
+			<div *ovStream="let track" style="height: 100%">
+				<ov-stream [track]="track"></ov-stream>
+				@if (track.participant.hasHandRaised) {
+				<mat-icon @inOutHandAnimation id="hand-notification">front_hand</mat-icon>
+				}
+			</div>
+
+			<div *ovParticipantPanelItemElements="let participant">
+				@if (participant.hasHandRaised) {
+				<mat-icon>front_hand</mat-icon>
+				}
+			</div>
+		</ov-videoconference>
+	`,
+	styles: `
+		#call-container, #room-container {
+			height: 100%;
+		}
+
+		#hand-notification {
+			margin-bottom: 5px;
+			z-index: 999;
+			position: absolute;
+			right: 10px;
+			bottom: 3px;
+		}
+	`,
 	animations: [
 		trigger('inOutHandAnimation', [
 			transition(':enter', [
@@ -42,7 +76,7 @@ enum DataTopicApp {
 		])
 	],
 	standalone: true,
-	imports: [OpenViduComponentsModule, ApiDirectiveModule, OpenViduComponentsDirectiveModule, MatIconButton, MatIcon]
+	imports: [OpenViduComponentsModule, MatIconButton, MatIcon]
 })
 export class AppComponent {
 	// For local development, leave these variables empty

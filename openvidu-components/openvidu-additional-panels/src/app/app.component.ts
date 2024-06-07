@@ -6,13 +6,11 @@ import {
 	PanelStatusInfo,
 	PanelService,
 	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule,
 } from 'openvidu-components-angular';
 
 import { MatIcon } from '@angular/material/icon';
 import { MatIconButton } from '@angular/material/button';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
 	selector: 'app-root',
@@ -50,16 +48,26 @@ import { CommonModule } from '@angular/common';
 			</div>
 		</ov-videoconference>
 	`,
-	styleUrls: ['./app.component.scss'],
+	styles: `
+		#my-panels {
+			height: 100%;
+			overflow: hidden;
+		}
+		#my-panel1,
+		#my-panel2 {
+			text-align: center;
+			height: calc(100% - 40px);
+			margin: 20px;
+		}
+		#my-panel1 {
+			background: #c9ffb2;
+		}
+		#my-panel2 {
+			background: #ddf2ff;
+		}
+	`,
 	standalone: true,
-	imports: [
-		CommonModule,
-		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
-		MatIconButton,
-		MatIcon,
-	],
+	imports: [OpenViduComponentsModule, MatIconButton, MatIcon],
 })
 export class AppComponent {
 	// For local development, leave these variables empty

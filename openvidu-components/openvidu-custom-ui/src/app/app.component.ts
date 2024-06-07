@@ -2,7 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 
-import { OpenViduComponentsModule, ApiDirectiveModule } from 'openvidu-components-angular';
+import {
+  OpenViduComponentsModule,
+  ApiDirectiveModule,
+} from 'openvidu-components-angular';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +18,6 @@ import { OpenViduComponentsModule, ApiDirectiveModule } from 'openvidu-component
 export class AppComponent {
   // For local development, leave these variables empty
   // For production, configure them with correct URLs depending on your deployment
-
   APPLICATION_SERVER_URL = '';
   LIVEKIT_URL = '';
 
@@ -25,7 +27,6 @@ export class AppComponent {
   // The token used to join the room.
   token!: string;
 
-  // Creates a new instance of the AppComponent class.
   constructor(private httpClient: HttpClient) {
     this.configureUrls();
   }

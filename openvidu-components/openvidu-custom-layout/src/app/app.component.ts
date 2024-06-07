@@ -5,10 +5,7 @@ import {
 	ParticipantModel,
 	ParticipantService,
 	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule,
 } from 'openvidu-components-angular';
-import { environment } from 'src/environments/environment';
 import { NgClass } from '@angular/common';
 
 @Component({
@@ -52,14 +49,23 @@ import { NgClass } from '@angular/common';
 			</div>
 		</ov-videoconference>
 	`,
-	styleUrls: ['./app.component.scss'],
+	styles: `
+		.container {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: space-between;
+		}
+		.item {
+			flex: 0 50%;
+			height: 250px;
+			margin-bottom: 2%;
+		}
+		.hidden {
+			display: none;
+		}
+	`,
 	standalone: true,
-	imports: [
-		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
-		NgClass,
-	],
+	imports: [OpenViduComponentsModule, NgClass],
 })
 export class AppComponent implements OnInit, OnDestroy {
 	// For local development, leave these variables empty

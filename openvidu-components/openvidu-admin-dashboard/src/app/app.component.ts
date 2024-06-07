@@ -1,8 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, WritableSignal, signal } from '@angular/core';
 import {
 	RecordingInfo,
 	OpenViduComponentsModule,
-	ApiDirectiveModule,
 	RecordingStatus,
 	RecordingOutputMode,
 	RecordingDeleteRequestedEvent,
@@ -11,34 +10,29 @@ import {
 @Component({
 	selector: 'app-root',
 	template: `
-		<!-- Reference documentation: https://docs.openvidu.io/en/stable/api/openvidu-components-angular/components/AdminLoginComponent.html -->
-		@if (!logged) {
-		<ov-admin-login
-			(onLoginRequested)="onLoginClicked($event)"
-		></ov-admin-login>
-		}
-
-		<!-- Reference documentation: https://docs.openvidu.io/en/stable/api/openvidu-components-angular/components/AdminDashboardComponent.html -->
 		@if (logged) {
 		<ov-admin-dashboard
-			[recordingsList]="recordings"
-			(onLogoutRequested)="onLogoutClicked()"
-			(onRefreshRecordingsRequested)="onRefreshRecordingsClicked()"
+			[recordingsList]="recordings()"
+			(onLogoutRequested)="onLogoutRequested()"
+			(onRefreshRecordingsRequested)="onRefreshRecordingsRequested()"
 			(onLoadMoreRecordingsRequested)="onLoadMoreRecordingsRequested()"
-			(onRecordingDeleteRequested)="onDeleteRecordingClicked($event)"
+			(onRecordingDeleteRequested)="onRecordingDeleteRequested($event)"
 		></ov-admin-dashboard>
+		} @else {
+		<ov-admin-login (onLoginRequested)="onLoginRequested($event)">
+		</ov-admin-login>
 		}
 	`,
 	standalone: true,
-	imports: [OpenViduComponentsModule, ApiDirectiveModule],
+	imports: [OpenViduComponentsModule],
 })
 export class AppComponent {
-	title = 'openvidu-admin-dashboard';
+	roomName = 'openvidu-admin-dashboard';
 	logged: boolean = false;
-	recordings: RecordingInfo[] = [
+	recordings: WritableSignal<RecordingInfo[]> = signal([
 		{
 			id: 'recording1',
-			roomName: this.title,
+			roomName: this.roomName,
 			roomId: 'roomId1',
 			outputMode: RecordingOutputMode.COMPOSED,
 			status: RecordingStatus.READY,
@@ -49,11 +43,11 @@ export class AppComponent {
 			size: 100,
 			location: 'http://localhost:8080/recordings/recording1',
 		},
-	];
+	]);
 
 	constructor() {}
 
-	onLoginClicked(credentials: { username: string; password: string }) {
+	onLoginRequested(credentials: { username: string; password: string }) {
 		console.log(`Loggin button clicked ${credentials}`);
 		/**
 		 * WARNING! This code is developed for didactic purposes only.
@@ -62,7 +56,7 @@ export class AppComponent {
 		this.logged = true;
 	}
 
-	onLogoutClicked() {
+	onLogoutRequested() {
 		console.log('Logout button clicked');
 		/**
 		 * WARNING! This code is developed for didactic purposes only.
@@ -71,35 +65,45 @@ export class AppComponent {
 		this.logged = false;
 	}
 
-	onRefreshRecordingsClicked() {
+	onRefreshRecordingsRequested() {
 		console.log('Refresh recording clicked');
 		/**
 		 * WARNING! This code is developed for didactic purposes only.
 		 * The authentication process should be done in the server side.
 		 **/
 		// Getting the recordings from the server
-		this.recordings = [
+		this.recordings.update(() => [
 			{
-				id: 'recording2',
-				roomName: this.title,
-				roomId: 'roomId2',
+				id: 'recording1',
+				roomName: this.roomName,
+				roomId: 'roomId1',
 				outputMode: RecordingOutputMode.COMPOSED,
 				status: RecordingStatus.READY,
-				filename: 'sampleRecording2.mp4',
+				filename: 'sampleRecording1.mp4',
 				startedAt: new Date().getTime(),
 				endedAt: new Date().getTime(),
 				duration: 0,
 				size: 100,
-				location: 'http://localhost:8080/recordings/recording2',
+				location: 'http://localhost:8080/recordings/recording1',
 			},
-		];
+		]);
 	}
 
 	onLoadMoreRecordingsRequested() {
 		console.log('Load more recordings clicked');
 	}
 
-	onDeleteRecordingClicked(recording: RecordingDeleteRequestedEvent) {
+	onRecordingDeleteRequested(recording: RecordingDeleteRequestedEvent) {
 		console.log(`Delete recording clicked ${recording.recordingId}`);
+		/**
+		 * WARNING! This code is developed for didactic purposes only.
+		 * The authentication process should be done in the server side.
+		 **/
+		// Deleting the recording from the server
+		this.recordings.update((recordings) =>
+			recordings.filter((rec) => rec.id !== recording.recordingId)
+		);
+
+		console.log(this.recordings());
 	}
 }

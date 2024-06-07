@@ -27,13 +27,16 @@ import {
 			</div>
 		</ov-videoconference>
 	`,
-	styleUrls: ['./app.component.scss'],
+	styles: `
+		p {
+			position: absolute;
+			bottom: 0;
+			border: 2px solid;
+			background: #000000;
+		}
+	`,
 	standalone: true,
-	imports: [
-		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
-	],
+	imports: [OpenViduComponentsModule],
 })
 export class AppComponent {
 	// For local development, leave these variables empty

@@ -2,12 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 
-import { environment } from 'src/environments/environment';
-import {
-	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule,
-} from 'openvidu-components-angular';
+import { OpenViduComponentsModule } from 'openvidu-components-angular';
+import { MatIconButton } from '@angular/material/button';
+import { MatIcon } from '@angular/material/icon';
 
 @Component({
 	selector: 'app-root',
@@ -19,17 +16,15 @@ import {
 			(onTokenRequested)="onTokenRequested($event)"
 		>
 			<div *ovToolbarAdditionalPanelButtons style="text-align: center;">
-				<button (click)="onButtonClicked()">MY PANEL</button>
+				<button mat-icon-button (click)="onButtonClicked()">
+					<mat-icon>star</mat-icon>
+				</button>
 			</div>
 		</ov-videoconference>
 	`,
 	styles: [],
 	standalone: true,
-	imports: [
-		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
-	],
+	imports: [OpenViduComponentsModule, MatIconButton, MatIcon],
 })
 export class AppComponent {
 	// For local development, leave these variables empty

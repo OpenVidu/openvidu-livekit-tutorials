@@ -2,12 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 
-import { environment } from 'src/environments/environment';
-import {
-	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule,
-} from 'openvidu-components-angular';
+import { OpenViduComponentsModule } from 'openvidu-components-angular';
 
 @Component({
 	selector: 'app-root',
@@ -35,13 +30,29 @@ import {
 			</ov-panel>
 		</ov-videoconference>
 	`,
-	styleUrls: ['./app.component.scss'],
+	styles: `
+		#my-chat-panel,
+		#my-participants-panel,
+		#my-activities-panel {
+			text-align: center;
+			height: calc(100% - 40px);
+			margin: 20px;
+		}
+
+		#my-chat-panel {
+			background: #c9ffb2;
+		}
+
+		#my-participants-panel {
+			background: #ddf2ff;
+		}
+
+		#my-activities-panel {
+			background: #ffddc9;
+		}
+	`,
 	standalone: true,
-	imports: [
-		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
-	],
+	imports: [OpenViduComponentsModule],
 })
 export class AppComponent {
 	// For local development, leave these variables empty

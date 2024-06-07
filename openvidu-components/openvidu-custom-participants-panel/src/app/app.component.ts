@@ -6,10 +6,7 @@ import {
 	ParticipantModel,
 	ParticipantService,
 	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule,
 } from 'openvidu-components-angular';
-import { environment } from 'src/environments/environment';
 
 @Component({
 	selector: 'app-root',
@@ -33,13 +30,21 @@ import { environment } from 'src/environments/environment';
 			</div>
 		</ov-videoconference>
 	`,
-	styleUrls: ['./app.component.scss'],
+	styles: `
+		#my-panel {
+			background: #faff7f;
+			height: 100%;
+			overflow: hidden;
+		}
+		#my-panel > #local {
+			background: #a184ff;
+		}
+		#my-panel > #remote {
+			background: #7fb8ff;
+		}
+	`,
 	standalone: true,
-	imports: [
-		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
-	],
+	imports: [OpenViduComponentsModule],
 })
 export class AppComponent implements OnInit, OnDestroy {
 	// For local development, leave these variables empty

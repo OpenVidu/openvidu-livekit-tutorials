@@ -2,15 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
 
-import { environment } from 'src/environments/environment';
 import { MatIcon } from '@angular/material/icon';
 import { MatMenuTrigger, MatMenu, MatMenuItem } from '@angular/material/menu';
 import { MatIconButton } from '@angular/material/button';
-import {
-	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule,
-} from 'openvidu-components-angular';
+import { OpenViduComponentsModule } from 'openvidu-components-angular';
 
 @Component({
 	selector: 'app-root',
@@ -42,8 +37,6 @@ import {
 	standalone: true,
 	imports: [
 		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
 		MatIconButton,
 		MatMenuTrigger,
 		MatIcon,

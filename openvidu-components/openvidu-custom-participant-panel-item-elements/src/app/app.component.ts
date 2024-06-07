@@ -5,10 +5,7 @@ import { lastValueFrom } from 'rxjs';
 import {
 	OpenViduService,
 	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule,
 } from 'openvidu-components-angular';
-import { environment } from 'src/environments/environment';
 
 @Component({
 	selector: 'app-root',
@@ -38,11 +35,7 @@ import { environment } from 'src/environments/environment';
 	`,
 	styles: [],
 	standalone: true,
-	imports: [
-		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
-	],
+	imports: [OpenViduComponentsModule],
 })
 export class AppComponent {
 	// For local development, leave these variables empty

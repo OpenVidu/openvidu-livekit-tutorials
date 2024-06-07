@@ -1,7 +1,6 @@
 import { enableProdMode, importProvidersFrom } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
-
 import { environment } from './environments/environment';
 import { AppComponent } from './app/app.component';
 import { ParticipantAppModel } from './app/models/participant-app.model';
@@ -17,16 +16,13 @@ const config: OpenViduComponentsConfig = {
 	participantFactory: (props: ParticipantProperties) => new ParticipantAppModel(props)
 };
 
-
-
 if (environment.production) {
-  enableProdMode();
+	enableProdMode();
 }
 
 bootstrapApplication(AppComponent, {
-    providers: [
-        importProvidersFrom(BrowserModule, MatButtonModule, MatIconModule, OpenViduComponentsModule.forRoot(config)),
-        provideAnimations()
-    ]
-})
-  .catch(err => console.error(err));
+	providers: [
+		importProvidersFrom(BrowserModule, OpenViduComponentsModule.forRoot(config)),
+		provideAnimations()
+	]
+}).catch((err) => console.error(err));

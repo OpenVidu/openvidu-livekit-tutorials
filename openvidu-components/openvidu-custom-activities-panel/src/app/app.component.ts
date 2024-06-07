@@ -1,12 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { lastValueFrom } from 'rxjs';
-import { environment } from 'src/environments/environment';
-import {
-	OpenViduComponentsModule,
-	ApiDirectiveModule,
-	OpenViduComponentsDirectiveModule,
-} from 'openvidu-components-angular';
+import { OpenViduComponentsModule } from 'openvidu-components-angular';
 
 @Component({
 	selector: 'app-root',
@@ -14,8 +9,6 @@ import {
 		<ov-videoconference
 			[token]="token"
 			[livekitUrl]="LIVEKIT_URL"
-			[toolbarRecordingButton]="false"
-			[toolbarDisplayRoomName]="false"
 			(onTokenRequested)="onTokenRequested($event)"
 		>
 			<!-- Custom activities panel -->
@@ -25,13 +18,16 @@ import {
 			</div>
 		</ov-videoconference>
 	`,
-	styleUrls: ['./app.component.scss'],
+	styles: `
+		#my-panel {
+			background: #aafffc;
+			height: 100%;
+			overflow: hidden;
+			text-align: center;
+		}
+	`,
 	standalone: true,
-	imports: [
-		OpenViduComponentsModule,
-		ApiDirectiveModule,
-		OpenViduComponentsDirectiveModule,
-	],
+	imports: [OpenViduComponentsModule],
 })
 export class AppComponent {
 	// For local development, leave these variables empty
