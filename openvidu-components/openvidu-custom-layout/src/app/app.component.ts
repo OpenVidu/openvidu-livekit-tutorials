@@ -131,12 +131,12 @@ export class AppComponent implements OnInit, OnDestroy {
 	// Subscribe to updates for local and remote participants
 	subscribeToParticipants() {
 		this.localParticipantSubs =
-			this.participantService.localParticipantObs.subscribe((p) => {
+			this.participantService.localParticipant$.subscribe((p) => {
 				if (p) this.localParticipant = p;
 			});
 
 		this.remoteParticipantsSubs =
-			this.participantService.remoteParticipantsObs.subscribe(
+			this.participantService.remoteParticipants$.subscribe(
 				(participants) => {
 					this.remoteParticipants = participants;
 				}
