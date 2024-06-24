@@ -26,9 +26,7 @@ hs_err_pid*
 
 */pom.xml.versionsBackup
 
-openvidu-react-native-androidx/node_modules/
 
-openvidu-react-native-androidx/ios/build/
 
 .DS_Store
 
@@ -36,7 +34,7 @@ openvidu-react-native-androidx/ios/build/
 
 */.angular/
 */.idea/
-*/node_modules/
+**/**/node_modules/
 
 
 **/*.vscode/
