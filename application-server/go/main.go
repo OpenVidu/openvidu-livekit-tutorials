@@ -72,6 +72,6 @@ func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
 	router.POST("/token", createToken)
-	router.POST("/webhook", receiveWebhook)
+	router.POST("/livekit/webhook", receiveWebhook)
 	router.Run(":" + SERVER_PORT)
 }

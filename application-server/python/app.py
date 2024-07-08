@@ -35,7 +35,7 @@ token_verifier = TokenVerifier(LIVEKIT_API_KEY, LIVEKIT_API_SECRET)
 webhook_receiver = WebhookReceiver(token_verifier)
 
 
-@app.post("/webhook")
+@app.post("/livekit/webhook")
 def receive_webhook():
     auth_token = request.headers.get("Authorization")
 

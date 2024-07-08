@@ -35,7 +35,7 @@ const webhookReceiver = new WebhookReceiver(
   LIVEKIT_API_SECRET
 );
 
-app.post("/webhook", async (req, res) => {
+app.post("/livekit/webhook", async (req, res) => {
   try {
     const event = await webhookReceiver.receive(
       req.body,

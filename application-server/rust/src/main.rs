@@ -26,7 +26,7 @@ async fn main() {
 
     let app = Router::new()
         .route("/token", post(create_token))
-        .route("/webhook", post(receive_webhook))
+        .route("/livekit/webhook", post(receive_webhook))
         .layer(cors);
 
     let listener = TcpListener::bind("0.0.0.0:".to_string() + &server_port)
