@@ -53,7 +53,7 @@ app.MapPost("/token", async (HttpRequest request) =>
     }
 });
 
-app.MapPost("/webhook", async (HttpRequest request) =>
+app.MapPost("/livekit/webhook", async (HttpRequest request) =>
 {
     var body = new StreamReader(request.Body);
     string postData = await body.ReadToEndAsync();

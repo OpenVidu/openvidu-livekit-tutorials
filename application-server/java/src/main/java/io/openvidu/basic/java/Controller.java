@@ -47,7 +47,7 @@ public class Controller {
 		return ResponseEntity.ok(Map.of("token", token.toJwt()));
 	}
 
-	@PostMapping(value = "/webhook", consumes = "application/webhook+json")
+	@PostMapping(value = "/livekit/webhook", consumes = "application/webhook+json")
 	public ResponseEntity<String> receiveWebhook(@RequestHeader("Authorization") String authHeader, @RequestBody String body) {
 		WebhookReceiver webhookReceiver = new WebhookReceiver(LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
 		try {

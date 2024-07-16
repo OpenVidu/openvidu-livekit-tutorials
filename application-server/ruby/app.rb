@@ -33,7 +33,7 @@ post '/token' do
   return json({token: token.to_jwt})
 end
 
-post '/webhook' do
+post '/livekit/webhook' do
   auth_header = request.env['HTTP_AUTHORIZATION']
   token_verifier = LiveKit::TokenVerifier.new(api_key: LIVEKIT_API_KEY, api_secret: LIVEKIT_API_SECRET)
   begin

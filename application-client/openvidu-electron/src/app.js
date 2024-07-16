@@ -7,6 +7,10 @@ const LIVEKIT_URL = "ws://localhost:7880/";
 var room;
 
 async function joinRoom() {
+    // Disable 'Join' button
+    document.getElementById("join-button").disabled = true;
+    document.getElementById("join-button").innerText = "Joining...";
+
     // Initialize a new Room object
     room = new Room();
 
@@ -77,6 +81,10 @@ async function leaveRoom() {
     // Back to 'Join room' page
     document.getElementById("join").hidden = false;
     document.getElementById("room").hidden = true;
+
+    // Enable 'Join' button
+    document.getElementById("join-button").disabled = false;
+	document.getElementById("join-button").innerText = "Join!";
 }
 
 window.onbeforeunload = () => {
