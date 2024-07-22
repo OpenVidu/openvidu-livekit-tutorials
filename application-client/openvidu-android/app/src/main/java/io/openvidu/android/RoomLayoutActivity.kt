@@ -22,12 +22,14 @@ import io.livekit.android.LiveKit
 import io.livekit.android.events.RoomEvent
 import io.livekit.android.events.collect
 import io.livekit.android.room.Room
-import io.livekit.android.renderer.SurfaceViewRenderer
 import io.livekit.android.room.track.VideoTrack
+import io.openvidu.android.databinding.ActivityRoomLayoutBinding
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 class RoomLayoutActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityRoomLayoutBinding
+
     private lateinit var APPLICATION_SERVER_URL: String
     private lateinit var LIVEKIT_URL: String
 
@@ -42,7 +44,8 @@ class RoomLayoutActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_room_layout)
+        binding = ActivityRoomLayoutBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         APPLICATION_SERVER_URL = intent.getStringExtra("serverUrl") ?: ""
         LIVEKIT_URL = intent.getStringExtra("livekitUrl") ?: ""
@@ -51,7 +54,7 @@ class RoomLayoutActivity : AppCompatActivity() {
         room = LiveKit.create(applicationContext)
 
         // Setup the video renderer
-        room.initVideoRenderer(findViewById<SurfaceViewRenderer>(R.id.renderer))
+        room.initVideoRenderer(binding.renderer)
 
         requestNeededPermissions { connectToRoom() }
     }
@@ -101,8 +104,8 @@ class RoomLayoutActivity : AppCompatActivity() {
     }
 
     private fun attachVideo(videoTrack: VideoTrack) {
-        videoTrack.addRenderer(findViewById<SurfaceViewRenderer>(R.id.renderer))
-        findViewById<View>(R.id.progress).visibility = View.GONE
+        videoTrack.addRenderer(binding.renderer)
+        binding.progress.visibility = View.GONE
     }
 
     private fun onTrackUnsubscribed(event: RoomEvent.TrackUnsubscribed) {
@@ -114,8 +117,8 @@ class RoomLayoutActivity : AppCompatActivity() {
     }
 
     private fun detachVideo(videoTrack: VideoTrack) {
-        videoTrack.removeRenderer(findViewById<SurfaceViewRenderer>(R.id.renderer))
-        findViewById<View>(R.id.progress).visibility = View.VISIBLE
+        videoTrack.removeRenderer(binding.renderer)
+        binding.progress.visibility = View.VISIBLE
     }
 
     private fun leaveRoom() {
