@@ -6,4 +6,7 @@
     <color name="colorAccent">#0087A9</color>
     <color name="backgroundColor">#4D4D4D</color>
     <color name="textColor">#4D4D4D</color>
+    <color name="leaveRoomButton">#F24949</color>
+    <color name="participantBackground">#2F2F2F</color>
+    <color name="identityBackground">#B8B8B8</color>
 </resources>

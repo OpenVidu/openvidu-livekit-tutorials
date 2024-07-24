@@ -49,7 +49,8 @@
                 android:inputType="text"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/participantLabel" />
+                app:layout_constraintTop_toBottomOf="@+id/participantLabel"
+                tools:text="Participant1" />
 
             <TextView
                 android:id="@+id/roomLabel"

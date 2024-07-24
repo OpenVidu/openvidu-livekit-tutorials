@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -23,17 +24,26 @@ import io.livekit.android.events.RoomEvent
 import io.livekit.android.events.collect
 import io.livekit.android.room.Room
 import io.livekit.android.room.track.VideoTrack
+import io.livekit.android.util.flow
 import io.openvidu.android.databinding.ActivityRoomLayoutBinding
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
+data class TrackInfo(
+    val track: VideoTrack,
+    val participantIdentity: String,
+    val isLocal: Boolean = false
+)
+
 class RoomLayoutActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRoomLayoutBinding
+    private lateinit var participantAdapter: ParticipantAdapter
 
     private lateinit var APPLICATION_SERVER_URL: String
     private lateinit var LIVEKIT_URL: String
 
     private lateinit var room: Room
+    private val participantTracks: MutableList<TrackInfo> = mutableListOf()
 
     private val client = HttpClient(CIO) {
         expectSuccess = true
@@ -47,21 +57,32 @@ class RoomLayoutActivity : AppCompatActivity() {
         binding = ActivityRoomLayoutBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.loader.visibility = View.VISIBLE
+        binding.leaveButton.setOnClickListener {
+            leaveRoom()
+        }
+
         APPLICATION_SERVER_URL = intent.getStringExtra("serverUrl") ?: ""
         LIVEKIT_URL = intent.getStringExtra("livekitUrl") ?: ""
 
         // Create Room object.
         room = LiveKit.create(applicationContext)
 
-        // Setup the video renderer
-        room.initVideoRenderer(binding.renderer)
-
+        initRecyclerView()
         requestNeededPermissions { connectToRoom() }
+    }
+
+    private fun initRecyclerView() {
+        participantAdapter = ParticipantAdapter(participantTracks, room)
+        binding.participants.layoutManager = LinearLayoutManager(this)
+        binding.participants.adapter = participantAdapter
     }
 
     private fun connectToRoom() {
         val participantName = intent.getStringExtra("participantName") ?: "Participant 1"
         val roomName = intent.getStringExtra("roomName") ?: "Test Room"
+
+        binding.roomName.text = roomName
 
         lifecycleScope.launch {
             // Setup event handling.
@@ -86,6 +107,24 @@ class RoomLayoutActivity : AppCompatActivity() {
                 val localParticipant = room.localParticipant
                 localParticipant.setMicrophoneEnabled(true)
                 localParticipant.setCameraEnabled(true)
+
+                // Add local video track to the participantTracks list.
+                launch {
+                    localParticipant::videoTrackPublications.flow
+                        .collect { publications ->
+                            val videoTrack = publications.firstOrNull()?.second as? VideoTrack
+
+                            if (videoTrack != null) {
+                                participantTracks.add(
+                                    0,
+                                    TrackInfo(videoTrack, participantName, true)
+                                )
+                                participantAdapter.notifyItemInserted(0)
+                            }
+                        }
+                }
+
+                binding.loader.visibility = View.GONE
             } catch (e: Exception) {
                 println("There was an error connecting to the room: ${e.message}")
                 Toast.makeText(this@RoomLayoutActivity, "Failed to join room", Toast.LENGTH_SHORT)
@@ -99,26 +138,22 @@ class RoomLayoutActivity : AppCompatActivity() {
         val track = event.track
 
         if (track is VideoTrack) {
-            attachVideo(track)
+            participantTracks.add(TrackInfo(track, event.participant.identity!!.value))
+            participantAdapter.notifyItemInserted(participantTracks.size - 1)
         }
-    }
-
-    private fun attachVideo(videoTrack: VideoTrack) {
-        videoTrack.addRenderer(binding.renderer)
-        binding.progress.visibility = View.GONE
     }
 
     private fun onTrackUnsubscribed(event: RoomEvent.TrackUnsubscribed) {
         val track = event.track
 
         if (track is VideoTrack) {
-            detachVideo(track)
-        }
-    }
+            val index = participantTracks.indexOfFirst { it.track.sid == track.sid }
 
-    private fun detachVideo(videoTrack: VideoTrack) {
-        videoTrack.removeRenderer(binding.renderer)
-        binding.progress.visibility = View.VISIBLE
+            if (index != -1) {
+                participantTracks.removeAt(index)
+                participantAdapter.notifyItemRemoved(index)
+            }
+        }
     }
 
     private fun leaveRoom() {
