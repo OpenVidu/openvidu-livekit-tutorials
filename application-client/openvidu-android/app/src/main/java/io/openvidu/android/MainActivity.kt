@@ -3,6 +3,7 @@ package io.openvidu.android
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import io.openvidu.android.databinding.ActivityMainBinding
@@ -11,6 +12,7 @@ import io.openvidu.android.databinding.DialogSettingsBinding
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 
+    // Configure this variables with correct URLs depending on your deployment
     private var applicationServerUrl = "https://{YOUR-LAN-IP}.openvidu-local.dev:6443/"
     private var livekitUrl = "wss://{YOUR-LAN-IP}.openvidu-local.dev:7443/"
 
@@ -43,11 +45,17 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("serverUrl", applicationServerUrl)
             intent.putExtra("livekitUrl", livekitUrl)
             startActivity(intent)
+        } else {
+            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
         }
 
         binding.joinButton.isEnabled = true
     }
 
+    /**
+     * This dialog allows to change the LiveKit URL and the application server URL
+     * from the application itself. This is useful for development purposes.
+     */
     private fun showSettingsDialog() {
         val dialogBinding = DialogSettingsBinding.inflate(LayoutInflater.from(this))
 

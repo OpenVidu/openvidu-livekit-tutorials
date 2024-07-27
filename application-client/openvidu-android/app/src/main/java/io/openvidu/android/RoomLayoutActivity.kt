@@ -65,10 +65,12 @@ class RoomLayoutActivity : AppCompatActivity() {
         APPLICATION_SERVER_URL = intent.getStringExtra("serverUrl") ?: ""
         LIVEKIT_URL = intent.getStringExtra("livekitUrl") ?: ""
 
-        // Create Room object.
+        // Create Room object
         room = LiveKit.create(applicationContext)
 
         initRecyclerView()
+
+        // Check for audio and camera permissions before connecting to the room
         requestNeededPermissions { connectToRoom() }
     }
 
@@ -79,17 +81,20 @@ class RoomLayoutActivity : AppCompatActivity() {
     }
 
     private fun connectToRoom() {
-        val participantName = intent.getStringExtra("participantName") ?: "Participant 1"
+        // Get the room name and participant name from the intent
+        val participantName = intent.getStringExtra("participantName") ?: "Participant1"
         val roomName = intent.getStringExtra("roomName") ?: "Test Room"
 
         binding.roomName.text = roomName
 
         lifecycleScope.launch {
-            // Setup event handling.
+            // Specify the actions when events take place in the room
             launch {
                 room.events.collect { event ->
                     when (event) {
+                        // On every new Track received...
                         is RoomEvent.TrackSubscribed -> onTrackSubscribed(event)
+                        // On every new Track destroyed...
                         is RoomEvent.TrackUnsubscribed -> onTrackUnsubscribed(event)
                         else -> {}
                     }
@@ -97,18 +102,18 @@ class RoomLayoutActivity : AppCompatActivity() {
             }
 
             try {
-                // Get token from server.
+                // Get token from your application server with the room name and participant name
                 val token = getToken(roomName, participantName)
 
-                // Connect to server.
+                // Connect to the room with the LiveKit URL and the token
                 room.connect(LIVEKIT_URL, token)
 
-                // Turn on audio/video recording.
+                // Publish your camera and microphone
                 val localParticipant = room.localParticipant
                 localParticipant.setMicrophoneEnabled(true)
                 localParticipant.setCameraEnabled(true)
 
-                // Add local video track to the participantTracks list.
+                // Add local video track to the participantTracks list
                 launch {
                     localParticipant::videoTrackPublications.flow
                         .collect { publications ->
@@ -137,6 +142,7 @@ class RoomLayoutActivity : AppCompatActivity() {
     private fun onTrackSubscribed(event: RoomEvent.TrackSubscribed) {
         val track = event.track
 
+        // If the track is a video track, add it to the participantTracks list
         if (track is VideoTrack) {
             participantTracks.add(TrackInfo(track, event.participant.identity!!.value))
             participantAdapter.notifyItemInserted(participantTracks.size - 1)
@@ -146,6 +152,7 @@ class RoomLayoutActivity : AppCompatActivity() {
     private fun onTrackUnsubscribed(event: RoomEvent.TrackUnsubscribed) {
         val track = event.track
 
+        // If the track is a video track, remove it from the participantTracks list
         if (track is VideoTrack) {
             val index = participantTracks.indexOfFirst { it.track.sid == track.sid }
 
@@ -157,8 +164,11 @@ class RoomLayoutActivity : AppCompatActivity() {
     }
 
     private fun leaveRoom() {
+        // Leave the room by calling 'disconnect' method over the Room object
         room.disconnect()
+
         client.close()
+
         // Go back to the previous activity.
         finish()
     }
@@ -173,7 +183,7 @@ class RoomLayoutActivity : AppCompatActivity() {
             registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
                 var hasDenied = false
 
-                // Check if any permissions weren't granted.
+                // Check if any permissions weren't granted
                 for (grant in grants.entries) {
                     if (!grant.value) {
                         Toast.makeText(this, "Missing permission: ${grant.key}", Toast.LENGTH_SHORT)
@@ -203,6 +213,19 @@ class RoomLayoutActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * --------------------------------------------
+     * GETTING A TOKEN FROM YOUR APPLICATION SERVER
+     * --------------------------------------------
+     * The method below request the creation of a token to
+     * your application server. This prevents the need to expose
+     * your LiveKit API key and secret to the client side.
+     *
+     * In this sample code, there is no user control at all. Anybody could
+     * access your application server endpoints. In a real production
+     * environment, your application server must identify the user to allow
+     * access to the endpoints.
+     */
     private suspend fun getToken(roomName: String, participantName: String): String {
         val response = client.post(APPLICATION_SERVER_URL + "token") {
             contentType(ContentType.Application.Json)

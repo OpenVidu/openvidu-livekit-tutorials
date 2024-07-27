@@ -18,6 +18,7 @@ class ParticipantViewHolder(private val binding: ParticipantItemBinding) :
 
         binding.identity.text = participantIdentity
 
+        // Only initialize the renderer once
         if (!used) {
             room.initVideoRenderer(binding.renderer)
             used = true
