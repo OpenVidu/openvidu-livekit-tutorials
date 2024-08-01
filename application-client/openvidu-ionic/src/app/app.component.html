@@ -8,18 +8,57 @@
                 >
                     <ion-icon slot="icon-only" name="logo-github"></ion-icon>
                 </ion-button>
-                <ion-button
-                    href="https://livekit-tutorials.openvidu.io/tutorials/application-client/ionic/"
-                >
+                <ion-button href="https://livekit-tutorials.openvidu.io/tutorials/application-client/ionic/">
                     <ion-icon slot="icon-only" name="book"></ion-icon>
                 </ion-button>
             </ion-buttons>
         </ion-toolbar>
     </ion-header>
 
-    @if (!room()) {
+    @if (settingUrls()) {
+    <ion-content [fullscreen]="true" class="ion-padding" id="settingUrls">
+        <div id="settings-dialog" class="form">
+            <h2>Configure URLs</h2>
+            <ion-list [formGroup]="urlsForm">
+                <ion-item>
+                    <ion-input
+                        formControlName="serverUrl"
+                        label="Application Server URL"
+                        labelPlacement="floating"
+                        id="server-url"
+                        placeholder="Application Server URL"
+                        type="url"
+                        required
+                    ></ion-input>
+                </ion-item>
+                <ion-item>
+                    <ion-input
+                        formControlName="livekitUrl"
+                        label="LiveKit URL"
+                        labelPlacement="floating"
+                        id="livekit-url"
+                        placeholder="LiveKit URL"
+                        type="url"
+                        required
+                    ></ion-input>
+                </ion-item>
+            </ion-list>
+            <ion-button
+                id="save-button"
+                class="form-button"
+                (click)="saveUrls()"
+                [disabled]="!urlsForm.valid"
+                expand="block"
+                shape="round"
+                color="primary"
+            >
+                Save
+            </ion-button>
+        </div>
+    </ion-content>
+    } @else if (!room()) {
     <ion-content [fullscreen]="true" class="ion-padding" id="join">
-        <div id="join-dialog">
+        <div id="join-dialog" class="form">
             <h2>Join a Video Room</h2>
             <ion-list [formGroup]="roomForm">
                 <ion-item>
@@ -45,22 +84,18 @@
                     ></ion-input>
                 </ion-item>
             </ion-list>
-            <ion-button id="join-button" (click)="joinRoom()" [disabled]="!roomForm.valid" expand="block" shape="round" color="primary">
+            <ion-button
+                id="join-button"
+                class="form-button"
+                (click)="joinRoom()"
+                [disabled]="!roomForm.valid"
+                expand="block"
+                shape="round"
+                color="primary"
+            >
                 Join!
             </ion-button>
         </div>
-
-        <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-            <ion-fab-button
-                id="settings-button"
-                [disabled]="!roomForm.valid"
-                (click)="presentSettingsAlert()"
-                size="small"
-                color="dark"
-            >
-                <ion-icon name="settings"></ion-icon>
-            </ion-fab-button>
-        </ion-fab>
     </ion-content>
     } @else {
     <ion-content [scrollEvents]="true" class="ion-padding" id="room">

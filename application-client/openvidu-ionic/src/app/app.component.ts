@@ -2,13 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
-    AlertController,
     IonApp,
     IonButton,
     IonButtons,
     IonContent,
-    IonFab,
-    IonFabButton,
     IonFooter,
     IonHeader,
     IonIcon,
@@ -39,7 +36,8 @@ type TrackInfo = {
 };
 
 // For local development launching app in web browser, leave these variables empty
-// For production or when launching app in device, configure them with correct URLs
+// For production or when launching app in a mobile device, configure them with correct URLs
+// If you leave them empty when launching app in a mobile device, the user will be prompted to enter the URLs
 var APPLICATION_SERVER_URL = '';
 var LIVEKIT_URL = '';
 
@@ -58,8 +56,6 @@ var LIVEKIT_URL = '';
         IonTitle,
         IonButtons,
         IonButton,
-        IonFab,
-        IonFabButton,
         IonIcon,
         IonContent,
         IonList,
@@ -74,11 +70,18 @@ export class AppComponent implements OnDestroy {
         participantName: new FormControl('Participant' + Math.floor(Math.random() * 100), Validators.required),
     });
 
+    urlsForm = new FormGroup({
+        serverUrl: new FormControl('', Validators.required),
+        livekitUrl: new FormControl('', Validators.required),
+    });
+
     room = signal<Room | undefined>(undefined);
     localTrack = signal<LocalVideoTrack | undefined>(undefined);
     remoteTracksMap = signal<Map<string, TrackInfo>>(new Map());
 
-    constructor(private httpClient: HttpClient, private platform: Platform, private alertController: AlertController) {
+    settingUrls = signal(false);
+
+    constructor(private httpClient: HttpClient, private platform: Platform) {
         this.configureUrls();
         addIcons({
             logoGithub,
@@ -88,28 +91,28 @@ export class AppComponent implements OnDestroy {
     }
 
     configureUrls() {
-        const deviceMode = this.platform.is('hybrid');
+        const mobileMode = this.platform.is('hybrid');
 
-        // If APPLICATION_SERVER_URL is not configured and app is not launched in device mode,
-        // use default value from local development
-        if (!APPLICATION_SERVER_URL) {
-            if (deviceMode) {
-                APPLICATION_SERVER_URL = 'https://{YOUR-LAN-IP}.openvidu-local.dev:6443/';
-            } else {
+        // If URLs are not configured and app is launched in a mobile device,
+        // prompt the user to configure them
+        if (mobileMode) {
+            if (!APPLICATION_SERVER_URL || !LIVEKIT_URL) {
+                this.settingUrls.set(true);
+            }
+        } else {
+            // If APPLICATION_SERVER_URL is not configured and app is not launched in a mobile device,
+            // use default value from local development
+            if (!APPLICATION_SERVER_URL) {
                 if (window.location.hostname === 'localhost') {
                     APPLICATION_SERVER_URL = 'http://localhost:6080/';
                 } else {
                     APPLICATION_SERVER_URL = 'https://' + window.location.hostname + ':6443/';
                 }
             }
-        }
 
-        // If LIVEKIT_URL is not configured and app is not launched in device mode,
-        // use default value from local development
-        if (!LIVEKIT_URL) {
-            if (deviceMode) {
-                LIVEKIT_URL = 'wss://{YOUR-LAN-IP}.openvidu-local.dev:7443/';
-            } else {
+            // If LIVEKIT_URL is not configured and app is not launched in a mobile device,
+            // use default value from local development
+            if (!LIVEKIT_URL) {
                 if (window.location.hostname === 'localhost') {
                     LIVEKIT_URL = 'ws://localhost:7880/';
                 } else {
@@ -119,48 +122,10 @@ export class AppComponent implements OnDestroy {
         }
     }
 
-    /**
-     * This method allows to change the LiveKit URL and the application server URL
-     * from the application itself. This is useful for development purposes.
-     */
-    async presentSettingsAlert() {
-        const alert = await this.alertController.create({
-            header: 'Configure URLs',
-            inputs: [
-                {
-                    name: 'serverUrl',
-                    type: 'text',
-                    value: APPLICATION_SERVER_URL,
-                    placeholder: 'Application Server URL',
-                    id: 'server-url-input',
-                },
-                {
-                    name: 'livekitUrl',
-                    type: 'text',
-                    value: LIVEKIT_URL,
-                    placeholder: 'LiveKit URL',
-                    id: 'livekit-url-input',
-                },
-            ],
-            buttons: [
-                {
-                    text: 'Cancel',
-                    role: 'cancel',
-                    id: 'cancel-btn',
-                    cssClass: 'secondary',
-                },
-                {
-                    text: 'Ok',
-                    id: 'ok-btn',
-                    handler: (data) => {
-                        APPLICATION_SERVER_URL = data.serverUrl;
-                        LIVEKIT_URL = data.livekitUrl;
-                    },
-                },
-            ],
-        });
-
-        await alert.present();
+    saveUrls() {
+        APPLICATION_SERVER_URL = this.urlsForm.value.serverUrl!;
+        LIVEKIT_URL = this.urlsForm.value.livekitUrl!;
+        this.settingUrls.set(false);
     }
 
     async joinRoom() {

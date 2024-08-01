@@ -39,9 +39,6 @@ class RoomLayoutActivity : AppCompatActivity() {
     private lateinit var binding: ActivityRoomLayoutBinding
     private lateinit var participantAdapter: ParticipantAdapter
 
-    private lateinit var APPLICATION_SERVER_URL: String
-    private lateinit var LIVEKIT_URL: String
-
     private lateinit var room: Room
     private val participantTracks: MutableList<TrackInfo> = mutableListOf()
 
@@ -61,9 +58,6 @@ class RoomLayoutActivity : AppCompatActivity() {
         binding.leaveButton.setOnClickListener {
             leaveRoom()
         }
-
-        APPLICATION_SERVER_URL = intent.getStringExtra("serverUrl") ?: ""
-        LIVEKIT_URL = intent.getStringExtra("livekitUrl") ?: ""
 
         // Create Room object
         room = LiveKit.create(applicationContext)
@@ -106,7 +100,7 @@ class RoomLayoutActivity : AppCompatActivity() {
                 val token = getToken(roomName, participantName)
 
                 // Connect to the room with the LiveKit URL and the token
-                room.connect(LIVEKIT_URL, token)
+                room.connect(Urls.livekitUrl, token)
 
                 // Publish your camera and microphone
                 val localParticipant = room.localParticipant
@@ -227,7 +221,7 @@ class RoomLayoutActivity : AppCompatActivity() {
      * access to the endpoints.
      */
     private suspend fun getToken(roomName: String, participantName: String): String {
-        val response = client.post(APPLICATION_SERVER_URL + "token") {
+        val response = client.post(Urls.applicationServerUrl + "token") {
             contentType(ContentType.Application.Json)
             setBody(TokenRequest(participantName, roomName))
         }

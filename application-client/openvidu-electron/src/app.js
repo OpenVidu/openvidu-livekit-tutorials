@@ -1,6 +1,6 @@
 const { Room, RoomEvent } = require("livekit-client");
 
-// Configure this constants with correct URLs depending on your deployment
+// Configure these constants with correct URLs depending on your deployment
 const APPLICATION_SERVER_URL = "http://localhost:6080/";
 const LIVEKIT_URL = "ws://localhost:7880/";
 

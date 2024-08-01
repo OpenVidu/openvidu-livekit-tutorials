@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".ConfigureUrlsActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -12,11 +12,11 @@
         android:padding="20dp">
 
         <TextView
-            android:id="@+id/joinTitle"
+            android:id="@+id/configureTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="48dp"
-            android:text="@string/join_room"
+            android:text="@string/configure_urls"
             android:textSize="34sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
@@ -24,86 +24,65 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/participantLabel"
+            android:id="@+id/serverUrlLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:labelFor="@+id/participantName"
-            android:text="@string/participant"
+            android:labelFor="@+id/serverUrl"
+            android:text="@string/application_server_url"
             android:textSize="20sp"
-            app:layout_constraintStart_toStartOf="@+id/participantName"
-            app:layout_constraintTop_toBottomOf="@+id/joinTitle" />
+            app:layout_constraintStart_toStartOf="@+id/serverUrl"
+            app:layout_constraintTop_toBottomOf="@+id/configureTitle" />
 
         <EditText
-            android:id="@+id/participantName"
+            android:id="@+id/serverUrl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="12dp"
-            android:autofillHints="Participant Name"
+            android:autofillHints="Application Server URL"
             android:ems="10"
-            android:inputType="text"
+            android:inputType="textUri"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/participantLabel"
-            tools:text="Participant1" />
+            app:layout_constraintTop_toBottomOf="@+id/serverUrlLabel"
+            tools:text="http://localhost:6080" />
 
         <TextView
-            android:id="@+id/roomLabel"
+            android:id="@+id/livekitUrlLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:labelFor="@+id/roomName"
-            android:text="@string/room"
+            android:labelFor="@+id/livekitUrl"
+            android:text="@string/livekit_url"
             android:textSize="20sp"
-            app:layout_constraintStart_toStartOf="@+id/roomName"
-            app:layout_constraintTop_toBottomOf="@+id/participantName" />
+            app:layout_constraintStart_toStartOf="@+id/livekitUrl"
+            app:layout_constraintTop_toBottomOf="@+id/serverUrl" />
 
         <EditText
-            android:id="@+id/roomName"
+            android:id="@+id/livekitUrl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="12dp"
-            android:autofillHints="Room Name"
+            android:autofillHints="LiveKit URL"
             android:ems="10"
-            android:inputType="text"
-            android:text="@string/room_name"
+            android:inputType="textUri"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/roomLabel" />
+            app:layout_constraintTop_toBottomOf="@+id/livekitUrlLabel"
+            tools:text="http://localhost:7880" />
 
         <Button
-            android:id="@+id/joinButton"
+            android:id="@+id/saveButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="@string/joinBtn"
+            android:text="@string/save"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/roomName" />
-
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="131dp"
-            android:layout_height="136dp"
-            android:layout_marginTop="100dp"
-            android:contentDescription="@string/openvidu_logo"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/joinButton"
-            app:srcCompat="@drawable/openvidu_logo" />
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/openvidu_message"
-            android:textStyle="italic"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/imageView" />
+            app:layout_constraintTop_toBottomOf="@+id/livekitUrl" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

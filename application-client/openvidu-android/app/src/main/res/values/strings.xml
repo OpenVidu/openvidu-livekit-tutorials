@@ -5,8 +5,11 @@
     <string name="room">Room</string>
     <string name="room_name">Test Room</string>
     <string name="joinBtn">Join!</string>
+    <string name="openvidu_logo">OpenVidu logo</string>
+    <string name="openvidu_message">Made with love by <b>OpenVidu team</b></string>
     <string name="application_server_url">Application Server URL</string>
     <string name="livekit_url">LiveKit URL</string>
-    <string name="settings">Settings</string>
+    <string name="configure_urls">Configure URLs</string>
+    <string name="save">Save</string>
     <string name="leave_room">Leave Room</string>
 </resources>
