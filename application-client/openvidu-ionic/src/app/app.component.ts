@@ -2,13 +2,10 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
-    AlertController,
     IonApp,
     IonButton,
     IonButtons,
     IonContent,
-    IonFab,
-    IonFabButton,
     IonFooter,
     IonHeader,
     IonIcon,
@@ -59,8 +56,6 @@ var LIVEKIT_URL = '';
         IonTitle,
         IonButtons,
         IonButton,
-        IonFab,
-        IonFabButton,
         IonIcon,
         IonContent,
         IonList,
@@ -86,7 +81,7 @@ export class AppComponent implements OnDestroy {
 
     settingUrls = signal(false);
 
-    constructor(private httpClient: HttpClient, private platform: Platform, private alertController: AlertController) {
+    constructor(private httpClient: HttpClient, private platform: Platform) {
         this.configureUrls();
         addIcons({
             logoGithub,
