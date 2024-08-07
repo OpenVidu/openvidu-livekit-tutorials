@@ -68,8 +68,6 @@ struct ConfigureUrlsView: View {
                     
                     Text(errorMessage)
                         .foregroundColor(.red)
-                    
-                    
                 }
                 .padding()
                 .frame(width: geometry.size.width) // Make the scroll view full-width
@@ -79,10 +77,7 @@ struct ConfigureUrlsView: View {
 #if os(macOS)
         .frame(minWidth: 500, minHeight: 500)
 #endif
-        .alert(isPresented: $roomCtx.shouldShowDisconnectReason) {
-            Alert(title: Text("Disconnected"),
-                  message: Text("Reason: " + String(describing: roomCtx.latestError)))
-        }
+
     }
     
     func isValidURL(_ urlString: String) -> Bool {

@@ -81,14 +81,8 @@ struct RoomView: View {
     @EnvironmentObject var room: Room
     
     @State var isCameraPublishingBusy = false
-    @State var isMicrophonePublishingBusy = false
-    @State var isScreenSharePublishingBusy = false
-    
-    @State private var screenPickerPresented = false
-    @State private var publishOptionsPickerPresented = false
-    
-    @State private var cameraPublishOptions = VideoPublishOptions()
-    
+    @State var isMicrophonePublishingBusy = false    
+        
 #if os(macOS)
     @ObservedObject private var windowAccess = WindowAccess()
 #endif

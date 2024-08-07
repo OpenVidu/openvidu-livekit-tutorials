@@ -61,15 +61,15 @@ struct ConnectView: View {
                             
                             Spacer()
                             
-                            LKButton(title: "Reset urls") {
+                            LKButton(title: "Reset urls", action:  {
                                 Task.detached { @MainActor in
                                     roomCtx.livekitUrl = ""
                                     appCtx.applicationServerUrl = ""
                                 }
-                            }
+                            }, color: Color.ovYellow)
 
 
-                            LKButton(title: "Connect") {
+                            LKButton(title: "Join") {
                                 Task.detached { @MainActor in
                                     await connectToRoom()
                                 }

@@ -38,6 +38,7 @@ struct LazyView<Content: View>: View {
 struct LKButton: View {
     let title: String
     let action: () -> Void
+    var color: Color = Color.ovBlue  // Default color
 
     var body: some View {
         Button(action: action,
@@ -47,7 +48,7 @@ struct LKButton: View {
                        .padding(.horizontal, 12)
                        .padding(.vertical, 10)
                })
-               .background(Color.ovBlue)
+               .background(color)
                .cornerRadius(8)
     }
 }
