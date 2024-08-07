@@ -117,9 +117,21 @@ struct ConnectView: View {
             print("Connecting to room...")
             try await roomCtx.connect()
             print("Room connected")
+            await enableCameraAndMicrophone()
+           
         } catch {
-            print("Failed to get token: \(error.localizedDescription)")
+            print("Error trying to connect to room: \(error.localizedDescription)")
         }
     }
+    
+    func enableCameraAndMicrophone() async {
+        do {
+            try await room.localParticipant.setCamera(enabled: true)
+            try await room.localParticipant.setMicrophone(enabled: true)
+        } catch {
+            print("Error enabling camera and microphone: \(error.localizedDescription)")
+        }
+    }
+
 
 }
