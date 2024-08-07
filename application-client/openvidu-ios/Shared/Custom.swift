@@ -65,16 +65,6 @@ struct LKButton: View {
     }
 #endif
 
-#if os(macOS)
-    // Avoid showing focus border around textfield for macOS
-    extension NSTextField {
-        override open var focusRingType: NSFocusRingType {
-            get { .none }
-            set {}
-        }
-    }
-#endif
-
 struct LKTextField: View {
     enum `Type` {
         case `default`

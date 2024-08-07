@@ -18,62 +18,17 @@ import LiveKit
 import SFSafeSymbols
 import SwiftUI
 
-#if !os(macOS)
 let adaptiveMin = 170.0
 let toolbarPlacement: ToolbarItemPlacement = .bottomBar
-#else
-let adaptiveMin = 300.0
-let toolbarPlacement: ToolbarItemPlacement = .primaryAction
-#endif
+
 
 extension CIImage {
     // helper to create a `CIImage` for both platforms
     convenience init(named name: String) {
-#if !os(macOS)
-        self.init(cgImage: UIImage(named: name)!.cgImage!)
-#else
-        self.init(data: NSImage(named: name)!.tiffRepresentation!)!
-#endif
-    }
-}
+    self.init(cgImage: UIImage(named: name)!.cgImage!)
 
-#if os(macOS)
-// keeps weak reference to NSWindow
-class WindowAccess: ObservableObject {
-    private weak var window: NSWindow?
-    
-    deinit {
-        // reset changed properties
-        DispatchQueue.main.async { [weak window] in
-            window?.level = .normal
-        }
-    }
-    
-    @Published public var pinned: Bool = false {
-        didSet {
-            guard oldValue != pinned else { return }
-            level = pinned ? .floating : .normal
-        }
-    }
-    
-    private var level: NSWindow.Level {
-        get { window?.level ?? .normal }
-        set {
-            Task { @MainActor in
-                window?.level = newValue
-                objectWillChange.send()
-            }
-        }
-    }
-    
-    public func set(window: NSWindow?) {
-        self.window = window
-        Task { @MainActor in
-            objectWillChange.send()
-        }
     }
 }
-#endif
 
 struct RoomView: View {
     @EnvironmentObject var appCtx: AppContext
@@ -81,12 +36,8 @@ struct RoomView: View {
     @EnvironmentObject var room: Room
     
     @State var isCameraPublishingBusy = false
-    @State var isMicrophonePublishingBusy = false    
+    @State var isMicrophonePublishingBusy = false
         
-#if os(macOS)
-    @ObservedObject private var windowAccess = WindowAccess()
-#endif
-    
     func sortedParticipants() -> [Participant] {
         room.allParticipants.values.sorted { p1, p2 in
             if p1 is LocalParticipant { return true }

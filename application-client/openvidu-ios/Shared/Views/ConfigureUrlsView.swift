@@ -74,10 +74,6 @@ struct ConfigureUrlsView: View {
                 .frame(minHeight: geometry.size.height) // Set the content’s min height to the parent
             }
         }
-#if os(macOS)
-        .frame(minWidth: 500, minHeight: 500)
-#endif
-
     }
     
     func isValidURL(_ urlString: String) -> Bool {

@@ -180,9 +180,5 @@ struct OpenViduApp: App {
                 .environmentObject(appCtx)
         }
         .handlesExternalEvents(matching: Set(arrayLiteral: "*"))
-        #if os(macOS)
-            .windowStyle(.hiddenTitleBar)
-            .windowToolbarStyle(.unifiedCompact)
-        #endif
     }
 }
