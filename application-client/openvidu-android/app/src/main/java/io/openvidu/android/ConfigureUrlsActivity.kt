@@ -13,6 +13,9 @@ class ConfigureUrlsActivity : AppCompatActivity() {
         binding = ActivityConfigureUrlsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.serverUrl.setText(Urls.applicationServerUrl)
+        binding.livekitUrl.setText(Urls.livekitUrl)
+
         binding.saveButton.setOnClickListener {
             onSaveUrls()
         }

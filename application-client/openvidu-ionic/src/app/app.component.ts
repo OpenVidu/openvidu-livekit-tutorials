@@ -71,8 +71,8 @@ export class AppComponent implements OnDestroy {
     });
 
     urlsForm = new FormGroup({
-        serverUrl: new FormControl('', Validators.required),
-        livekitUrl: new FormControl('', Validators.required),
+        serverUrl: new FormControl(APPLICATION_SERVER_URL, Validators.required),
+        livekitUrl: new FormControl(LIVEKIT_URL, Validators.required),
     });
 
     room = signal<Room | undefined>(undefined);
