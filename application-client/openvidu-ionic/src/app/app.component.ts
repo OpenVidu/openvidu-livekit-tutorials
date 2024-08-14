@@ -35,8 +35,8 @@ type TrackInfo = {
     participantIdentity: string;
 };
 
-// For local development launching app in web browser, leave these variables empty
-// For production or when launching app in a mobile device, configure them with correct URLs
+// When running OpenVidu locally and launching app in web browser, leave these variables empty
+// For other deployment type or when launching app in a mobile device, configure them with correct URLs
 // If you leave them empty when launching app in a mobile device, the user will be prompted to enter the URLs
 var APPLICATION_SERVER_URL = '';
 var LIVEKIT_URL = '';
@@ -101,7 +101,7 @@ export class AppComponent implements OnDestroy {
             }
         } else {
             // If APPLICATION_SERVER_URL is not configured and app is not launched in a mobile device,
-            // use default value from local development
+            // use default value from OpenVidu Local deployment
             if (!APPLICATION_SERVER_URL) {
                 if (window.location.hostname === 'localhost') {
                     APPLICATION_SERVER_URL = 'http://localhost:6080/';
@@ -111,7 +111,7 @@ export class AppComponent implements OnDestroy {
             }
 
             // If LIVEKIT_URL is not configured and app is not launched in a mobile device,
-            // use default value from local development
+            // use default value from OpenVidu Local deployment
             if (!LIVEKIT_URL) {
                 if (window.location.hostname === 'localhost') {
                     LIVEKIT_URL = 'ws://localhost:7880/';

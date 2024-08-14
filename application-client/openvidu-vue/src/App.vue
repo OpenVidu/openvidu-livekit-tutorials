@@ -16,14 +16,14 @@ type TrackInfo = {
     participantIdentity: string;
 };
 
-// For local development, leave these variables empty
-// For production, configure them with correct URLs depending on your deployment
+// When running OpenVidu locally, leave these variables empty
+// For other deployment type, configure them with correct URLs depending on your deployment
 let APPLICATION_SERVER_URL = '';
 let LIVEKIT_URL = '';
 configureUrls();
 
 function configureUrls() {
-    // If APPLICATION_SERVER_URL is not configured, use default value from local development
+    // If APPLICATION_SERVER_URL is not configured, use default value from OpenVidu Local deployment
     if (!APPLICATION_SERVER_URL) {
         if (window.location.hostname === 'localhost') {
             APPLICATION_SERVER_URL = 'http://localhost:6080/';
@@ -32,7 +32,7 @@ function configureUrls() {
         }
     }
 
-    // If LIVEKIT_URL is not configured, use default value from local development
+    // If LIVEKIT_URL is not configured, use default value from OpenVidu Local deployment
     if (!LIVEKIT_URL) {
         if (window.location.hostname === 'localhost') {
             LIVEKIT_URL = 'ws://localhost:7880/';
