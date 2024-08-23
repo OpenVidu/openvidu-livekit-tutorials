@@ -20,7 +20,7 @@ function configureLiveKitUrl() {
 async function joinRoom() {
     // Disable 'Join' button
     document.getElementById("join-button").disabled = true;
-	document.getElementById("join-button").innerText = "Joining...";
+    document.getElementById("join-button").innerText = "Joining...";
 
     // Initialize a new Room object
     room = new LivekitClient.Room();
@@ -39,6 +39,10 @@ async function joinRoom() {
         if (track.kind === "video") {
             removeVideoContainer(participant.identity);
         }
+    });
+
+    room.on(LivekitClient.RoomEvent.RecordingStatusChanged, async (isRecording) => {
+        await updateRecordingInfo(isRecording);
     });
 
     try {
@@ -95,7 +99,7 @@ async function leaveRoom() {
 
     // Enable 'Join' button
     document.getElementById("join-button").disabled = false;
-	document.getElementById("join-button").innerText = "Join!";
+    document.getElementById("join-button").innerText = "Join!";
 }
 
 window.onbeforeunload = () => {
@@ -175,4 +179,177 @@ async function getToken(roomName, participantName) {
 
     const token = await response.json();
     return token.token;
+}
+
+async function openRecordingsDialog() {
+    const recordingsDialog = document.getElementById("recordings-dialog");
+    recordingsDialog.showModal();
+    await updateRecordingInfo(room.isRecording);
+}
+
+function closeRecordingsDialog() {
+    const recordingsDialog = document.getElementById("recordings-dialog");
+    recordingsDialog.close();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("recordings-dialog").addEventListener("close", () => {
+        const recordingVideo = document.getElementById("recording-video");
+
+        if (recordingVideo) {
+            recordingVideo.remove();
+        }
+    });
+});
+
+async function updateRecordingInfo(isRecording) {
+    const recordingButton = document.getElementById("recording-button");
+    const recordingText = document.getElementById("recording-text");
+
+    if (isRecording) {
+        recordingButton.disabled = false;
+        recordingButton.innerText = "Stop Recording";
+        recordingButton.className = "btn btn-danger";
+        recordingText.hidden = false;
+    } else {
+        recordingButton.disabled = false;
+        recordingButton.innerText = "Start Recording";
+        recordingButton.className = "btn btn-success";
+        recordingText.hidden = true;
+    }
+
+    await listRecordings();
+}
+
+async function manageRecording() {
+    const recordingButton = document.getElementById("recording-button");
+
+    if (recordingButton.innerText === "Start Recording") {
+        recordingButton.disabled = true;
+        recordingButton.innerText = "Starting...";
+        await startRecording();
+    } else {
+        recordingButton.disabled = true;
+        recordingButton.innerText = "Stopping...";
+        await stopRecording();
+    }
+}
+
+async function startRecording() {
+    const response = await fetch("/recordings/start", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            roomName: room.name
+        })
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error(error.errorMessage);
+        return;
+    }
+}
+
+async function stopRecording() {
+    const response = await fetch("/recordings/stop", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            roomName: room.name
+        })
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error(error.errorMessage);
+        return;
+    }
+}
+
+async function deleteRecording(recordingName) {
+    const response = await fetch(`/recordings/${recordingName}`, {
+        method: "DELETE"
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error(error.errorMessage);
+        return;
+    }
+
+    await listRecordings();
+}
+
+async function listRecordings() {
+    const response = await fetch(`/recordings?roomName=${room.name}`);
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error(error.errorMessage);
+        return;
+    }
+
+    const body = await response.json();
+    const recordings = body.recordings;
+
+    showRecordingList(recordings);
+}
+
+function showRecordingList(recordings) {
+    const recordingsList = document.getElementById("recording-list");
+
+    if (recordings.length === 0) {
+        recordingsList.innerHTML = "There are no recordings available";
+    } else {
+        recordingsList.innerHTML = "";
+    }
+
+    recordings.forEach((recording) => {
+        const recordingContainer = document.createElement("div");
+        recordingContainer.className = "recording-container";
+        recordingContainer.id = recording.name;
+
+        const recordingName = document.createElement("p");
+        recordingName.innerText = `${recording.name} - ${recording.duration} - ${recording.size} - ${new Date(
+            recording.startedAt
+        ).toLocaleString()}`;
+        recordingContainer.append(recordingName);
+
+        const playButton = document.createElement("button");
+        playButton.innerText = "Play";
+        playButton.className = "btn btn-primary";
+        playButton.onclick = () => displayRecording(recording.name);
+        recordingContainer.append(playButton);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.innerText = "Delete";
+        deleteButton.className = "btn btn-danger";
+        deleteButton.onclick = async () => {
+            await deleteRecording(recording.name);
+        };
+        recordingContainer.append(deleteButton);
+
+        recordingsList.append(recordingContainer);
+    });
+}
+
+function displayRecording(recordingName) {
+    const recordingContainer = document.getElementById("recording-video-container");
+    let recordingVideo = document.getElementById("recording-video");
+
+    if (!recordingVideo) {
+        recordingVideo = document.createElement("video");
+        recordingVideo.id = "recording-video";
+        recordingVideo.width = 600;
+        recordingVideo.controls = true;
+        recordingVideo.autoplay = true;
+        recordingContainer.append(recordingVideo);
+    }
+
+    recordingVideo.src = `/recordings/${recordingName}`;
 }
