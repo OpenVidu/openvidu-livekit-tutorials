@@ -214,7 +214,7 @@ async function updateRecordingInfo(isRecording) {
     } else {
         recordingButton.disabled = false;
         recordingButton.innerText = "Start Recording";
-        recordingButton.className = "btn btn-success";
+        recordingButton.className = "btn btn-primary";
         recordingText.hidden = true;
     }
 
@@ -304,35 +304,37 @@ function showRecordingList(recordings) {
     const recordingsList = document.getElementById("recording-list");
 
     if (recordings.length === 0) {
-        recordingsList.innerHTML = "There are no recordings available";
+        recordingsList.innerHTML = "<span>There are no recordings available</span>";
     } else {
         recordingsList.innerHTML = "";
     }
 
     recordings.forEach((recording) => {
+        const recordingName = recording.name;
+        const recordingDuration = secondsToHms(recording.duration);
+        const recordingSize = formatBytes(recording.size);
+        const recordingDate = new Date(recording.startedAt).toLocaleString();
+
         const recordingContainer = document.createElement("div");
         recordingContainer.className = "recording-container";
-        recordingContainer.id = recording.name;
+        recordingContainer.id = recordingName;
 
-        const recordingName = document.createElement("p");
-        recordingName.innerText = `${recording.name} - ${recording.duration} - ${recording.size} - ${new Date(
-            recording.startedAt
-        ).toLocaleString()}`;
-        recordingContainer.append(recordingName);
-
-        const playButton = document.createElement("button");
-        playButton.innerText = "Play";
-        playButton.className = "btn btn-primary";
-        playButton.onclick = () => displayRecording(recording.name);
-        recordingContainer.append(playButton);
-
-        const deleteButton = document.createElement("button");
-        deleteButton.innerText = "Delete";
-        deleteButton.className = "btn btn-danger";
-        deleteButton.onclick = async () => {
-            await deleteRecording(recording.name);
-        };
-        recordingContainer.append(deleteButton);
+        recordingContainer.innerHTML = `
+            <i class="fa-solid fa-file-video"></i>
+            <div class="recording-info">
+                <p class="recording-name">${recordingName}</p>
+                <p class="recording-details">${recordingDuration} | ${recordingSize}</p>
+                <p class="recording-date">${recordingDate}</p>
+            </div>
+            <div class="recording-actions">
+                <button title="Play" class="icon-button" onclick="displayRecording('${recordingName}')">
+                    <i class="fa-solid fa-play"></i>
+                </button>
+                <button title="Delete" class="icon-button delete-button" onclick="deleteRecording('${recordingName}')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
 
         recordingsList.append(recordingContainer);
     });
@@ -352,4 +354,28 @@ function displayRecording(recordingName) {
     }
 
     recordingVideo.src = `/recordings/${recordingName}`;
+}
+
+function secondsToHms(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor((seconds % 3600) % 60);
+
+    const hDisplay = h > 0 ? h + "h " : "";
+    const mDisplay = m > 0 ? m + "m " : "";
+    const sDisplay = s + "s";
+    return hDisplay + mDisplay + sDisplay;
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) {
+        return "0Bytes";
+    }
+
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const decimals = i < 2 ? 0 : 1;
+
+    return (bytes / Math.pow(k, i)).toFixed(decimals) + sizes[i];
 }

@@ -143,6 +143,10 @@ main {
     margin: 0;
 }
 
+#open-recordings-dialog {
+    margin: 0 10px;
+}
+
 #layout-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -180,6 +184,134 @@ main {
     color: #777777;
     font-weight: bold;
     border-bottom-right-radius: 4px;
+}
+
+#recordings-dialog {
+    width: 500px;
+    max-width: 90%;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    background-color: #fff;
+}
+
+#recordings-dialog h2 {
+    margin-bottom: 15px;
+    font-size: 30px;
+    font-weight: bold;
+    text-align: center;
+    color: #444;
+}
+
+#recording-controls {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#recording-text {
+    background-color: #ffeb3b;
+    color: #333;
+    border-radius: 5px;
+    margin-left: 20px;
+    padding: 0 5px;
+    font-weight: bold;
+    font-style: italic;
+}
+
+#recording-video-container {
+    margin-bottom: 15px;
+}
+
+#recording-video {
+    width: 100%;
+    border-radius: 5px;
+}
+
+#recording-list {
+    margin-bottom: 15px;
+}
+
+#recording-list span {
+    font-size: 16px;
+    font-weight: bold;
+    font-style: italic;
+    color: #333;
+    text-align: center;
+    display: block;
+    margin: 0;
+}
+
+.recording-container {
+    display: flex;
+    align-items: center;
+    border: 1px solid #dcdcdc;
+    border-radius: 5px;
+    padding: 10px;
+    background-color: #f4f4f4;
+    margin: 10px;
+}
+
+.fa-file-video {
+    font-size: 30px;
+    color: #333;
+    margin-right: 10px;
+}
+
+.recording-info {
+    flex-grow: 1;
+    font-size: 14px;
+    color: #333;
+}
+
+.recording-info p {
+    margin: 0;
+}
+
+.recording-name {
+    font-weight: bold;
+}
+
+.recording-details,
+.recording-date {
+    color: #777;
+}
+
+.recording-date {
+    font-style: italic;
+}
+
+.recording-actions {
+    display: flex;
+    align-items: center;
+}
+
+.icon-button {
+    background-color: transparent;
+    border: none;
+    color: #333;
+    margin-left: 10px;
+    padding: 4px 12px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    cursor: pointer;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+}
+
+.icon-button:hover {
+    background-color: #e0e0e0;
+}
+
+.delete-button {
+    color: #d9534f;
+}
+
+#close-recordings-dialog {
+    float: right;
 }
 
 footer {

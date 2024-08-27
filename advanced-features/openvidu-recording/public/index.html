@@ -75,7 +75,7 @@
             <div id="room" hidden>
                 <div id="room-header">
                     <h2 id="room-title"></h2>
-                    <button class="btn btn-info" id="open-recordings-dialog" onclick="openRecordingsDialog()">
+                    <button class="btn btn-primary" id="open-recordings-dialog" onclick="openRecordingsDialog()">
                         Recordings
                     </button>
                     <button class="btn btn-danger" id="leave-room-button" onclick="leaveRoom()">Leave Room</button>
@@ -83,15 +83,13 @@
                 <div id="layout-container"></div>
                 <dialog id="recordings-dialog">
                     <h2>Recordings</h2>
-                    <div id="recording-text" hidden>Room is being recorded</div>
-                    <button class="btn btn-success" id="recording-button" onclick="manageRecording()">
-                        Start Recording
-                    </button>
+                    <div id="recording-controls">
+                        <button class="btn btn-primary" id="recording-button" onclick="manageRecording()">Start Recording</button>
+                        <div id="recording-text" hidden>Room is being recorded</div>
+                    </div>
                     <div id="recording-video-container"></div>
                     <div id="recording-list"></div>
-                    <button class="btn btn-danger" id="close-recordings-dialog" onclick="closeRecordingsDialog()">
-                        Close
-                    </button>
+                    <button class="btn btn-secondary" id="close-recordings-dialog" onclick="closeRecordingsDialog()">Close</button>
                 </dialog>
             </div>
         </main>
