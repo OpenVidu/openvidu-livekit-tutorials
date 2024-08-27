@@ -1,121 +1,104 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>OpenVidu Recording</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />
 
-<head>
-	<title>openvidu-recording-node</title>
+        <!-- Bootstrap -->
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+            crossorigin="anonymous"
+        />
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"
+        ></script>
 
-	<meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
-	<link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+        <!-- Font Awesome -->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+            integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
 
-	<!-- Bootstrap -->
-	<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
-	 crossorigin="anonymous"></script>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
-	 crossorigin="anonymous">
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
-	 crossorigin="anonymous"></script>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-	<!-- Bootstrap -->
+        <link rel="stylesheet" href="styles.css" type="text/css" media="screen" />
+        <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.5.0/dist/livekit-client.umd.js"></script>
+        <script src="app.js"></script>
+    </head>
 
-	<link rel="styleSheet" href="style.css" type="text/css" media="screen">
-	<script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
-	<script src="app.js"></script>
-	<script>
-		$(document).ready(function () {
-			$('[data-toggle="tooltip"]').tooltip({
-				html: true
-			});
-		});
-	</script>
-</head>
+    <body>
+        <header>
+            <a href="/" title="Home"><h1>OpenVidu Recording</h1></a>
+            <div id="links">
+                <a
+                    href="https://github.com/OpenVidu/openvidu-livekit-tutorials/tree/master/advanced-features/openvidu-recording"
+                    title="GitHub Repository"
+                    target="_blank"
+                >
+                    <i class="fa-brands fa-github"></i>
+                </a>
+                <a
+                    href="https://livekit-tutorials.openvidu.io/tutorials/advanced-tutorials/openvidu-recording/"
+                    title="Documentation"
+                    target="_blank"
+                >
+                    <i class="fa-solid fa-book"></i>
+                </a>
+            </div>
+        </header>
 
-<body>
+        <main>
+            <div id="join">
+                <div id="join-dialog">
+                    <h2>Join a Video Room</h2>
+                    <form onsubmit="joinRoom(); return false">
+                        <div>
+                            <label for="participant-name">Participant</label>
+                            <input id="participant-name" class="form-control" type="text" required />
+                        </div>
+                        <div>
+                            <label for="room-name">Room</label>
+                            <input id="room-name" class="form-control" type="text" required />
+                        </div>
+                        <button id="join-button" class="btn btn-lg btn-success" type="submit">Join!</button>
+                    </form>
+                </div>
+            </div>
 
-	<nav class="navbar navbar-default">
-		<div class="container">
-			<div class="navbar-header">
-				<a class="navbar-brand" href="/">
-					<img class="demo-logo" src="images/openvidu_vert_white_bg_trans_cropped.png" /> Recording Node</a>
-				<a class="navbar-brand nav-icon" href="https://github.com/OpenVidu/openvidu-livekit-tutorials/tree/master/openvidu-recording-node"
-				 title="GitHub Repository" target="_blank">
-					<i class="fa fa-github" aria-hidden="true"></i>
-				</a>
-				<a class="navbar-brand nav-icon" href="#" title="Documentation"
-				 target="_blank">
-					<i class="fa fa-book" aria-hidden="true"></i>
-				</a>
-			</div>
-		</div>
-	</nav>
+            <div id="room" hidden>
+                <div id="room-header">
+                    <h2 id="room-title"></h2>
+                    <button class="btn btn-primary" id="open-recordings-dialog" onclick="openRecordingsDialog()">
+                        Recordings
+                    </button>
+                    <button class="btn btn-danger" id="leave-room-button" onclick="leaveRoom()">Leave Room</button>
+                </div>
+                <div id="layout-container"></div>
+                <dialog id="recordings-dialog">
+                    <h2>Recordings</h2>
+                    <div id="recording-controls">
+                        <button class="btn btn-primary" id="recording-button" onclick="manageRecording()">Start Recording</button>
+                        <div id="recording-text" hidden>Room is being recorded</div>
+                    </div>
+                    <div id="recording-video-container"></div>
+                    <div id="recording-list"></div>
+                    <button class="btn btn-secondary" id="close-recordings-dialog" onclick="closeRecordingsDialog()">Close</button>
+                </dialog>
+            </div>
+        </main>
 
-	<div id="main-container" class="container">
-		<div id="join" class="vertical-center">
-			<div id="img-div">
-				<img src="images/openvidu_grey_bg_transp_cropped.png" />
-			</div>
-			<div id="join-dialog" class="jumbotron">
-				<h1>Join a video room</h1>
-				<form class="form-group" onsubmit="return false">
-					<p>
-						<label>Room</label>
-						<input class="form-control" type="text" id="roomName" value="RoomA" required>
-					</p>
-					<p class="text-center">
-						<button class="btn btn-lg btn-success" id="join-btn" onclick="joinRoom()">Join!</button>
-					</p>
-				</form>
-				<hr>
-			</div>
-		</div>
-
-		<div id="room" style="display: none">
-			<div id="room-header">
-				<h1 id="room-title"></h1>
-				<input class="btn btn-sm btn-danger" type="button" id="buttonLeaveRoom" onmouseup="leaveRoom()"
-				 value="Leave room">
-			</div>
-			<div id="video-container" class="col-md-12"></div>
-			<div id="recording-btns">
-				<div class="btns">
-					<input class="btn btn-md" type="button" id="buttonStartRecording" onmouseup="startComposedRecording()" value="Start Composed recording">
-					<form>
-						<label class="checkbox-inline">
-							<input type="checkbox" id="has-audio-checkbox" checked>Has audio
-						</label>
-						<label class="checkbox-inline">
-							<input type="checkbox" id="has-video-checkbox" checked>Has video
-						</label>
-					</form>
-				</div>
-				<div class="btns">
-					<input class="btn btn-md" type="button" id="buttonListRecording" onmouseup="listRecordings()" value="List recordings">
-					<div class="vertical-separator-bottom"></div>
-					<input class="btn btn-md btn-danger" type="button" id="buttonStopRecording" onmouseup="stopRecording()" value="Stop recording"
-					 disabled>
-					<input class="form-control" id="forceRecordingId" type="text" onkeyup="checkBtnsRecordings()">
-				</div>
-				<div class="textarea-container" id="textarea-http-container">
-					<button type="button" class="btn btn-outline-secondary" id="clear-http-btn" onclick="clearHttpTextarea()">Clear</button>
-					<span>HTTP responses</span>
-					<textarea id="textarea-http" readonly="true" class="form-control" name="textarea-http"></textarea>
-				</div>
-				<div class="textarea-container" id="recordings-list-container">
-					<button type="button" class="btn btn-md btn-danger" id="delete-recordings-btn" onclick="deleteRecordings()" disabled>Delete All</button>
-					<span>Recordings list</span>
-					<ul id="recording-list"></ul>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<footer class="footer">
-		<div class="container">
-			<div class="text-muted">OpenVidu © 2023</div>
-			<a href="http://www.openvidu.io/" target="_blank">
-				<img class="openvidu-logo" src="images/openvidu_globe_bg_transp_cropped.png" />
-			</a>
-		</div>
-	</footer>
-
-</body>
-
+        <footer>
+            <p class="text">Made with love by <span>OpenVidu Team</span></p>
+            <a href="https://openvidu.io/" target="_blank">
+                <img id="openvidu-logo" src="images/openvidu_logo.png" alt="OpenVidu logo" />
+            </a>
+        </footer>
+    </body>
 </html>

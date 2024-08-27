@@ -1,348 +1,381 @@
-var LivekitClient = window.LivekitClient;
+// When running OpenVidu locally, leave this variable empty
+// For other deployment type, configure it with correct URL depending on your deployment
+var LIVEKIT_URL = "";
+configureLiveKitUrl();
+
+const LivekitClient = window.LivekitClient;
 var room;
-var myRoomName;
-var token;
-var nickname;
-var numVideos = 0;
 
-var localVideoPublication;
-var localAudioPublication;
-
-/* OPENVIDU METHODS */
-
-function joinRoom() {
-	// --- 0) Change the button ---
-
-	document.getElementById('join-btn').disabled = true;
-	document.getElementById('join-btn').innerHTML = 'Joining...';
-	const myParticipantName = `Participant${Math.floor(Math.random() * 100)}`;
-	const myRoomName = $('#roomName').val();
-
-	room = new LivekitClient.Room();
-
-	room.on(
-		LivekitClient.RoomEvent.TrackSubscribed,
-		(track, publication, participant) => {
-			const element = track.attach();
-			element.id = track.sid;
-			document.getElementById('video-container').appendChild(element);
-			if (track.kind === 'video') {
-				var audioTrackId;
-				var videoTrackId;
-				participant.getTracks().forEach((track) => {
-					if (track.kind === 'audio') {
-						audioTrackId = track.trackInfo.sid;
-					} else if (track.kind === 'video') {
-						videoTrackId = track.trackInfo.sid;
-					}
-				});
-				addIndividualRecordingButton(element.id, videoTrackId, audioTrackId);
-				updateNumVideos(1);
-			}
-		}
-	);
-
-	// On every new Track destroyed...
-	room.on(
-		LivekitClient.RoomEvent.TrackUnsubscribed,
-		(track, publication, participant) => {
-			track.detach();
-			document.getElementById(track.sid)?.remove();
-			if (track.kind === 'video') {
-				// removeUserData(participant);
-				updateNumVideos(-1);
-			}
-		}
-	);
-
-	room.on(LivekitClient.RoomEvent.RecordingStatusChanged, (isRecording) => {
-		console.log('Recording status changed: ' + status);
-		if (!isRecording) {
-			listRecordings();
-		}
-	});
-
-	getToken(myRoomName, myParticipantName).then(async (token) => {
-		const livekitUrl = getLivekitUrlFromMetadata(token);
-
-		try {
-			await room.connect(livekitUrl, token);
-
-			var participantName = $('#user').val();
-			$('#room-title').text(myRoomName);
-			$('#join').hide();
-			$('#room').show();
-
-			const [audioPublication, videoPublication] = await Promise.all([
-				room.localParticipant.setMicrophoneEnabled(true),
-				room.localParticipant.setCameraEnabled(true),
-			]);
-			localVideoPublication = videoPublication;
-			localAudioPublication = audioPublication;
-
-			console.log('Connected to room ' + myRoomName);
-			const element = videoPublication.track.attach();
-			element.id = videoPublication.track.sid;
-			document.getElementById('video-container').appendChild(element);
-			addIndividualRecordingButton(
-				element.id,
-				videoPublication.track.sid,
-				audioPublication.track.sid
-			);
-			updateNumVideos(1);
-		} catch (error) {
-			console.warn(
-				'There was an error connecting to the room:',
-				error.code,
-				error.message
-			);
-			enableBtn();
-		}
-
-		return false;
-	});
+function configureLiveKitUrl() {
+    // If LIVEKIT_URL is not configured, use default value from OpenVidu Local deployment
+    if (!LIVEKIT_URL) {
+        if (window.location.hostname === "localhost") {
+            LIVEKIT_URL = "ws://localhost:7880/";
+        } else {
+            LIVEKIT_URL = "wss://" + window.location.hostname + ":7443/";
+        }
+    }
 }
 
-function leaveRoom() {
-	room.disconnect();
-	room = null;
+async function joinRoom() {
+    // Disable 'Join' button
+    document.getElementById("join-button").disabled = true;
+    document.getElementById("join-button").innerText = "Joining...";
 
-	$('#video-container').empty();
-	numVideos = 0;
+    // Initialize a new Room object
+    room = new LivekitClient.Room();
 
-	$('#join').show();
-	$('#room').hide();
+    // Specify the actions when events take place in the room
+    // On every new Track received...
+    room.on(LivekitClient.RoomEvent.TrackSubscribed, (track, _publication, participant) => {
+        addTrack(track, participant.identity);
+    });
 
-	enableBtn();
+    // On every new Track destroyed...
+    room.on(LivekitClient.RoomEvent.TrackUnsubscribed, (track, _publication, participant) => {
+        track.detach();
+        document.getElementById(track.sid)?.remove();
+
+        if (track.kind === "video") {
+            removeVideoContainer(participant.identity);
+        }
+    });
+
+    room.on(LivekitClient.RoomEvent.RecordingStatusChanged, async (isRecording) => {
+        await updateRecordingInfo(isRecording);
+    });
+
+    try {
+        // Get the room name and participant name from the form
+        const roomName = document.getElementById("room-name").value;
+        const userName = document.getElementById("participant-name").value;
+
+        // Get a token from your application server with the room name and participant name
+        const token = await getToken(roomName, userName);
+
+        // Connect to the room with the LiveKit URL and the token
+        await room.connect(LIVEKIT_URL, token);
+
+        // Hide the 'Join room' page and show the 'Room' page
+        document.getElementById("room-title").innerText = roomName;
+        document.getElementById("join").hidden = true;
+        document.getElementById("room").hidden = false;
+
+        // Publish your camera and microphone
+        await room.localParticipant.enableCameraAndMicrophone();
+        const localVideoTrack = this.room.localParticipant.videoTrackPublications.values().next().value.track;
+        addTrack(localVideoTrack, userName, true);
+    } catch (error) {
+        console.log("There was an error connecting to the room:", error.message);
+        await leaveRoom();
+    }
 }
 
-/* OPENVIDU METHODS */
+function addTrack(track, participantIdentity, local = false) {
+    const element = track.attach();
+    element.id = track.sid;
 
-function enableBtn() {
-	document.getElementById('join-btn').disabled = false;
-	document.getElementById('join-btn').innerHTML = 'Join!';
+    /* If the track is a video track, we create a container and append the video element to it 
+    with the participant's identity */
+    if (track.kind === "video") {
+        const videoContainer = createVideoContainer(participantIdentity, local);
+        videoContainer.append(element);
+        appendParticipantData(videoContainer, participantIdentity + (local ? " (You)" : ""));
+    } else {
+        document.getElementById("layout-container").append(element);
+    }
 }
 
-/* APPLICATION REST METHODS */
+async function leaveRoom() {
+    // Leave the room by calling 'disconnect' method over the Room object
+    await room.disconnect();
 
-function getToken(roomName, participantName) {
-	return new Promise((resolve, reject) => {
-		// Video-call chosen by the user
-		httpRequest(
-			'POST',
-			'token',
-			{ roomName, participantName },
-			'Error generating token',
-			(response) => resolve(response.token)
-		);
-	});
+    // Remove all HTML elements inside the layout container
+    removeAllLayoutElements();
+
+    // Back to 'Join room' page
+    document.getElementById("join").hidden = false;
+    document.getElementById("room").hidden = true;
+
+    // Enable 'Join' button
+    document.getElementById("join-button").disabled = false;
+    document.getElementById("join-button").innerText = "Join!";
 }
 
-async function httpRequest(method, url, body, errorMsg, successCallback) {
-	try {
-		const response = await fetch(url, {
-			method,
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: method === 'GET' ? undefined : JSON.stringify(body),
-		});
-
-		if (response.ok) {
-			const data = await response.json();
-			successCallback(data);
-		} else {
-			console.warn(errorMsg);
-			console.warn('Error: ' + response.statusText);
-		}
-	} catch (error) {
-		console.error(error);
-	}
-}
-
-function startComposedRecording() {
-	var hasAudio = $('#has-audio-checkbox').prop('checked');
-	var hasVideo = $('#has-video-checkbox').prop('checked');
-
-	httpRequest(
-		'POST',
-		'recordings/start',
-		{
-			roomName: room.roomInfo.name,
-			outputMode: 'COMPOSED',
-			videoOnly: hasVideo && !hasAudio,
-			audioOnly: hasAudio && !hasVideo,
-		},
-		'Start recording WRONG',
-		(res) => {
-			console.log(res);
-			document.getElementById('forceRecordingId').value = res.id;
-			checkBtnsRecordings();
-			$('#textarea-http').text(JSON.stringify(res, null, '\t'));
-		}
-	);
-}
-
-function startIndividualRecording(videoTrackId, audioTrackId) {
-	return new Promise((resolve, reject) => {
-		httpRequest(
-			'POST',
-			'recordings/start',
-			{
-				roomName: room.roomInfo.name,
-				outputMode: 'INDIVIDUAL',
-				audioTrackId,
-				videoTrackId,
-			},
-			'Start recording WRONG',
-			(res) => {
-				console.log(res);
-				$('#textarea-http').text(JSON.stringify(res.info, null, '\t'));
-				resolve(res);
-			}
-		);
-	});
-}
-
-function stopRecording(id) {
-	var forceRecordingId = id ? id : $('#forceRecordingId').val();
-	httpRequest(
-		'POST',
-		'recordings/stop',
-		{
-			recordingId: forceRecordingId,
-		},
-		'Stop recording WRONG',
-		(res) => {
-			console.log(res);
-			$('#forceRecordingId').val('');
-			$('#textarea-http').text(JSON.stringify(res.info, null, '\t'));
-		}
-	);
-}
-
-function listRecordings() {
-	httpRequest('GET', 'recordings/list', {}, 'List recordings WRONG', (res) => {
-		console.log(res);
-		$('#recording-list').empty();
-		if (res.recordings && res.recordings.length > 0) {
-			res.recordings.forEach((recording) => {
-				var li = document.createElement('li');
-				var a = document.createElement('a');
-				a.href = recording.path;
-				a.target = '_blank';
-				a.appendChild(document.createTextNode(recording.name));
-				li.appendChild(a);
-				$('#recording-list').append(li);
-			});
-			$('#delete-recordings-btn').prop('disabled', res.recordings.length === 0);
-		}
-	});
-}
-
-function deleteRecordings() {
-	httpRequest('DELETE', 'recordings', {}, 'Delete recordings WRONG', (res) => {
-		console.log(res);
-		$('#recording-list').empty();
-		$('#delete-recordings-btn').prop('disabled', true);
-		$('#textarea-http').text(JSON.stringify(res, null, '\t'));
-	});
-}
-
-/* APPLICATION REST METHODS */
-
-/* APPLICATION BROWSER METHODS */
-
-events = '';
-
-window.onbeforeunload = function () {
-	// Gracefully leave room
-	if (room) {
-		removeUser();
-		leaveRoom();
-	}
+window.onbeforeunload = () => {
+    room?.disconnect();
 };
 
-function getLivekitUrlFromMetadata(token) {
-	if (!token) throw new Error('Trying to get metadata from an empty token');
-	try {
-		const base64Url = token.split('.')[1];
-		const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-		const jsonPayload = decodeURIComponent(
-			window
-				.atob(base64)
-				.split('')
-				.map((c) => {
-					return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-				})
-				.join('')
-		);
+window.onload = generateFormValues;
 
-		const payload = JSON.parse(jsonPayload);
-		if (!payload?.metadata) throw new Error('Token does not contain metadata');
-		const metadata = JSON.parse(payload.metadata);
-		return metadata.livekitUrl;
-	} catch (error) {
-		throw new Error('Error decoding and parsing token: ' + error);
-	}
+function generateFormValues() {
+    document.getElementById("room-name").value = "Test Room";
+    document.getElementById("participant-name").value = "Participant" + Math.floor(Math.random() * 100);
 }
 
-function updateNumVideos(i) {
-	numVideos += i;
-	$('video').removeClass();
-	switch (numVideos) {
-		case 1:
-			$('video').addClass('two');
-			break;
-		case 2:
-			$('video').addClass('two');
-			break;
-		case 3:
-			$('video').addClass('three');
-			break;
-		case 4:
-			$('video').addClass('four');
-			break;
-	}
+function createVideoContainer(participantIdentity, local = false) {
+    const videoContainer = document.createElement("div");
+    videoContainer.id = `camera-${participantIdentity}`;
+    videoContainer.className = "video-container";
+    const layoutContainer = document.getElementById("layout-container");
+
+    if (local) {
+        layoutContainer.prepend(videoContainer);
+    } else {
+        layoutContainer.append(videoContainer);
+    }
+
+    return videoContainer;
 }
 
-function checkBtnsRecordings() {
-	if (document.getElementById('forceRecordingId').value === '') {
-		document.getElementById('buttonStopRecording').disabled = true;
-	} else {
-		document.getElementById('buttonStopRecording').disabled = false;
-	}
+function appendParticipantData(videoContainer, participantIdentity) {
+    const dataElement = document.createElement("div");
+    dataElement.className = "participant-data";
+    dataElement.innerHTML = `<p>${participantIdentity}</p>`;
+    videoContainer.prepend(dataElement);
 }
 
-function addIndividualRecordingButton(elementId, videoTrackId, audioTrackId) {
-	const div = document.createElement('div');
-
-	var button = document.createElement('button');
-	// button.id = elementId + '-button';
-	button.className = 'recording-track-button btn btn-sm';
-
-	button.innerHTML = 'Record Track';
-	button.style = 'position: absolute; left: 0; z-index: 1000;';
-
-	button.onclick = async () => {
-		if (button.innerHTML === 'Record Track') {
-			button.innerHTML = 'Stop Recording';
-			button.className = 'recording-track-button btn btn-sm btn-danger';
-			var res = await startIndividualRecording(videoTrackId, audioTrackId);
-			button.id = res.info.egressId;
-		} else {
-			button.innerHTML = 'Record Track';
-			button.className = 'recording-track-button btn btn-sm';
-			stopRecording(button.id);
-		}
-	};
-	div.appendChild(button);
-	var element = document.getElementById(elementId);
-	element.parentNode.insertBefore(div, element.nextSibling);
+function removeVideoContainer(participantIdentity) {
+    const videoContainer = document.getElementById(`camera-${participantIdentity}`);
+    videoContainer?.remove();
 }
 
-function clearHttpTextarea() {
-	$('#textarea-http').text('');
+function removeAllLayoutElements() {
+    const layoutElements = document.getElementById("layout-container").children;
+    Array.from(layoutElements).forEach((element) => {
+        element.remove();
+    });
 }
 
-/* APPLICATION BROWSER METHODS */
+/**
+ * --------------------------------------------
+ * GETTING A TOKEN FROM YOUR APPLICATION SERVER
+ * --------------------------------------------
+ * The method below request the creation of a token to
+ * your application server. This prevents the need to expose
+ * your LiveKit API key and secret to the client side.
+ *
+ * In this sample code, there is no user control at all. Anybody could
+ * access your application server endpoints. In a real production
+ * environment, your application server must identify the user to allow
+ * access to the endpoints.
+ */
+async function getToken(roomName, participantName) {
+    const response = await fetch("/token", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            roomName,
+            participantName
+        })
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`Failed to get token: ${error.errorMessage}`);
+    }
+
+    const token = await response.json();
+    return token.token;
+}
+
+async function openRecordingsDialog() {
+    const recordingsDialog = document.getElementById("recordings-dialog");
+    recordingsDialog.showModal();
+    await updateRecordingInfo(room.isRecording);
+}
+
+function closeRecordingsDialog() {
+    const recordingsDialog = document.getElementById("recordings-dialog");
+    recordingsDialog.close();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("recordings-dialog").addEventListener("close", () => {
+        const recordingVideo = document.getElementById("recording-video");
+
+        if (recordingVideo) {
+            recordingVideo.remove();
+        }
+    });
+});
+
+async function updateRecordingInfo(isRecording) {
+    const recordingButton = document.getElementById("recording-button");
+    const recordingText = document.getElementById("recording-text");
+
+    if (isRecording) {
+        recordingButton.disabled = false;
+        recordingButton.innerText = "Stop Recording";
+        recordingButton.className = "btn btn-danger";
+        recordingText.hidden = false;
+    } else {
+        recordingButton.disabled = false;
+        recordingButton.innerText = "Start Recording";
+        recordingButton.className = "btn btn-primary";
+        recordingText.hidden = true;
+    }
+
+    await listRecordings();
+}
+
+async function manageRecording() {
+    const recordingButton = document.getElementById("recording-button");
+
+    if (recordingButton.innerText === "Start Recording") {
+        recordingButton.disabled = true;
+        recordingButton.innerText = "Starting...";
+        await startRecording();
+    } else {
+        recordingButton.disabled = true;
+        recordingButton.innerText = "Stopping...";
+        await stopRecording();
+    }
+}
+
+async function startRecording() {
+    const response = await fetch("/recordings/start", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            roomName: room.name
+        })
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error(error.errorMessage);
+        return;
+    }
+}
+
+async function stopRecording() {
+    const response = await fetch("/recordings/stop", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            roomName: room.name
+        })
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error(error.errorMessage);
+        return;
+    }
+}
+
+async function deleteRecording(recordingName) {
+    const response = await fetch(`/recordings/${recordingName}`, {
+        method: "DELETE"
+    });
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error(error.errorMessage);
+        return;
+    }
+
+    await listRecordings();
+}
+
+async function listRecordings() {
+    const response = await fetch(`/recordings?roomName=${room.name}`);
+
+    if (!response.ok) {
+        const error = await response.json();
+        console.error(error.errorMessage);
+        return;
+    }
+
+    const body = await response.json();
+    const recordings = body.recordings;
+
+    showRecordingList(recordings);
+}
+
+function showRecordingList(recordings) {
+    const recordingsList = document.getElementById("recording-list");
+
+    if (recordings.length === 0) {
+        recordingsList.innerHTML = "<span>There are no recordings available</span>";
+    } else {
+        recordingsList.innerHTML = "";
+    }
+
+    recordings.forEach((recording) => {
+        const recordingName = recording.name;
+        const recordingDuration = secondsToHms(recording.duration);
+        const recordingSize = formatBytes(recording.size);
+        const recordingDate = new Date(recording.startedAt).toLocaleString();
+
+        const recordingContainer = document.createElement("div");
+        recordingContainer.className = "recording-container";
+        recordingContainer.id = recordingName;
+
+        recordingContainer.innerHTML = `
+            <i class="fa-solid fa-file-video"></i>
+            <div class="recording-info">
+                <p class="recording-name">${recordingName}</p>
+                <p class="recording-details">${recordingDuration} | ${recordingSize}</p>
+                <p class="recording-date">${recordingDate}</p>
+            </div>
+            <div class="recording-actions">
+                <button title="Play" class="icon-button" onclick="displayRecording('${recordingName}')">
+                    <i class="fa-solid fa-play"></i>
+                </button>
+                <button title="Delete" class="icon-button delete-button" onclick="deleteRecording('${recordingName}')">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        `;
+
+        recordingsList.append(recordingContainer);
+    });
+}
+
+function displayRecording(recordingName) {
+    const recordingContainer = document.getElementById("recording-video-container");
+    let recordingVideo = document.getElementById("recording-video");
+
+    if (!recordingVideo) {
+        recordingVideo = document.createElement("video");
+        recordingVideo.id = "recording-video";
+        recordingVideo.width = 600;
+        recordingVideo.controls = true;
+        recordingVideo.autoplay = true;
+        recordingContainer.append(recordingVideo);
+    }
+
+    recordingVideo.src = `/recordings/${recordingName}`;
+}
+
+function secondsToHms(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor((seconds % 3600) % 60);
+
+    const hDisplay = h > 0 ? h + "h " : "";
+    const mDisplay = m > 0 ? m + "m " : "";
+    const sDisplay = s + "s";
+    return hDisplay + mDisplay + sDisplay;
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) {
+        return "0Bytes";
+    }
+
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const decimals = i < 2 ? 0 : 1;
+
+    return (bytes / Math.pow(k, i)).toFixed(decimals) + sizes[i];
+}
