@@ -65,6 +65,8 @@ async function joinRoom() {
         await room.localParticipant.enableCameraAndMicrophone();
         const localVideoTrack = this.room.localParticipant.videoTrackPublications.values().next().value.track;
         addTrack(localVideoTrack, userName, true);
+
+        await updateRecordingInfo(room.isRecording);
     } catch (error) {
         console.log("There was an error connecting to the room:", error.message);
         await leaveRoom();
@@ -106,7 +108,15 @@ window.onbeforeunload = () => {
     room?.disconnect();
 };
 
-window.onload = generateFormValues;
+document.addEventListener("DOMContentLoaded", async function () {
+    var currentPage = window.location.pathname;
+
+    if (currentPage === "/recordings.html") {
+        await listRecordings();
+    } else {
+        generateFormValues();
+    }
+});
 
 function generateFormValues() {
     document.getElementById("room-name").value = "Test Room";
@@ -161,46 +171,17 @@ function removeAllLayoutElements() {
  * access to the endpoints.
  */
 async function getToken(roomName, participantName) {
-    const response = await fetch("/token", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            roomName,
-            participantName
-        })
+    const [error, body] = await httpRequest("POST", "/token", {
+        roomName,
+        participantName
     });
 
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(`Failed to get token: ${error.errorMessage}`);
+    if (error) {
+        throw new Error(`Failed to get token: ${error.message}`);
     }
 
-    const token = await response.json();
-    return token.token;
+    return body.token;
 }
-
-async function openRecordingsDialog() {
-    const recordingsDialog = document.getElementById("recordings-dialog");
-    recordingsDialog.showModal();
-    await updateRecordingInfo(room.isRecording);
-}
-
-function closeRecordingsDialog() {
-    const recordingsDialog = document.getElementById("recordings-dialog");
-    recordingsDialog.close();
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("recordings-dialog").addEventListener("close", () => {
-        const recordingVideo = document.getElementById("recording-video");
-
-        if (recordingVideo) {
-            recordingVideo.remove();
-        }
-    });
-});
 
 async function updateRecordingInfo(isRecording) {
     const recordingButton = document.getElementById("recording-button");
@@ -218,7 +199,8 @@ async function updateRecordingInfo(isRecording) {
         recordingText.hidden = true;
     }
 
-    await listRecordings();
+    const roomId = await room.getSid();
+    await listRecordings(room.name, roomId);
 }
 
 async function manageRecording() {
@@ -227,77 +209,92 @@ async function manageRecording() {
     if (recordingButton.innerText === "Start Recording") {
         recordingButton.disabled = true;
         recordingButton.innerText = "Starting...";
-        await startRecording();
+
+        const [error, _] = await startRecording();
+
+        if (error && error.status !== 409) {
+            recordingButton.disabled = false;
+            recordingButton.innerText = "Start Recording";
+        }
     } else {
         recordingButton.disabled = true;
         recordingButton.innerText = "Stopping...";
-        await stopRecording();
+
+        const [error, _] = await stopRecording();
+
+        if (error && error.status !== 409) {
+            recordingButton.disabled = false;
+            recordingButton.innerText = "Stop Recording";
+        }
     }
 }
 
 async function startRecording() {
-    const response = await fetch("/recordings/start", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            roomName: room.name
-        })
+    return await httpRequest("POST", "/recordings/start", {
+        roomName: room.name
     });
-
-    if (!response.ok) {
-        const error = await response.json();
-        console.error(error.errorMessage);
-        return;
-    }
 }
 
 async function stopRecording() {
-    const response = await fetch("/recordings/stop", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            roomName: room.name
-        })
+    return await httpRequest("POST", "/recordings/stop", {
+        roomName: room.name
     });
-
-    if (!response.ok) {
-        const error = await response.json();
-        console.error(error.errorMessage);
-        return;
-    }
 }
 
 async function deleteRecording(recordingName) {
-    const response = await fetch(`/recordings/${recordingName}`, {
-        method: "DELETE"
-    });
+    const [error, _] = await httpRequest("DELETE", `/recordings/${recordingName}`);
 
-    if (!response.ok) {
-        const error = await response.json();
-        console.error(error.errorMessage);
-        return;
+    if (!error || error.status === 404) {
+        const roomId = await room?.getSid();
+        await listRecordings(room?.name, roomId);
     }
-
-    await listRecordings();
 }
 
-async function listRecordings() {
-    const response = await fetch(`/recordings?roomName=${room.name}`);
+async function listRecordings(roomName, roomId) {
+    const url = "/recordings" + (roomName ? `?roomName=${roomName}` + (roomId ? `&roomId=${roomId}` : "") : "") ;
+    const [error, body] = await httpRequest("GET", url);
 
-    if (!response.ok) {
-        const error = await response.json();
-        console.error(error.errorMessage);
-        return;
+    if (!error) {
+        const recordings = body.recordings;
+        showRecordingList(recordings);
     }
+}
 
-    const body = await response.json();
-    const recordings = body.recordings;
+async function listRecordingsByRoom() {
+    const roomName = document.getElementById("room-name").value;
+    await listRecordings(roomName);
+}
 
-    showRecordingList(recordings);
+async function httpRequest(method, url, body) {
+    try {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: method !== "GET" ? JSON.stringify(body) : undefined
+        });
+
+        const responseBody = await response.json();
+
+        if (!response.ok) {
+            console.error(responseBody.errorMessage);
+            const error = {
+                status: response.status,
+                message: responseBody.errorMessage
+            };
+            return [error, undefined];
+        }
+
+        return [undefined, responseBody];
+    } catch (error) {
+        console.error(error.message);
+        const errorObj = {
+            status: 0,
+            message: error.message
+        };
+        return [errorObj, undefined];
+    }
 }
 
 function showRecordingList(recordings) {
@@ -311,8 +308,7 @@ function showRecordingList(recordings) {
 
     recordings.forEach((recording) => {
         const recordingName = recording.name;
-        const recordingDuration = secondsToHms(recording.duration);
-        const recordingSize = formatBytes(recording.size);
+        const recordingSize = formatBytes(recording.size ?? 0);
         const recordingDate = new Date(recording.startedAt).toLocaleString();
 
         const recordingContainer = document.createElement("div");
@@ -323,7 +319,7 @@ function showRecordingList(recordings) {
             <i class="fa-solid fa-file-video"></i>
             <div class="recording-info">
                 <p class="recording-name">${recordingName}</p>
-                <p class="recording-details">${recordingDuration} | ${recordingSize}</p>
+                <p class="recording-size">${recordingSize}</p>
                 <p class="recording-date">${recordingDate}</p>
             </div>
             <div class="recording-actions">
@@ -341,30 +337,15 @@ function showRecordingList(recordings) {
 }
 
 function displayRecording(recordingName) {
-    const recordingContainer = document.getElementById("recording-video-container");
-    let recordingVideo = document.getElementById("recording-video");
-
-    if (!recordingVideo) {
-        recordingVideo = document.createElement("video");
-        recordingVideo.id = "recording-video";
-        recordingVideo.width = 600;
-        recordingVideo.controls = true;
-        recordingVideo.autoplay = true;
-        recordingContainer.append(recordingVideo);
-    }
-
+    const recordingVideoDialog = document.getElementById("recording-video-dialog");
+    recordingVideoDialog.showModal();
+    const recordingVideo = document.getElementById("recording-video");
     recordingVideo.src = `/recordings/${recordingName}`;
 }
 
-function secondsToHms(seconds) {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor((seconds % 3600) % 60);
-
-    const hDisplay = h > 0 ? h + "h " : "";
-    const mDisplay = m > 0 ? m + "m " : "";
-    const sDisplay = s + "s";
-    return hDisplay + mDisplay + sDisplay;
+function closeRecording() {
+    const recordingVideoDialog = document.getElementById("recording-video-dialog");
+    recordingVideoDialog.close();
 }
 
 function formatBytes(bytes) {
