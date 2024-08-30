@@ -95,6 +95,15 @@ async function leaveRoom() {
     // Remove all HTML elements inside the layout container
     removeAllLayoutElements();
 
+    // Remove all recordings from the list
+    removeAllRecordings();
+
+    // Reset recording state
+    document.getElementById("recording-button").disabled = false;
+    document.getElementById("recording-button").innerText = "Start Recording";
+    document.getElementById("recording-button").className = "btn btn-primary";
+    document.getElementById("recording-text").hidden = true;
+
     // Back to 'Join room' page
     document.getElementById("join").hidden = false;
     document.getElementById("room").hidden = true;
@@ -116,6 +125,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     } else {
         generateFormValues();
     }
+
+    document.getElementById("recording-video-dialog").addEventListener("close", () => {
+        const recordingVideo = document.getElementById("recording-video");
+        recordingVideo.src = "";
+    });
 });
 
 function generateFormValues() {
@@ -230,13 +244,13 @@ async function manageRecording() {
 }
 
 async function startRecording() {
-    return await httpRequest("POST", "/recordings/start", {
+    return httpRequest("POST", "/recordings/start", {
         roomName: room.name
     });
 }
 
 async function stopRecording() {
-    return await httpRequest("POST", "/recordings/stop", {
+    return httpRequest("POST", "/recordings/stop", {
         roomName: room.name
     });
 }
@@ -251,7 +265,7 @@ async function deleteRecording(recordingName) {
 }
 
 async function listRecordings(roomName, roomId) {
-    const url = "/recordings" + (roomName ? `?roomName=${roomName}` + (roomId ? `&roomId=${roomId}` : "") : "") ;
+    const url = "/recordings" + (roomName ? `?roomName=${roomName}` + (roomId ? `&roomId=${roomId}` : "") : "");
     const [error, body] = await httpRequest("GET", url);
 
     if (!error) {
@@ -346,6 +360,13 @@ function displayRecording(recordingName) {
 function closeRecording() {
     const recordingVideoDialog = document.getElementById("recording-video-dialog");
     recordingVideoDialog.close();
+}
+
+function removeAllRecordings() {
+    const recordingList = document.getElementById("recording-list").children;
+    Array.from(recordingList).forEach((recording) => {
+        recording.remove();
+    });
 }
 
 function formatBytes(bytes) {
