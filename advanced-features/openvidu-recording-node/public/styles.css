@@ -55,6 +55,7 @@ main {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 20px;
     height: 100%;
 }
 
@@ -127,8 +128,26 @@ main {
     align-items: center;
 }
 
+#recording-text {
+    width: 100%;
+    max-width: 1000px;
+}
+
+#recording-text span {
+    background-color: #ffeb3b;
+    color: #333;
+    border-radius: 5px;
+    padding: 0 5px;
+    font-weight: bold;
+    font-style: italic;
+    float: right;
+    margin-bottom: 10px;
+}
+
 #room-header {
     display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     justify-content: space-between;
     align-items: center;
     width: 100%;
@@ -141,10 +160,6 @@ main {
     font-size: 2em;
     font-weight: bold;
     margin: 0;
-}
-
-#open-recordings-dialog {
-    margin: 0 10px;
 }
 
 #layout-container {
@@ -186,51 +201,40 @@ main {
     border-bottom-right-radius: 4px;
 }
 
-#recordings-dialog {
-    width: 500px;
-    max-width: 90%;
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    background-color: #fff;
+#recordings {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
 }
 
-#recordings-dialog h2 {
-    margin-bottom: 15px;
+#recording-header {
+    margin: 15px 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 3fr 1fr;
+    align-items: center;
+    gap: 10px;
+}
+
+#recording-header h3 {
+    margin: 0;
+    text-align: center;
     font-size: 30px;
     font-weight: bold;
-    text-align: center;
     color: #444;
+    grid-column-start: 2;
 }
 
-#recording-controls {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-#recording-text {
-    background-color: #ffeb3b;
-    color: #333;
-    border-radius: 5px;
-    margin-left: 20px;
-    padding: 0 5px;
-    font-weight: bold;
-    font-style: italic;
-}
-
-#recording-video-container {
-    margin-bottom: 15px;
-}
-
-#recording-video {
-    width: 100%;
-    border-radius: 5px;
+#recording-header a {
+    margin-left: auto;
 }
 
 #recording-list {
-    margin-bottom: 15px;
+    width: 600px;
+    max-width: 100%;
 }
 
 #recording-list span {
@@ -238,9 +242,9 @@ main {
     font-weight: bold;
     font-style: italic;
     color: #333;
-    text-align: center;
     display: block;
     margin: 0;
+    text-align: center;
 }
 
 .recording-container {
@@ -273,7 +277,7 @@ main {
     font-weight: bold;
 }
 
-.recording-details,
+.recording-size,
 .recording-date {
     color: #777;
 }
@@ -310,7 +314,23 @@ main {
     color: #d9534f;
 }
 
-#close-recordings-dialog {
+#recording-video-dialog {
+    width: 500px;
+    max-width: 90%;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    background-color: #fff;
+}
+
+#recording-video {
+    width: 100%;
+    border-radius: 5px;
+}
+
+#close-recording-video-dialog {
+    margin-top: 10px;
     float: right;
 }
 

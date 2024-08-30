@@ -70,27 +70,34 @@
                         <button id="join-button" class="btn btn-lg btn-success" type="submit">Join!</button>
                     </form>
                 </div>
+                <a href="/recordings.html" target="_blank" class="btn btn-primary">View all recordings</a>
             </div>
 
             <div id="room" hidden>
+                <div id="recording-text" hidden><span>Room is being recorded</span></div>
                 <div id="room-header">
                     <h2 id="room-title"></h2>
-                    <button class="btn btn-primary" id="open-recordings-dialog" onclick="openRecordingsDialog()">
-                        Recordings
+                    <button class="btn btn-primary" id="recording-button" onclick="manageRecording()">
+                        Start Recording
                     </button>
                     <button class="btn btn-danger" id="leave-room-button" onclick="leaveRoom()">Leave Room</button>
                 </div>
                 <div id="layout-container"></div>
-                <dialog id="recordings-dialog">
-                    <h2>Recordings</h2>
-                    <div id="recording-controls">
-                        <button class="btn btn-primary" id="recording-button" onclick="manageRecording()">Start Recording</button>
-                        <div id="recording-text" hidden>Room is being recorded</div>
+                <div id="recordings">
+                    <div id="recording-header">
+                        <h3>Session Recordings</h3>
+                        <a href="/recordings.html" target="_blank" class="btn btn-sm btn-primary"
+                            >View all recordings</a
+                        >
                     </div>
-                    <div id="recording-video-container"></div>
                     <div id="recording-list"></div>
-                    <button class="btn btn-secondary" id="close-recordings-dialog" onclick="closeRecordingsDialog()">Close</button>
-                </dialog>
+                    <dialog id="recording-video-dialog">
+                        <video id="recording-video" autoplay controls></video>
+                        <button class="btn btn-secondary" id="close-recording-video-dialog" onclick="closeRecording()">
+                            Close
+                        </button>
+                    </dialog>
+                </div>
             </div>
         </main>
 
