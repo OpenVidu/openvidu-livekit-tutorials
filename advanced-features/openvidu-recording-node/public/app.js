@@ -41,6 +41,7 @@ async function joinRoom() {
         }
     });
 
+    // When recording status changes...
     room.on(LivekitClient.RoomEvent.RecordingStatusChanged, async (isRecording) => {
         await updateRecordingInfo(isRecording);
     });
@@ -66,6 +67,7 @@ async function joinRoom() {
         const localVideoTrack = this.room.localParticipant.videoTrackPublications.values().next().value.track;
         addTrack(localVideoTrack, userName, true);
 
+        // Update recording info
         await updateRecordingInfo(room.isRecording);
     } catch (error) {
         console.log("There was an error connecting to the room:", error.message);
@@ -126,6 +128,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         generateFormValues();
     }
 
+    // Remove recording video when the dialog is closed
     document.getElementById("recording-video-dialog").addEventListener("close", () => {
         const recordingVideo = document.getElementById("recording-video");
         recordingVideo.src = "";

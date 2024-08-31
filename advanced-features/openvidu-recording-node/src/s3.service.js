@@ -81,6 +81,8 @@ export class S3Service {
         };
         const command = new ListObjectsV2Command(params);
         const { Contents: objects } = await this.run(command);
+
+        // Filter objects by regex and return the keys
         return (
             objects
                 ?.filter((object) => regex.test(object.Key))
