@@ -2,7 +2,7 @@
 
 Simple video-call application with recording capabilities. It includes a backend built with Node.js with Express and a frontend built with plain HTML, CSS and JavaScript.
 
-For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/tutorials/advanced-tutorials/node/).
+For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/tutorials/advanced-tutorials/openvidu-recording/).
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ For further information, check the [tutorial documentation](https://livekit-tuto
 
 ```bash
 git clone https://github.com/OpenVidu/openvidu-livekit-tutorials.git
-cd openvidu-livekit-tutorials/advanced-features/openvidu-recording
+cd openvidu-livekit-tutorials/advanced-features/openvidu-recording-node
 ```
 
 2. Install dependencies
