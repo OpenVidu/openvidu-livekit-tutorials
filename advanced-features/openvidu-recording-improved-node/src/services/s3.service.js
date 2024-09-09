@@ -3,7 +3,8 @@ import {
     GetObjectCommand,
     DeleteObjectCommand,
     ListObjectsV2Command,
-    HeadObjectCommand
+    HeadObjectCommand,
+    PutObjectCommand
 } from "@aws-sdk/client-s3";
 import { AWS_REGION, S3_ACCESS_KEY, S3_BUCKET, S3_ENDPOINT, S3_SECRET_KEY } from "../config.js";
 
@@ -29,6 +30,16 @@ export class S3Service {
         return this;
     }
 
+    async uploadObject(key, body) {
+        const params = {
+            Bucket: S3_BUCKET,
+            Key: key,
+            Body: JSON.stringify(body)
+        };
+        const command = new PutObjectCommand(params);
+        return this.run(command);
+    }
+
     async exists(key) {
         try {
             await this.headObject(key);
@@ -45,11 +56,6 @@ export class S3Service {
         };
         const command = new HeadObjectCommand(params);
         return this.run(command);
-    }
-
-    async getObjectSize(key) {
-        const { ContentLength } = await this.headObject(key);
-        return ContentLength;
     }
 
     async getObject(key) {

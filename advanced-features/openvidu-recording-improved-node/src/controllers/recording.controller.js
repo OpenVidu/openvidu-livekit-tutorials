@@ -27,7 +27,8 @@ recordingController.post("/start", async (req, res) => {
     // Use the EncodedFileOutput to save the recording to an MP4 file
     const fileOutput = new EncodedFileOutput({
         fileType: EncodedFileType.MP4,
-        filepath: `${RECORDINGS_PATH}{room_name}-{room_id}-{time}`
+        filepath: `${RECORDINGS_PATH}{room_name}-{room_id}-{time}`,
+        disableManifest: true
     });
 
     try {
@@ -69,6 +70,7 @@ recordingController.post("/stop", async (req, res) => {
         const recording = {
             name: file.filename.split("/").pop(),
             startedAt: Number(egressInfo.startedAt) / 1_000_000,
+            duration: Number(file.duration) / 1_000_000_000,
             size: Number(file.size)
         };
         res.json({ message: "Recording stopped", recording });
@@ -83,13 +85,14 @@ recordingController.get("/", async (req, res) => {
     const roomId = req.query.roomId?.toString();
 
     try {
-        const keyStart = RECORDINGS_PATH + (roomName ? `${roomName}` + (roomId ? `-${roomId}` : "") : "");
-        const keyEnd = ".mp4.json";
+        const keyStart =
+            RECORDINGS_PATH + ".metadata/" + (roomName ? `${roomName}` + (roomId ? `-${roomId}` : "") : "");
+        const keyEnd = ".json";
         const regex = new RegExp(`^${keyStart}.*${keyEnd}$`);
 
         // List all Egress metadata files in the recordings path that match the regex
-        const payloadKeys = await s3Service.listObjects(RECORDINGS_PATH, regex);
-        const recordings = await Promise.all(payloadKeys.map((payloadKey) => getRecordingInfo(payloadKey)));
+        const metadataKeys = await s3Service.listObjects(RECORDINGS_PATH + ".metadata/", regex);
+        const recordings = await Promise.all(metadataKeys.map((metadataKey) => s3Service.getObjectAsJson(metadataKey)));
         res.json({ recordings });
     } catch (error) {
         console.error("Error listing recordings.", error);
@@ -126,8 +129,9 @@ recordingController.get("/:recordingName", async (req, res) => {
 
 recordingController.delete("/:recordingName", async (req, res) => {
     const { recordingName } = req.params;
-    const key = RECORDINGS_PATH + recordingName;
-    const exists = await s3Service.exists(key);
+    const recordingKey = RECORDINGS_PATH + recordingName;
+    const metadataKey = RECORDINGS_PATH + ".metadata/" + recordingName.replace(".mp4", ".json");
+    const exists = await s3Service.exists(recordingKey);
 
     if (!exists) {
         res.status(404).json({ errorMessage: "Recording not found" });
@@ -136,7 +140,7 @@ recordingController.delete("/:recordingName", async (req, res) => {
 
     try {
         // Delete the recording file and metadata file from S3
-        await Promise.all([s3Service.deleteObject(key), s3Service.deleteObject(`${key}.json`)]);
+        await Promise.all([s3Service.deleteObject(recordingKey), s3Service.deleteObject(metadataKey)]);
         res.json({ message: "Recording deleted" });
     } catch (error) {
         console.error("Error deleting recording.", error);
@@ -152,21 +156,4 @@ const getActiveEgressesByRoom = async (roomName) => {
         console.error("Error listing egresses.", error);
         return [];
     }
-};
-
-const getRecordingInfo = async (payloadKey) => {
-    // Get the Egress metadata file as JSON
-    const data = await s3Service.getObjectAsJson(payloadKey);
-
-    // Get the recording file size
-    const recordingKey = payloadKey.replace(".json", "");
-    const size = await s3Service.getObjectSize(recordingKey);
-
-    const recordingName = recordingKey.split("/").pop();
-    const recording = {
-        name: recordingName,
-        startedAt: Number(data.started_at) / 1000000,
-        size: size
-    };
-    return recording;
 };
