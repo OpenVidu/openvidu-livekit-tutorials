@@ -4,7 +4,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 import { AccessToken, RoomServiceClient } from "livekit-server-sdk";
-import { LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, SERVER_PORT } from "./config.js";
+import { LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, SERVER_PORT, APP_NAME } from "./config.js";
 import { recordingController } from "./controllers/recording.controller.js";
 import { webhookController } from "./controllers/webhook.controller.js";
 
@@ -53,7 +53,7 @@ app.post("/token", async (req, res) => {
         const roomOptions = {
             name: roomName,
             metadata: JSON.stringify({
-                createdBy: "openvidu-recording-improved-tutorial",
+                createdBy: APP_NAME,
                 recordingStatus: "STOPPED"
             })
         };

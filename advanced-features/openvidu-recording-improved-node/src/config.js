@@ -1,4 +1,5 @@
 export const SERVER_PORT = process.env.SERVER_PORT || 6080;
+export const APP_NAME = "openvidu-recording-improved-tutorial";
 
 // LiveKit configuration
 export const LIVEKIT_URL = process.env.LIVEKIT_URL || "http://localhost:7880";
@@ -13,3 +14,4 @@ export const AWS_REGION = process.env.AWS_REGION || "us-east-1";
 export const S3_BUCKET = process.env.S3_BUCKET || "openvidu";
 
 export const RECORDINGS_PATH = process.env.RECORDINGS_PATH ?? "recordings/";
+export const RECORDINGS_METADATA_PATH = ".metadata/";

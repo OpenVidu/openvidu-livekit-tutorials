@@ -1,6 +1,12 @@
 import { Router } from "express";
 import { EgressClient, EncodedFileOutput, EncodedFileType } from "livekit-server-sdk";
-import { LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, RECORDINGS_PATH } from "../config.js";
+import {
+    LIVEKIT_URL,
+    LIVEKIT_API_KEY,
+    LIVEKIT_API_SECRET,
+    RECORDINGS_PATH,
+    RECORDINGS_METADATA_PATH
+} from "../config.js";
 import { S3Service } from "../services/s3.service.js";
 
 const egressClient = new EgressClient(LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
@@ -86,12 +92,12 @@ recordingController.get("/", async (req, res) => {
 
     try {
         const keyStart =
-            RECORDINGS_PATH + ".metadata/" + (roomName ? `${roomName}` + (roomId ? `-${roomId}` : "") : "");
+            RECORDINGS_PATH + RECORDINGS_METADATA_PATH + (roomName ? `${roomName}` + (roomId ? `-${roomId}` : "") : "");
         const keyEnd = ".json";
         const regex = new RegExp(`^${keyStart}.*${keyEnd}$`);
 
         // List all Egress metadata files in the recordings path that match the regex
-        const metadataKeys = await s3Service.listObjects(RECORDINGS_PATH + ".metadata/", regex);
+        const metadataKeys = await s3Service.listObjects(RECORDINGS_PATH + RECORDINGS_METADATA_PATH, regex);
         const recordings = await Promise.all(metadataKeys.map((metadataKey) => s3Service.getObjectAsJson(metadataKey)));
         res.json({ recordings });
     } catch (error) {
@@ -130,7 +136,7 @@ recordingController.get("/:recordingName", async (req, res) => {
 recordingController.delete("/:recordingName", async (req, res) => {
     const { recordingName } = req.params;
     const recordingKey = RECORDINGS_PATH + recordingName;
-    const metadataKey = RECORDINGS_PATH + ".metadata/" + recordingName.replace(".mp4", ".json");
+    const metadataKey = RECORDINGS_PATH + RECORDINGS_METADATA_PATH + recordingName.replace(".mp4", ".json");
     const exists = await s3Service.exists(recordingKey);
 
     if (!exists) {
