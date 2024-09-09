@@ -42,8 +42,9 @@ async function joinRoom() {
     });
 
     // When recording status changes...
-    room.on(LivekitClient.RoomEvent.RecordingStatusChanged, async (isRecording) => {
-        await updateRecordingInfo(isRecording);
+    room.on(LivekitClient.RoomEvent.RoomMetadataChanged, async (metadata) => {
+        const { recordingStatus } = JSON.parse(metadata);
+        await updateRecordingInfo(recordingStatus);
     });
 
     try {
@@ -68,7 +69,13 @@ async function joinRoom() {
         addTrack(localVideoTrack, userName, true);
 
         // Update recording info
-        await updateRecordingInfo(room.isRecording);
+        const { recordingStatus } = JSON.parse(room.metadata);
+        await updateRecordingInfo(recordingStatus);
+
+        if (recordingStatus !== "STOPPED" && recordingStatus !== "FAILED") {
+            const roomId = await room.getSid();
+            await listRecordings(room.name, roomId);
+        }
     } catch (error) {
         console.log("There was an error connecting to the room:", error.message);
         await leaveRoom();
@@ -200,49 +207,47 @@ async function getToken(roomName, participantName) {
     return body.token;
 }
 
-async function updateRecordingInfo(isRecording) {
+async function updateRecordingInfo(recordingStatus) {
     const recordingButton = document.getElementById("recording-button");
     const recordingText = document.getElementById("recording-text");
 
-    if (isRecording) {
-        recordingButton.disabled = false;
-        recordingButton.innerText = "Stop Recording";
-        recordingButton.className = "btn btn-danger";
-        recordingText.hidden = false;
-    } else {
-        recordingButton.disabled = false;
-        recordingButton.innerText = "Start Recording";
-        recordingButton.className = "btn btn-primary";
-        recordingText.hidden = true;
-    }
+    switch (recordingStatus) {
+        case "STARTING":
+            recordingButton.disabled = true;
+            recordingButton.innerText = "Starting...";
+            break;
+        case "STARTED":
+            recordingButton.disabled = false;
+            recordingButton.innerText = "Stop Recording";
+            recordingButton.className = "btn btn-danger";
+            recordingText.hidden = false;
+            break;
+        case "STOPPING":
+            recordingButton.disabled = true;
+            recordingButton.innerText = "Stopping...";
+            recordingButton.className = "btn btn-danger";
+            recordingText.hidden = false;
+            break;
+        case "STOPPED":
+        case "FAILED":
+            recordingButton.disabled = false;
+            recordingButton.innerText = "Start Recording";
+            recordingButton.className = "btn btn-primary";
+            recordingText.hidden = true;
 
-    const roomId = await room.getSid();
-    await listRecordings(room.name, roomId);
+            const roomId = await room.getSid();
+            await listRecordings(room.name, roomId);
+            break;
+    }
 }
 
 async function manageRecording() {
     const recordingButton = document.getElementById("recording-button");
 
     if (recordingButton.innerText === "Start Recording") {
-        recordingButton.disabled = true;
-        recordingButton.innerText = "Starting...";
-
-        const [error, _] = await startRecording();
-
-        if (error && error.status !== 409) {
-            recordingButton.disabled = false;
-            recordingButton.innerText = "Start Recording";
-        }
+        await startRecording();
     } else {
-        recordingButton.disabled = true;
-        recordingButton.innerText = "Stopping...";
-
-        const [error, _] = await stopRecording();
-
-        if (error && error.status !== 409) {
-            recordingButton.disabled = false;
-            recordingButton.innerText = "Stop Recording";
-        }
+        await stopRecording();
     }
 }
 
