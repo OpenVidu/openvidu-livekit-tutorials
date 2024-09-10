@@ -1,5 +1,11 @@
 import { EgressClient, EgressStatus, EncodedFileOutput, EncodedFileType } from "livekit-server-sdk";
-import { LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, RECORDINGS_PATH, RECORDINGS_METADATA_PATH } from "../config.js";
+import {
+    LIVEKIT_URL,
+    LIVEKIT_API_KEY,
+    LIVEKIT_API_SECRET,
+    RECORDINGS_PATH,
+    RECORDINGS_METADATA_PATH
+} from "../config.js";
 import { S3Service } from "./s3.service.js";
 
 const s3Service = new S3Service();
@@ -58,34 +64,41 @@ export class RecordingService {
         }
     }
 
+    async getRecordingMetadata(recordingName) {
+        const key = this.getMetadataKey(recordingName);
+        return s3Service.getObjectAsJson(key);
+    }
+
     async getRecordingStream(recordingName) {
-        const key = RECORDINGS_PATH + recordingName;
+        const key = this.getRecordingKey(recordingName);
         return s3Service.getObject(key);
     }
 
     async existsRecording(recordingName) {
-        const key = RECORDINGS_PATH + recordingName;
+        const key = this.getRecordingKey(recordingName);
         return s3Service.exists(key);
     }
 
     async deleteRecording(recordingName) {
         const recordingKey = RECORDINGS_PATH + recordingName;
-        const metadataKey = RECORDINGS_PATH + RECORDINGS_METADATA_PATH + recordingName.replace(".mp4", ".json");
+        const metadataKey = this.getMetadataKey(recordingName);
         // Delete the recording file and metadata file from S3
         await Promise.all([s3Service.deleteObject(recordingKey), s3Service.deleteObject(metadataKey)]);
     }
 
     async saveRecordingMetadata(egressInfo) {
         const recordingInfo = this.convertToRecordingInfo(egressInfo);
-        const metadataName = recordingInfo.name.replace(".mp4", ".json");
-        const key = RECORDINGS_PATH + RECORDINGS_METADATA_PATH + metadataName;
+        const key = this.getMetadataKey(recordingInfo.name);
         await s3Service.uploadObject(key, recordingInfo);
     }
 
     convertToRecordingInfo(egressInfo) {
         const file = egressInfo.fileResults[0];
         return {
+            id: egressInfo.egressId,
             name: file.filename.split("/").pop(),
+            roomName: egressInfo.roomName,
+            roomId: egressInfo.roomId,
             startedAt: Number(egressInfo.startedAt) / 1_000_000,
             duration: Number(file.duration) / 1_000_000_000,
             size: Number(file.size)
@@ -105,5 +118,13 @@ export class RecordingService {
             default:
                 return "FAILED";
         }
+    }
+
+    getRecordingKey(recordingName) {
+        return RECORDINGS_PATH + recordingName;
+    }
+
+    getMetadataKey(recordingName) {
+        return RECORDINGS_PATH + RECORDINGS_METADATA_PATH + recordingName.replace(".mp4", ".json");
     }
 }

@@ -1,5 +1,7 @@
-import { RoomServiceClient } from "livekit-server-sdk";
+import { DataPacket_Kind, RoomServiceClient } from "livekit-server-sdk";
 import { LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET, APP_NAME } from "../config.js";
+
+const encoder = new TextEncoder();
 
 export class RoomService {
     static instance;
@@ -36,5 +38,19 @@ export class RoomService {
             recordingStatus
         };
         return this.roomClient.updateRoomMetadata(roomName, JSON.stringify(metadata));
+    }
+
+    async sendDataToRoom(roomName, rawData) {
+        const data = encoder.encode(JSON.stringify(rawData));
+        const options = {
+            topic: "RECORDING_DELETED",
+            destinationSids: []
+        };
+
+        try {
+            await this.roomClient.sendData(roomName, data, DataPacket_Kind.RELIABLE, options);
+        } catch (error) {
+            console.error("Error sending data to room", error);
+        }
     }
 }

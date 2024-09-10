@@ -47,6 +47,15 @@ async function joinRoom() {
         await updateRecordingInfo(recordingStatus);
     });
 
+    // When a message is received...
+    room.on(LivekitClient.RoomEvent.DataReceived, async (payload, _participant, _kind, topic) => {
+        // If the message is a recording deletion notification, remove the recording from the list
+        if (topic === "RECORDING_DELETED") {
+            const { recordingName } = JSON.parse(new TextDecoder().decode(payload));
+            deleteRecordingContainer(recordingName);
+        }
+    });
+
     try {
         // Get the room name and participant name from the form
         const roomName = document.getElementById("room-name").value;
@@ -267,8 +276,21 @@ async function deleteRecording(recordingName) {
     const [error, _] = await httpRequest("DELETE", `/recordings/${recordingName}`);
 
     if (!error || error.status === 404) {
-        const roomId = await room?.getSid();
-        await listRecordings(room?.name, roomId);
+        deleteRecordingContainer(recordingName);
+    }
+}
+
+function deleteRecordingContainer(recordingName) {
+    const recordingContainer = document.getElementById(recordingName);
+
+    if (recordingContainer) {
+        recordingContainer.remove();
+
+        const recordingsList = document.getElementById("recording-list");
+        
+        if (recordingsList.children.length === 0) {
+            recordingsList.innerHTML = "<span>There are no recordings available</span>";
+        }
     }
 }
 

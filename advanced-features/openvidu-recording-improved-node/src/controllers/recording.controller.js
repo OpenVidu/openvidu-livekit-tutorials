@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { RecordingService } from "../services/recording.service.js";
+import { RoomService } from "../services/room.service.js";
 
 const recordingService = new RecordingService();
+const roomService = new RoomService();
 
 export const recordingController = Router();
 
@@ -104,7 +106,11 @@ recordingController.delete("/:recordingName", async (req, res) => {
     }
 
     try {
+        const { roomName } = await recordingService.getRecordingMetadata(recordingName);
         await recordingService.deleteRecording(recordingName);
+
+        // Notify to all participants that the recording was deleted
+        await roomService.sendDataToRoom(roomName, { recordingName });
         res.json({ message: "Recording deleted" });
     } catch (error) {
         console.error("Error deleting recording.", error);
