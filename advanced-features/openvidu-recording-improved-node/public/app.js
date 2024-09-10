@@ -287,7 +287,7 @@ function deleteRecordingContainer(recordingName) {
         recordingContainer.remove();
 
         const recordingsList = document.getElementById("recording-list");
-        
+
         if (recordingsList.children.length === 0) {
             recordingsList.innerHTML = "<span>There are no recordings available</span>";
         }
@@ -352,6 +352,7 @@ function showRecordingList(recordings) {
 
     recordings.forEach((recording) => {
         const recordingName = recording.name;
+        const recordingDuration = secondsToHms(recording.duration ?? 0);
         const recordingSize = formatBytes(recording.size ?? 0);
         const recordingDate = new Date(recording.startedAt).toLocaleString();
 
@@ -363,7 +364,7 @@ function showRecordingList(recordings) {
             <i class="fa-solid fa-file-video"></i>
             <div class="recording-info">
                 <p class="recording-name">${recordingName}</p>
-                <p class="recording-size">${recordingSize}</p>
+                <p class="recording-size">${recordingDuration} | ${recordingSize}</p>
                 <p class="recording-date">${recordingDate}</p>
             </div>
             <div class="recording-actions">
@@ -397,6 +398,17 @@ function removeAllRecordings() {
     Array.from(recordingList).forEach((recording) => {
         recording.remove();
     });
+}
+
+function secondsToHms(seconds) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor((seconds % 3600) % 60);
+
+    const hDisplay = h > 0 ? h + "h " : "";
+    const mDisplay = m > 0 ? m + "m " : "";
+    const sDisplay = s + "s";
+    return hDisplay + mDisplay + sDisplay;
 }
 
 function formatBytes(bytes) {
