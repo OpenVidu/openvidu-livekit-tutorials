@@ -1,0 +1,45 @@
+import { Router } from "express";
+import { AccessToken } from "livekit-server-sdk";
+import { LIVEKIT_API_KEY, LIVEKIT_API_SECRET } from "../config.js";
+import { RoomService } from "../services/room.service.js";
+
+const roomService = new RoomService();
+
+export const roomController = Router();
+
+roomController.post("/", async (req, res) => {
+    const roomName = req.body.roomName;
+    const participantName = req.body.participantName;
+
+    if (!roomName || !participantName) {
+        res.status(400).json({ errorMessage: "roomName and participantName are required" });
+        return;
+    }
+
+    const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
+        identity: participantName
+    });
+    const permissions = {
+        room: roomName,
+        roomJoin: true,
+        roomAdmin: true,
+        roomList: true,
+        roomRecord: true
+    };
+    at.addGrant(permissions);
+    const token = await at.toJwt();
+
+    try {
+        // Create room if it doesn't exist
+        const room = await roomService.getRoom(roomName);
+
+        if (!room) {
+            await roomService.createRoom(roomName);
+        }
+    } catch (error) {
+        console.error("Error creating room.", error);
+        res.status(500).json({ errorMessage: "Error creating room" });
+    }
+
+    res.json({ token });
+});
