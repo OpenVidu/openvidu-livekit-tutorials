@@ -66,10 +66,10 @@ app.post("/recordings/start", async (req, res) => {
         return;
     }
 
-    const activeEgresses = await getActiveEgressesByRoom(roomName);
+    const activeRecording = await getActiveRecordingByRoom(roomName);
 
-    // Check if there is already an active egress for this room
-    if (activeEgresses.length > 0) {
+    // Check if there is already an active recording for this room
+    if (activeRecording) {
         res.status(409).json({ errorMessage: "Recording already started for this room" });
         return;
     }
@@ -102,19 +102,17 @@ app.post("/recordings/stop", async (req, res) => {
         return;
     }
 
-    const activeEgresses = await getActiveEgressesByRoom(roomName);
+    const activeRecording = await getActiveRecordingByRoom(roomName);
 
-    // Check if there is an active egress for this room
-    if (activeEgresses.length === 0) {
+    // Check if there is an active recording for this room
+    if (!activeRecording) {
         res.status(409).json({ errorMessage: "Recording not started for this room" });
         return;
     }
 
-    const egressId = activeEgresses[0].egressId;
-
     try {
         // Stop the Egress to finish the recording
-        const egressInfo = await egressClient.stopEgress(egressId);
+        const egressInfo = await egressClient.stopEgress(activeRecording);
         const file = egressInfo.fileResults[0];
         const recording = {
             name: file.filename.split("/").pop(),
@@ -128,13 +126,14 @@ app.post("/recordings/stop", async (req, res) => {
     }
 });
 
-const getActiveEgressesByRoom = async (roomName) => {
+const getActiveRecordingByRoom = async (roomName) => {
     try {
         // List all active egresses for the room
-        return await egressClient.listEgress({ roomName, active: true });
+        const egresses = await egressClient.listEgress({ roomName, active: true });
+        return egresses.length > 0 ? egresses[0].egressId : null;
     } catch (error) {
         console.error("Error listing egresses.", error);
-        return [];
+        return null;
     }
 };
 
