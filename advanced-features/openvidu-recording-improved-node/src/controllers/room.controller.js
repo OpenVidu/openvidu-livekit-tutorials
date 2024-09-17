@@ -31,9 +31,9 @@ roomController.post("/", async (req, res) => {
 
     try {
         // Create room if it doesn't exist
-        const room = await roomService.getRoom(roomName);
+        const exists = await roomService.exists(roomName);
 
-        if (!room) {
+        if (!exists) {
             await roomService.createRoom(roomName);
         }
     } catch (error) {

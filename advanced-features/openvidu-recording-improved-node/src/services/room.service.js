@@ -32,6 +32,11 @@ export class RoomService {
         return rooms.length > 0 ? rooms[0] : null;
     }
 
+    async exists(roomName) {
+        const room = await this.getRoom(roomName);
+        return room !== null;
+    }
+
     async updateRoomMetadata(roomName, recordingStatus) {
         const metadata = {
             createdBy: APP_NAME,

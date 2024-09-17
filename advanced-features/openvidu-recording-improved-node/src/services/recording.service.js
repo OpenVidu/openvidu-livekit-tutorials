@@ -80,7 +80,7 @@ export class RecordingService {
     }
 
     async deleteRecording(recordingName) {
-        const recordingKey = RECORDINGS_PATH + recordingName;
+        const recordingKey = this.getRecordingKey(recordingName);
         const metadataKey = this.getMetadataKey(recordingName);
         // Delete the recording file and metadata file from S3
         await Promise.all([s3Service.deleteObject(recordingKey), s3Service.deleteObject(metadataKey)]);

@@ -110,7 +110,12 @@ recordingController.delete("/:recordingName", async (req, res) => {
         await recordingService.deleteRecording(recordingName);
 
         // Notify to all participants that the recording was deleted
-        await roomService.sendDataToRoom(roomName, { recordingName });
+        const existsRoom = await roomService.exists(roomName);
+
+        if (existsRoom) {
+            await roomService.sendDataToRoom(roomName, { recordingName });
+        }
+
         res.json({ message: "Recording deleted" });
     } catch (error) {
         console.error("Error deleting recording.", error);
