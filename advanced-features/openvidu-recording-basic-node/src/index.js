@@ -111,7 +111,7 @@ app.post("/recordings/stop", async (req, res) => {
     }
 
     try {
-        // Stop the Egress to finish the recording
+        // Stop the egress to finish the recording
         const egressInfo = await egressClient.stopEgress(activeRecording);
         const file = egressInfo.fileResults[0];
         const recording = {
@@ -146,7 +146,7 @@ app.get("/recordings", async (req, res) => {
         const keyEnd = ".mp4.json";
         const regex = new RegExp(`^${keyStart}.*${keyEnd}$`);
 
-        // List all Egress metadata files in the recordings path that match the regex
+        // List all egress metadata files in the recordings path that match the regex
         const payloadKeys = await s3Service.listObjects(RECORDINGS_PATH, regex);
         const recordings = await Promise.all(payloadKeys.map((payloadKey) => getRecordingInfo(payloadKey)));
         res.json({ recordings });
@@ -157,7 +157,7 @@ app.get("/recordings", async (req, res) => {
 });
 
 const getRecordingInfo = async (payloadKey) => {
-    // Get the Egress metadata file as JSON
+    // Get the egress metadata file as JSON
     const data = await s3Service.getObjectAsJson(payloadKey);
 
     // Get the recording file size

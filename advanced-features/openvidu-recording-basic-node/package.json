@@ -1,5 +1,5 @@
 {
-    "name": "openvidu-recording",
+    "name": "openvidu-recording-basic-node",
     "version": "1.0.0",
     "description": "Simple video-call application with recording capabilities",
     "main": "src/index.js",
@@ -8,10 +8,10 @@
         "start": "node src/index.js"
     },
     "dependencies": {
-        "@aws-sdk/client-s3": "3.635.0",
+        "@aws-sdk/client-s3": "3.654.0",
         "cors": "2.8.5",
         "dotenv": "16.4.5",
-        "express": "4.19.2",
-        "livekit-server-sdk": "2.6.1"
+        "express": "4.21.0",
+        "livekit-server-sdk": "2.6.2"
     }
 }
