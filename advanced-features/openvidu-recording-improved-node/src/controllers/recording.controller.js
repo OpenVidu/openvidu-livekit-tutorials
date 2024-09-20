@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { RecordingService } from "../services/recording.service.js";
 import { RoomService } from "../services/room.service.js";
+import { RECORDING_PLAYBACK_STRATEGY } from "../config.js";
 
 const recordingService = new RecordingService();
 const roomService = new RoomService();
@@ -17,7 +18,7 @@ recordingController.post("/start", async (req, res) => {
 
     const activeRecording = await recordingService.getActiveRecordingByRoom(roomName);
 
-    // Check if there is already an active egress for this room
+    // Check if there is already an active recording for this room
     if (activeRecording) {
         res.status(409).json({ errorMessage: "Recording already started for this room" });
         return;
@@ -42,7 +43,7 @@ recordingController.post("/stop", async (req, res) => {
 
     const activeRecording = await recordingService.getActiveRecordingByRoom(roomName);
 
-    // Check if there is an active egress for this room
+    // Check if there is an active recording for this room
     if (!activeRecording) {
         res.status(409).json({ errorMessage: "Recording not started for this room" });
         return;
@@ -72,6 +73,7 @@ recordingController.get("/", async (req, res) => {
 
 recordingController.get("/:recordingName", async (req, res) => {
     const { recordingName } = req.params;
+    const { range } = req.headers;
     const exists = await recordingService.existsRecording(recordingName);
 
     if (!exists) {
@@ -81,18 +83,46 @@ recordingController.get("/:recordingName", async (req, res) => {
 
     try {
         // Get the recording file from S3
-        const { body, size } = await recordingService.getRecordingStream(recordingName);
+        const { stream, size, start, end } = await recordingService.getRecordingStream(recordingName, range);
 
-        // Set the response headers
+        // Set response headers
+        res.status(206);
+        res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Content-Type", "video/mp4");
-        res.setHeader("Content-Length", size);
         res.setHeader("Accept-Ranges", "bytes");
+        res.setHeader("Content-Range", `bytes ${start}-${end}/${size}`);
+        res.setHeader("Content-Length", end - start + 1);
 
         // Pipe the recording file to the response
-        body.pipe(res).on("finish", () => res.end());
+        stream.pipe(res).on("finish", () => res.end());
     } catch (error) {
         console.error("Error getting recording.", error);
         res.status(500).json({ errorMessage: "Error getting recording" });
+    }
+});
+
+recordingController.get("/:recordingName/url", async (req, res) => {
+    const { recordingName } = req.params;
+    const exists = await recordingService.existsRecording(recordingName);
+
+    if (!exists) {
+        res.status(404).json({ errorMessage: "Recording not found" });
+        return;
+    }
+
+    // If the recording playback strategy is "PROXY", return the endpoint URL
+    if (RECORDING_PLAYBACK_STRATEGY === "PROXY") {
+        res.json({ recordingUrl: `/recordings/${recordingName}` });
+        return;
+    }
+
+    try {
+        // If the recording playback strategy is "URL", return a signed URL to access the recording directly from S3
+        const recordingUrl = await recordingService.getRecordingUrl(recordingName);
+        res.json({ recordingUrl });
+    } catch (error) {
+        console.error("Error getting recording URL.", error);
+        res.status(500).json({ errorMessage: "Error getting recording URL" });
     }
 });
 

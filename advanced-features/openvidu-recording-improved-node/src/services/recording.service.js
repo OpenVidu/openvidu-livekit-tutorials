@@ -4,7 +4,8 @@ import {
     LIVEKIT_API_KEY,
     LIVEKIT_API_SECRET,
     RECORDINGS_PATH,
-    RECORDINGS_METADATA_PATH
+    RECORDINGS_METADATA_PATH,
+    RECORDING_FILE_PORTION_SIZE
 } from "../config.js";
 import { S3Service } from "./s3.service.js";
 
@@ -36,7 +37,7 @@ export class RecordingService {
     }
 
     async stopRecording(recordingId) {
-        // Stop the Egress to finish the recording
+        // Stop the egress to finish the recording
         const egressInfo = await this.egressClient.stopEgress(recordingId);
         return this.convertToRecordingInfo(egressInfo);
     }
@@ -47,7 +48,7 @@ export class RecordingService {
         const keyEnd = ".json";
         const regex = new RegExp(`^${keyStart}.*${keyEnd}$`);
 
-        // List all Egress metadata files in the recordings path that match the regex
+        // List all egress metadata files in the recordings path that match the regex
         const metadataKeys = await s3Service.listObjects(RECORDINGS_PATH + RECORDINGS_METADATA_PATH, regex);
         const recordings = await Promise.all(metadataKeys.map((metadataKey) => s3Service.getObjectAsJson(metadataKey)));
         return recordings;
@@ -69,9 +70,23 @@ export class RecordingService {
         return s3Service.getObjectAsJson(key);
     }
 
-    async getRecordingStream(recordingName) {
+    async getRecordingStream(recordingName, range) {
         const key = this.getRecordingKey(recordingName);
-        return s3Service.getObject(key);
+        const size = await s3Service.getObjectSize(key);
+
+        // Get the requested range
+        const parts = range?.replace(/bytes=/, "").split("-");
+        const start = range ? parseInt(parts[0], 10) : 0;
+        const endRange = parts[1] ? parseInt(parts[1], 10) : start + RECORDING_FILE_PORTION_SIZE;
+        const end = Math.min(endRange, size - 1);
+
+        const stream = await s3Service.getObject(key, { start, end });
+        return { stream, size, start, end };
+    }
+
+    async getRecordingUrl(recordingName) {
+        const key = this.getRecordingKey(recordingName);
+        return s3Service.getObjectUrl(key);
     }
 
     async existsRecording(recordingName) {

@@ -309,6 +309,11 @@ async function listRecordingsByRoom() {
     await listRecordings(roomName);
 }
 
+async function getRecordingUrl(recordingName) {
+    const [_, body] = await httpRequest("GET", `/recordings/${recordingName}/url`);
+    return body?.recordingUrl;
+}
+
 async function httpRequest(method, url, body) {
     try {
         const response = await fetch(url, {
@@ -381,11 +386,13 @@ function showRecordingList(recordings) {
     });
 }
 
-function displayRecording(recordingName) {
+async function displayRecording(recordingName) {
     const recordingVideoDialog = document.getElementById("recording-video-dialog");
     recordingVideoDialog.showModal();
     const recordingVideo = document.getElementById("recording-video");
-    recordingVideo.src = `/recordings/${recordingName}`;
+
+    const recordingUrl = await getRecordingUrl(recordingName);
+    recordingVideo.src = recordingUrl;
 }
 
 function closeRecording() {

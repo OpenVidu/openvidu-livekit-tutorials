@@ -6,6 +6,7 @@ import {
     HeadObjectCommand,
     PutObjectCommand
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { AWS_REGION, S3_ACCESS_KEY, S3_BUCKET, S3_ENDPOINT, S3_SECRET_KEY } from "../config.js";
 
 export class S3Service {
@@ -58,18 +59,33 @@ export class S3Service {
         return this.run(command);
     }
 
-    async getObject(key) {
+    async getObjectSize(key) {
+        const { ContentLength: size } = await this.headObject(key);
+        return size;
+    }
+
+    async getObject(key, range) {
+        const params = {
+            Bucket: S3_BUCKET,
+            Key: key,
+            Range: range ? `bytes=${range.start}-${range.end}` : undefined
+        };
+        const command = new GetObjectCommand(params);
+        const { Body: body } = await this.run(command);
+        return body;
+    }
+
+    async getObjectUrl(key) {
         const params = {
             Bucket: S3_BUCKET,
             Key: key
         };
         const command = new GetObjectCommand(params);
-        const { Body: body, ContentLength: size } = await this.run(command);
-        return { body, size };
+        return getSignedUrl(this.s3Client, command, { expiresIn: 86400 }); // 24 hours
     }
 
     async getObjectAsJson(key) {
-        const { body } = await this.getObject(key);
+        const body = await this.getObject(key);
         const stringifiedData = await body.transformToString();
         return JSON.parse(stringifiedData);
     }
