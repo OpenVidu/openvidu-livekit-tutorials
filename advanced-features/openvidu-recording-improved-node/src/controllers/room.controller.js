@@ -19,14 +19,7 @@ roomController.post("/", async (req, res) => {
     const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
         identity: participantName
     });
-    const permissions = {
-        room: roomName,
-        roomJoin: true,
-        roomAdmin: true,
-        roomList: true,
-        roomRecord: true
-    };
-    at.addGrant(permissions);
+    at.addGrant({ room: roomName, roomJoin: true, roomRecord: true });
     const token = await at.toJwt();
 
     try {
@@ -36,10 +29,10 @@ roomController.post("/", async (req, res) => {
         if (!exists) {
             await roomService.createRoom(roomName);
         }
+
+        res.json({ token });
     } catch (error) {
         console.error("Error creating room.", error);
         res.status(500).json({ errorMessage: "Error creating room" });
     }
-
-    res.json({ token });
 });
