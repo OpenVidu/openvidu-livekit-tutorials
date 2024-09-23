@@ -14,6 +14,7 @@ const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || "devkey";
 const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET || "secret";
 
 const RECORDINGS_PATH = process.env.RECORDINGS_PATH ?? "recordings/";
+const RECORDING_FILE_PORTION_SIZE = 5 * 1024 * 1024; // 5MB
 
 const app = express();
 
@@ -175,6 +176,7 @@ const getRecordingInfo = async (payloadKey) => {
 
 app.get("/recordings/:recordingName", async (req, res) => {
     const { recordingName } = req.params;
+    const { range } = req.headers;
     const key = RECORDINGS_PATH + recordingName;
     const exists = await s3Service.exists(key);
 
@@ -185,20 +187,37 @@ app.get("/recordings/:recordingName", async (req, res) => {
 
     try {
         // Get the recording file from S3
-        const { body, size } = await s3Service.getObject(key);
+        const { stream, size, start, end } = await getRecordingStream(recordingName, range);
 
-        // Set the response headers
+        // Set response headers
+        res.status(206);
+        res.setHeader("Cache-Control", "no-cache");
         res.setHeader("Content-Type", "video/mp4");
-        res.setHeader("Content-Length", size);
         res.setHeader("Accept-Ranges", "bytes");
+        res.setHeader("Content-Range", `bytes ${start}-${end}/${size}`);
+        res.setHeader("Content-Length", end - start + 1);
 
         // Pipe the recording file to the response
-        body.pipe(res).on("finish", () => res.end());
+        stream.pipe(res).on("finish", () => res.end());
     } catch (error) {
         console.error("Error getting recording.", error);
         res.status(500).json({ errorMessage: "Error getting recording" });
     }
 });
+
+const getRecordingStream = async (recordingName, range) => {
+    const key = RECORDINGS_PATH + recordingName;
+    const size = await s3Service.getObjectSize(key);
+
+    // Get the requested range
+    const parts = range?.replace(/bytes=/, "").split("-");
+    const start = range ? parseInt(parts[0], 10) : 0;
+    const endRange = parts[1] ? parseInt(parts[1], 10) : start + RECORDING_FILE_PORTION_SIZE;
+    const end = Math.min(endRange, size - 1);
+
+    const stream = await s3Service.getObject(key, { start, end });
+    return { stream, size, start, end };
+};
 
 app.delete("/recordings/:recordingName", async (req, res) => {
     const { recordingName } = req.params;

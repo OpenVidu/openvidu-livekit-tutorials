@@ -54,22 +54,23 @@ export class S3Service {
     }
 
     async getObjectSize(key) {
-        const { ContentLength } = await this.headObject(key);
-        return ContentLength;
+        const { ContentLength: size } = await this.headObject(key);
+        return size;
     }
 
-    async getObject(key) {
+    async getObject(key, range) {
         const params = {
             Bucket: S3_BUCKET,
-            Key: key
+            Key: key,
+            Range: range ? `bytes=${range.start}-${range.end}` : undefined
         };
         const command = new GetObjectCommand(params);
-        const { Body: body, ContentLength: size } = await this.run(command);
-        return { body, size };
+        const { Body: body } = await this.run(command);
+        return body;
     }
 
     async getObjectAsJson(key) {
-        const { body } = await this.getObject(key);
+        const body = await this.getObject(key);
         const stringifiedData = await body.transformToString();
         return JSON.parse(stringifiedData);
     }
@@ -83,11 +84,7 @@ export class S3Service {
         const { Contents: objects } = await this.run(command);
 
         // Filter objects by regex and return the keys
-        return (
-            objects
-                ?.filter((object) => regex.test(object.Key))
-                .map((payload) => payload.Key) ?? []
-        );
+        return objects?.filter((object) => regex.test(object.Key)).map((payload) => payload.Key) ?? [];
     }
 
     async deleteObject(key) {
