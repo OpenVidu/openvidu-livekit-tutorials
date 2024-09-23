@@ -143,14 +143,15 @@ app.get("/recordings", async (req, res) => {
     const roomId = req.query.roomId?.toString();
 
     try {
-        const keyStart = RECORDINGS_PATH + (roomName ? `${roomName}` + (roomId ? `-${roomId}` : "") : "");
+        const keyStart = RECORDINGS_PATH + (roomName ? `${roomName}-` + (roomId ? roomId : "") : "");
         const keyEnd = ".mp4.json";
         const regex = new RegExp(`^${keyStart}.*${keyEnd}$`);
 
         // List all egress metadata files in the recordings path that match the regex
         const payloadKeys = await s3Service.listObjects(RECORDINGS_PATH, regex);
         const recordings = await Promise.all(payloadKeys.map((payloadKey) => getRecordingInfo(payloadKey)));
-        res.json({ recordings });
+        const sortedRecordings = filterAndSortRecordings(recordings, roomName, roomId);
+        res.json({ recordings: sortedRecordings });
     } catch (error) {
         console.error("Error listing recordings.", error);
         res.status(500).json({ errorMessage: "Error listing recordings" });
@@ -167,11 +168,26 @@ const getRecordingInfo = async (payloadKey) => {
 
     const recordingName = recordingKey.split("/").pop();
     const recording = {
+        id: data.egress_id,
         name: recordingName,
+        roomName: data.room_name,
+        roomId: data.room_id,
         startedAt: Number(data.started_at) / 1000000,
         size: size
     };
     return recording;
+};
+
+const filterAndSortRecordings = (recordings, roomName, roomId) => {
+    let filteredRecordings = recordings;
+
+    if (roomName || roomId) {
+        filteredRecordings = recordings.filter((recording) => {
+            return (!roomName || recording.roomName === roomName) && (!roomId || recording.roomId === roomId);
+        });
+    }
+
+    return filteredRecordings.sort((a, b) => b.startedAt - a.startedAt);
 };
 
 app.get("/recordings/:recordingName", async (req, res) => {

@@ -44,14 +44,26 @@ export class RecordingService {
 
     async listRecordings(roomName, roomId) {
         const keyStart =
-            RECORDINGS_PATH + RECORDINGS_METADATA_PATH + (roomName ? `${roomName}` + (roomId ? `-${roomId}` : "") : "");
+            RECORDINGS_PATH + RECORDINGS_METADATA_PATH + (roomName ? `${roomName}-` + (roomId ? roomId : "") : "");
         const keyEnd = ".json";
         const regex = new RegExp(`^${keyStart}.*${keyEnd}$`);
 
         // List all egress metadata files in the recordings path that match the regex
         const metadataKeys = await s3Service.listObjects(RECORDINGS_PATH + RECORDINGS_METADATA_PATH, regex);
         const recordings = await Promise.all(metadataKeys.map((metadataKey) => s3Service.getObjectAsJson(metadataKey)));
-        return recordings;
+        return this.filterAndSortRecordings(recordings, roomName, roomId);
+    }
+
+    filterAndSortRecordings(recordings, roomName, roomId) {
+        let filteredRecordings = recordings;
+
+        if (roomName || roomId) {
+            filteredRecordings = recordings.filter((recording) => {
+                return (!roomName || recording.roomName === roomName) && (!roomId || recording.roomId === roomId);
+            });
+        }
+
+        return filteredRecordings.sort((a, b) => b.startedAt - a.startedAt);
     }
 
     async getActiveRecordingByRoom(roomName) {
