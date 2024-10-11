@@ -117,7 +117,7 @@ recordingController.get("/:recordingName/url", async (req, res) => {
     }
 
     try {
-        // If the recording playback strategy is "URL", return a signed URL to access the recording directly from S3
+        // If the recording playback strategy is "S3", return a signed URL to access the recording directly from S3
         const recordingUrl = await recordingService.getRecordingUrl(recordingName);
         res.json({ recordingUrl });
     } catch (error) {

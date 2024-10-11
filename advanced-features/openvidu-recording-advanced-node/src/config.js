@@ -15,5 +15,5 @@ export const S3_BUCKET = process.env.S3_BUCKET || "openvidu";
 
 export const RECORDINGS_PATH = process.env.RECORDINGS_PATH ?? "recordings/";
 export const RECORDINGS_METADATA_PATH = ".metadata/";
-export const RECORDING_PLAYBACK_STRATEGY = process.env.RECORDING_PLAYBACK_STRATEGY || "URL"; // PROXY or URL
+export const RECORDING_PLAYBACK_STRATEGY = process.env.RECORDING_PLAYBACK_STRATEGY || "S3"; // PROXY or S3
 export const RECORDING_FILE_PORTION_SIZE = 5 * 1024 * 1024; // 5MB
