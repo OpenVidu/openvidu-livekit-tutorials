@@ -7,22 +7,14 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	"github.com/livekit/protocol/auth"
 	"github.com/livekit/protocol/webhook"
 )
 
-var (
-	SERVER_PORT        = getEnv("SERVER_PORT", "6080")
-	LIVEKIT_API_KEY    = getEnv("LIVEKIT_API_KEY", "devkey")
-	LIVEKIT_API_SECRET = getEnv("LIVEKIT_API_SECRET", "secret")
-)
-
-func getEnv(key, defaultValue string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return defaultValue
-}
+var SERVER_PORT string
+var LIVEKIT_API_KEY string
+var LIVEKIT_API_SECRET string
 
 func createToken(context *gin.Context) {
 	var body struct {
@@ -45,7 +37,7 @@ func createToken(context *gin.Context) {
 		RoomJoin: true,
 		Room:     body.RoomName,
 	}
-	at.AddGrant(grant).SetIdentity(body.ParticipantName)
+	at.SetVideoGrant(grant).SetIdentity(body.ParticipantName)
 
 	token, err := at.ToJWT()
 	if err != nil {
@@ -69,9 +61,24 @@ func receiveWebhook(context *gin.Context) {
 }
 
 func main() {
+	loadEnv()
 	router := gin.Default()
 	router.Use(cors.Default())
 	router.POST("/token", createToken)
 	router.POST("/livekit/webhook", receiveWebhook)
 	router.Run(":" + SERVER_PORT)
+}
+
+func loadEnv() {
+	godotenv.Load() // Load environment variables from .env file
+	SERVER_PORT = getEnv("SERVER_PORT", "6080")
+	LIVEKIT_API_KEY = getEnv("LIVEKIT_API", "devkey")
+	LIVEKIT_API_SECRET = getEnv("LIVEKIT_API_SECRET", "secret")
+}
+
+func getEnv(key, defaultValue string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return defaultValue
 }

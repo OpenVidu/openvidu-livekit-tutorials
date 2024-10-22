@@ -12,7 +12,7 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "livekit-client": "2.1.5",
+    "livekit-client": "^2.5.9",
     "vue": "^3.4.21"
   },
   "devDependencies": {
