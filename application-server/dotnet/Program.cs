@@ -1,17 +1,14 @@
-﻿using System.Text;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.IdentityModel.Tokens;
-using System.Text.Json;
-using System.Security.Cryptography;
-using System.Security.Claims;
+﻿using System.Text.Json;
+using Livekit.Server.Sdk.Dotnet;
 
 var builder = WebApplication.CreateBuilder(args);
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 IConfiguration config = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json")
-                .AddEnvironmentVariables().Build();
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json")
+    .AddEnvironmentVariables()
+    .Build();
 
 // Load env variables
 var SERVER_PORT = config.GetValue<int>("SERVER_PORT");
@@ -21,11 +18,13 @@ var LIVEKIT_API_SECRET = config.GetValue<string>("LIVEKIT_API_SECRET");
 // Enable CORS support
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-                      builder =>
-                      {
-                          builder.WithOrigins("*").AllowAnyHeader();
-                      });
+    options.AddPolicy(
+        name: MyAllowSpecificOrigins,
+        builder =>
+        {
+            builder.WithOrigins("*").AllowAnyHeader();
+        }
+    );
 });
 
 builder.WebHost.UseKestrel(serverOptions =>
@@ -36,103 +35,63 @@ builder.WebHost.UseKestrel(serverOptions =>
 var app = builder.Build();
 app.UseCors(MyAllowSpecificOrigins);
 
-app.MapPost("/token", async (HttpRequest request) =>
-{
-    var body = new StreamReader(request.Body);
-    string postData = await body.ReadToEndAsync();
-    Dictionary<string, dynamic> bodyParams = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(postData) ?? new Dictionary<string, dynamic>();
-
-    if (bodyParams.TryGetValue("roomName", out var roomName) && bodyParams.TryGetValue("participantName", out var participantName))
+app.MapPost(
+    "/token",
+    async (HttpRequest request) =>
     {
-        var token = CreateLiveKitJWT(roomName.ToString(), participantName.ToString());
-        return Results.Json(new { token });
+        var body = new StreamReader(request.Body);
+        string postData = await body.ReadToEndAsync();
+        Dictionary<string, dynamic> bodyParams =
+            JsonSerializer.Deserialize<Dictionary<string, dynamic>>(postData)
+            ?? new Dictionary<string, dynamic>();
+
+        if (
+            bodyParams.TryGetValue("roomName", out var roomName)
+            && bodyParams.TryGetValue("participantName", out var participantName)
+        )
+        {
+            var token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET)
+                .WithIdentity(participantName)
+                .WithName(participantName)
+                .WithGrants(new VideoGrants { RoomJoin = true, Room = roomName });
+
+            var jwt = token.ToJwt();
+            return Results.Json(new { token = jwt });
+        }
+        else
+        {
+            return Results.BadRequest(
+                new { errorMessage = "roomName and participantName are required" }
+            );
+        }
     }
-    else
+);
+
+app.MapPost(
+    "/livekit/webhook",
+    async (HttpRequest request) =>
     {
-        return Results.BadRequest(new { errorMessage = "roomName and participantName are required" });
+        var webhookReceiver = new WebhookReceiver(LIVEKIT_API_KEY, LIVEKIT_API_SECRET);
+        try
+        {
+            StreamReader body = new StreamReader(request.Body);
+            string postData = await body.ReadToEndAsync();
+            string authHeader =
+                request.Headers["Authorization"].FirstOrDefault()
+                ?? throw new Exception("Authorization header is missing");
+
+            WebhookEvent webhookEvent = webhookReceiver.Receive(postData, authHeader);
+
+            Console.Out.WriteLine(webhookEvent);
+
+            return Results.Ok();
+        }
+        catch (Exception e)
+        {
+            Console.Error.WriteLine("Error validating webhook event: " + e.Message);
+            return Results.Unauthorized();
+        }
     }
-});
-
-app.MapPost("/livekit/webhook", async (HttpRequest request) =>
-{
-    var body = new StreamReader(request.Body);
-    string postData = await body.ReadToEndAsync();
-
-    var authHeader = request.Headers["Authorization"];
-    if (authHeader.Count == 0)
-    {
-        return Results.BadRequest("Authorization header is required");
-    }
-    try
-    {
-        VerifyWebhookEvent(authHeader.First(), postData);
-    }
-    catch (Exception e)
-    {
-        Console.Error.WriteLine("Error validating webhook event: " + e.Message);
-        return Results.Unauthorized();
-    }
-
-    Console.Out.WriteLine(postData);
-    return Results.Ok();
-});
-
-string CreateLiveKitJWT(string roomName, string participantName)
-{
-    JwtHeader headers = new(new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(LIVEKIT_API_SECRET)), "HS256"));
-
-    var videoGrants = new Dictionary<string, object>()
-    {
-        { "room", roomName },
-        { "roomJoin", true }
-    };
-    JwtPayload payload = new()
-    {
-        { "exp", new DateTimeOffset(DateTime.UtcNow.AddHours(6)).ToUnixTimeSeconds() },
-        { "iss", LIVEKIT_API_KEY },
-        { "nbf", 0 },
-        { "sub", participantName },
-        { "name", participantName },
-        { "video", videoGrants }
-    };
-    JwtSecurityToken token = new(headers, payload);
-    return new JwtSecurityTokenHandler().WriteToken(token);
-}
-
-void VerifyWebhookEvent(string authHeader, string body)
-{
-    var utf8Encoding = new UTF8Encoding();
-    var tokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(utf8Encoding.GetBytes(LIVEKIT_API_SECRET)),
-        ValidateIssuer = true,
-        ValidIssuer = LIVEKIT_API_KEY,
-        ValidateAudience = false
-    };
-
-    var jwtValidator = new JwtSecurityTokenHandler();
-    var claimsPrincipal = jwtValidator.ValidateToken(authHeader, tokenValidationParameters, out SecurityToken validatedToken);
-
-    var sha256 = SHA256.Create();
-    var hashBytes = sha256.ComputeHash(utf8Encoding.GetBytes(body));
-    var hash = Convert.ToBase64String(hashBytes);
-
-    if (claimsPrincipal.HasClaim(c => c.Type == "sha256") && claimsPrincipal.FindFirstValue("sha256") != hash)
-    {
-        throw new ArgumentException("sha256 checksum of body does not match!");
-    }
-}
-
-if (LIVEKIT_API_KEY == null || LIVEKIT_API_SECRET == null)
-{
-    Console.Error.WriteLine("\nERROR: LIVEKIT_API_KEY and LIVEKIT_API_SECRET not set\n");
-    Environment.Exit(1);
-}
-if (LIVEKIT_API_SECRET.Length < 32)
-{
-    Console.Error.WriteLine("\nERROR: LIVEKIT_API_SECRET must be at least 32 characters long\n");
-    Environment.Exit(1);
-}
+);
 
 app.Run();

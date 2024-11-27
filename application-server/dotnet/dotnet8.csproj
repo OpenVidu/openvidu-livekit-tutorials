@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.1" />
+    <PackageReference Include="Livekit.Server.Sdk.Dotnet" Version="1.0.2" />
   </ItemGroup>
 
 </Project>
