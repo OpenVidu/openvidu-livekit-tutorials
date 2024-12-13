@@ -51,9 +51,9 @@ app.MapPost(
         )
         {
             var token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET)
-                .WithIdentity(participantName)
-                .WithName(participantName)
-                .WithGrants(new VideoGrants { RoomJoin = true, Room = roomName });
+                .WithIdentity(participantName.ToString())
+                .WithName(participantName.ToString())
+                .WithGrants(new VideoGrants { RoomJoin = true, Room = roomName.ToString() });
 
             var jwt = token.ToJwt();
             return Results.Json(new { token = jwt });
