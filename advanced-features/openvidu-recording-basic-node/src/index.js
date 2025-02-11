@@ -14,23 +14,11 @@ import { S3Service } from "./s3.service.js";
 
 // Configuration
 const SERVER_PORT = process.env.SERVER_PORT || 6080;
-const LIVEKIT_URL = process.env.LIVEKIT_URL || "http://localhost:7880";
 const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY || "devkey";
 const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET || "secret";
+const LIVEKIT_URL = process.env.LIVEKIT_URL || "http://localhost:7880";
 const RECORDINGS_PATH = process.env.RECORDINGS_PATH ?? "recordings/";
 const RECORDING_FILE_PORTION_SIZE = 5 * 1024 * 1024; // 5MB
-
-// Initialize services
-const egressClient = new EgressClient(
-  LIVEKIT_URL,
-  LIVEKIT_API_KEY,
-  LIVEKIT_API_SECRET
-);
-const webhookReceiver = new WebhookReceiver(
-  LIVEKIT_API_KEY,
-  LIVEKIT_API_SECRET
-);
-const s3Service = new S3Service();
 
 const app = express();
 
@@ -42,6 +30,17 @@ app.use(express.raw({ type: "application/webhook+json" }));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, "../public")));
+
+const egressClient = new EgressClient(
+  LIVEKIT_URL,
+  LIVEKIT_API_KEY,
+  LIVEKIT_API_SECRET
+);
+const s3Service = new S3Service();
+const webhookReceiver = new WebhookReceiver(
+  LIVEKIT_API_KEY,
+  LIVEKIT_API_SECRET
+);
 
 // Generate access tokens for participants to join a room
 app.post("/token", async (req, res) => {
