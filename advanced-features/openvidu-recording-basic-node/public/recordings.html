@@ -56,18 +56,6 @@
 
         <main>
             <div id="recordings-all">
-                <div id="actions">
-                    <button id="refresh-button" title="Refresh" class="icon-button" onclick="listRecordings()">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                    <form onsubmit="listRecordingsByRoom(); return false">
-                        <input id="room-name" type="text" placeholder="Room name" />
-                        <button title="Search" type="submit">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </form>
-                </div>
-
                 <h2>Recordings</h2>
                 <div id="recording-list"></div>
                 <dialog id="recording-video-dialog">

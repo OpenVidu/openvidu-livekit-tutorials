@@ -8,10 +8,10 @@
         "start": "node src/index.js"
     },
     "dependencies": {
-        "@aws-sdk/client-s3": "3.654.0",
+        "@aws-sdk/client-s3": "3.744.0",
         "cors": "2.8.5",
-        "dotenv": "16.4.5",
-        "express": "4.21.0",
-        "livekit-server-sdk": "^2.7.2"
+        "dotenv": "16.4.7",
+        "express": "5.0.1",
+        "livekit-server-sdk": "^2.9.7"
     }
 }
