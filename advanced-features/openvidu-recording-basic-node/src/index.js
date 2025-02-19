@@ -217,7 +217,7 @@ app.delete("/recordings/:recordingName", async (req, res) => {
   }
 
   try {
-    // Delete the recording file file from S3
+    // Delete the recording file from S3
     await Promise.all([s3Service.deleteObject(key)]);
     res.json({ message: "Recording deleted" });
   } catch (error) {
