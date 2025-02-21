@@ -1,0 +1,797 @@
+{
+	"info": {
+		"_postman_id": "f3c07b39-211a-4128-9c45-45cf7e7cfdfa",
+		"name": "OpenVidu Server Tutorials",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "20220126"
+	},
+	"item": [
+		{
+			"name": "Room",
+			"item": [
+				{
+					"name": "Create room",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ROOM_URL}}",
+							"host": [
+								"{{ROOM_URL}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List rooms",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ROOM_URL}}?roomName={{ROOM_NAME}}",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"query": [
+								{
+									"key": "roomName",
+									"value": "{{ROOM_NAME}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update room metadata",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"metadata\": \"Some data\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ROOM_URL}}/{{ROOM_NAME}}/metadata",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"path": [
+								"{{ROOM_NAME}}",
+								"metadata"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Send data",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"data\": {\n        \"some\": \"data\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ROOM_URL}}/{{ROOM_NAME}}/send-data",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"path": [
+								"{{ROOM_NAME}}",
+								"send-data"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete room",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{ROOM_URL}}/{{ROOM_NAME}}",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"path": [
+								"{{ROOM_NAME}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List participants",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ROOM_URL}}/{{ROOM_NAME}}/participants",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"path": [
+								"{{ROOM_NAME}}",
+								"participants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get participant",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{ROOM_URL}}/{{ROOM_NAME}}/participants/{{PARTICIPANT_IDENTITY}}",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"path": [
+								"{{ROOM_NAME}}",
+								"participants",
+								"{{PARTICIPANT_IDENTITY}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update participant",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"metadata\": \"Some data\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ROOM_URL}}/{{ROOM_NAME}}/participants/{{PARTICIPANT_IDENTITY}}",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"path": [
+								"{{ROOM_NAME}}",
+								"participants",
+								"{{PARTICIPANT_IDENTITY}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete participant",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{ROOM_URL}}/{{ROOM_NAME}}/participants/{{PARTICIPANT_IDENTITY}}",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"path": [
+								"{{ROOM_NAME}}",
+								"participants",
+								"{{PARTICIPANT_IDENTITY}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Mute track",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"trackId\": \"{{TRACK_ID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ROOM_URL}}/{{ROOM_NAME}}/participants/{{PARTICIPANT_IDENTITY}}/mute",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"path": [
+								"{{ROOM_NAME}}",
+								"participants",
+								"{{PARTICIPANT_IDENTITY}}",
+								"mute"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Subscribe to tracks",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"trackIds\": [\"{{TRACK_ID}}\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ROOM_URL}}/{{ROOM_NAME}}/participants/{{PARTICIPANT_IDENTITY}}/subscribe",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"path": [
+								"{{ROOM_NAME}}",
+								"participants",
+								"{{PARTICIPANT_IDENTITY}}",
+								"subscribe"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unsubscribe to tracks",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"trackIds\": [\"{{TRACK_ID}}\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{ROOM_URL}}/{{ROOM_NAME}}/participants/{{PARTICIPANT_IDENTITY}}/unsubscribe",
+							"host": [
+								"{{ROOM_URL}}"
+							],
+							"path": [
+								"{{ROOM_NAME}}",
+								"participants",
+								"{{PARTICIPANT_IDENTITY}}",
+								"unsubscribe"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Egress",
+			"item": [
+				{
+					"name": "Create RoomComposite egress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{EGRESS_URL}}/room-composite",
+							"host": [
+								"{{EGRESS_URL}}"
+							],
+							"path": [
+								"room-composite"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create stream egress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\",\n    \"streamUrl\": \"rtmp://live.twitch.tv/app/stream-key\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{EGRESS_URL}}/stream",
+							"host": [
+								"{{EGRESS_URL}}"
+							],
+							"path": [
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Participant egress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\",\n    \"participantIdentity\": \"{{PARTICIPANT_IDENTITY}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{EGRESS_URL}}/participant",
+							"host": [
+								"{{EGRESS_URL}}"
+							],
+							"path": [
+								"participant"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create TrackComposite egress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\",\n    \"videoTrackId\": \"{{TRACK_ID}}\",\n    \"audioTrackId\": \"TR_AMzNsuvnjz8UHm\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{EGRESS_URL}}/track-composite",
+							"host": [
+								"{{EGRESS_URL}}"
+							],
+							"path": [
+								"track-composite"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Track egress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\",\n    \"trackId\": \"{{TRACK_ID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{EGRESS_URL}}/track",
+							"host": [
+								"{{EGRESS_URL}}"
+							],
+							"path": [
+								"track"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Web egress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"url\": \"https://openvidu.io\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{EGRESS_URL}}/web",
+							"host": [
+								"{{EGRESS_URL}}"
+							],
+							"path": [
+								"web"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List egresses",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{EGRESS_URL}}?roomName={{ROOM_NAME}}&active=true",
+							"host": [
+								"{{EGRESS_URL}}"
+							],
+							"query": [
+								{
+									"key": "egressId",
+									"value": "{{EGRESS_ID}}",
+									"disabled": true
+								},
+								{
+									"key": "roomName",
+									"value": "{{ROOM_NAME}}"
+								},
+								{
+									"key": "active",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update egress layout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"layout\": \"speaker\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{EGRESS_URL}}/{{EGRESS_ID}}/layout",
+							"host": [
+								"{{EGRESS_URL}}"
+							],
+							"path": [
+								"{{EGRESS_ID}}",
+								"layout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Add/remove stream URLs",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"streamUrlsToAdd\": [\"rtmp://a.rtmp.youtube.com/live2/stream-key\"],\n    \"streamUrlsToRemove\": []\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{EGRESS_URL}}/{{EGRESS_ID}}/stream",
+							"host": [
+								"{{EGRESS_URL}}"
+							],
+							"path": [
+								"{{EGRESS_ID}}",
+								"stream"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Stop egress",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{EGRESS_URL}}/{{EGRESS_ID}}",
+							"host": [
+								"{{EGRESS_URL}}"
+							],
+							"path": [
+								"{{EGRESS_ID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Ingress",
+			"item": [
+				{
+					"name": "Create RTMP ingress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\",\n    \"participantIdentity\": \"Ingress-Participant\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{INGRESS_URL}}/rtmp",
+							"host": [
+								"{{INGRESS_URL}}"
+							],
+							"path": [
+								"rtmp"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create WHIP ingress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\",\n    \"participantIdentity\": \"Ingress-Participant\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{INGRESS_URL}}/whip",
+							"host": [
+								"{{INGRESS_URL}}"
+							],
+							"path": [
+								"whip"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create URL ingress",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\",\n    \"participantIdentity\": \"Ingress-Participant\",\n    \"url\": \"http://playertest.longtailvideo.com/adaptive/wowzaid3/playlist.m3u8\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{INGRESS_URL}}/url",
+							"host": [
+								"{{INGRESS_URL}}"
+							],
+							"path": [
+								"url"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List ingresses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{INGRESS_URL}}?roomName={{ROOM_NAME}}",
+							"host": [
+								"{{INGRESS_URL}}"
+							],
+							"query": [
+								{
+									"key": "ingressId",
+									"value": "{{INGRESS_ID}}",
+									"disabled": true
+								},
+								{
+									"key": "roomName",
+									"value": "{{ROOM_NAME}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update ingress",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{INGRESS_URL}}/{{INGRESS_ID}}",
+							"host": [
+								"{{INGRESS_URL}}"
+							],
+							"path": [
+								"{{INGRESS_ID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete ingress",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{INGRESS_URL}}/{{INGRESS_ID}}",
+							"host": [
+								"{{INGRESS_URL}}"
+							],
+							"path": [
+								"{{INGRESS_ID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Create token",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"roomName\": \"{{ROOM_NAME}}\",\n    \"participantName\": \"{{PARTICIPANT_IDENTITY}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{BASE_URL}}/token",
+					"host": [
+						"{{BASE_URL}}"
+					],
+					"path": [
+						"token"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "BASE_URL",
+			"value": "http://localhost:6080",
+			"type": "string"
+		},
+		{
+			"key": "ROOM_URL",
+			"value": "{{BASE_URL}}/rooms",
+			"type": "string"
+		},
+		{
+			"key": "EGRESS_URL",
+			"value": "{{BASE_URL}}/egresses",
+			"type": "string"
+		},
+		{
+			"key": "INGRESS_URL",
+			"value": "{{BASE_URL}}/ingresses",
+			"type": "string"
+		},
+		{
+			"key": "ROOM_NAME",
+			"value": "Test Room",
+			"type": "string"
+		},
+		{
+			"key": "PARTICIPANT_IDENTITY",
+			"value": "Participant1",
+			"type": "string"
+		},
+		{
+			"key": "TRACK_ID",
+			"value": "TR_VCfQLUfBeb8YpF",
+			"type": "string"
+		},
+		{
+			"key": "EGRESS_ID",
+			"value": "EG_rvEMBCq9vdXA",
+			"type": "string"
+		},
+		{
+			"key": "INGRESS_ID",
+			"value": "IN_bjXDVmCnFqev",
+			"type": "string"
+		}
+	]
+}
