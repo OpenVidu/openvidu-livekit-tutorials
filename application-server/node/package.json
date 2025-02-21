@@ -1,16 +1,16 @@
 {
-    "name": "basic-node",
+    "name": "openvidu-node",
     "version": "1.0.0",
-    "description": "Basic server application built for Node.js with Express",
-    "main": "index.js",
+    "description": "OpenVidu server application built for Node.js with Express",
+    "main": "src/index.js",
     "type": "module",
     "scripts": {
-        "start": "node index.js"
+        "start": "node src/index.js"
     },
     "dependencies": {
         "cors": "2.8.5",
-        "dotenv": "16.4.5",
+        "dotenv": "16.4.7",
         "express": "5.0.1",
-        "livekit-server-sdk": "^2.7.2"
+        "livekit-server-sdk": "^2.10.1"
     }
 }
