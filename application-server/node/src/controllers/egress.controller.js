@@ -203,8 +203,8 @@ egressController.post("/:egressId/layout", async (req, res) => {
     }
 
     try {
-        const egressInfo = await egressClient.updateLayout(egressId, layout);
-        res.json({ egressInfo });
+        const egress = await egressClient.updateLayout(egressId, layout);
+        res.json({ egress });
     } catch (error) {
         const errorMessage = "Error updating egress layout";
         console.error(errorMessage, error);
@@ -213,7 +213,7 @@ egressController.post("/:egressId/layout", async (req, res) => {
 });
 
 // Add/remove stream URLs to an egress
-egressController.post("/:egressId/stream", async (req, res) => {
+egressController.post("/:egressId/streams", async (req, res) => {
     const { egressId } = req.params;
     const { streamUrlsToAdd, streamUrlsToRemove } = req.body;
 
@@ -223,8 +223,8 @@ egressController.post("/:egressId/stream", async (req, res) => {
     }
 
     try {
-        const egressInfo = await egressClient.updateStream(egressId, streamUrlsToAdd, streamUrlsToRemove);
-        res.json({ egressInfo });
+        const egress = await egressClient.updateStream(egressId, streamUrlsToAdd, streamUrlsToRemove);
+        res.json({ egress });
     } catch (error) {
         const errorMessage = "Error updating egress streams";
         console.error(errorMessage, error);
@@ -237,7 +237,7 @@ egressController.delete("/:egressId", async (req, res) => {
     const { egressId } = req.params;
 
     try {
-        const egressInfo = await egressClient.stopEgress(egressId);
+        await egressClient.stopEgress(egressId);
         res.json({ message: "Egress stopped" });
     } catch (error) {
         const errorMessage = "Error stopping egress";

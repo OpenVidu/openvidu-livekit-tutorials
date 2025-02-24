@@ -538,13 +538,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{EGRESS_URL}}/{{EGRESS_ID}}/stream",
+							"raw": "{{EGRESS_URL}}/{{EGRESS_ID}}/streams",
 							"host": [
 								"{{EGRESS_URL}}"
 							],
 							"path": [
 								"{{EGRESS_ID}}",
-								"stream"
+								"streams"
 							]
 						}
 					},
