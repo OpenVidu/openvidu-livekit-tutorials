@@ -1,13 +1,13 @@
-package io.openvidu.basic.java;
+package io.openvidu.java;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class BasicJavaApplication {
+public class OpenViduJavaApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(BasicJavaApplication.class, args);
+		SpringApplication.run(OpenViduJavaApplication.class, args);
 	}
 
 }

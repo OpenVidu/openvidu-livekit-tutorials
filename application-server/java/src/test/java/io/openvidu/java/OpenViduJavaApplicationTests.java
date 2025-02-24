@@ -1,10 +1,10 @@
-package io.openvidu.basic.java;
+package io.openvidu.java;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class BasicJavaApplicationTests {
+class OpenViduJavaApplicationTests {
 
 	@Test
 	void contextLoads() {

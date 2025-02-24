@@ -1,12 +1,12 @@
-# Basic Java
+# OpenVidu Java
 
-Basic server application built for Java with Spring Boot. It internally uses [livekit-server-sdk-kotlin](https://github.com/livekit/server-sdk-kotlin).
+OpenVidu server application built for Java with Spring Boot. It internally uses [livekit-server-sdk-kotlin](https://github.com/livekit/server-sdk-kotlin).
 
 For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/tutorials/application-server/java/).
 
 ## Prerequisites
 
--   [Java >=17](https://www.java.com/en/download/)
+-   [Java >=21](https://www.java.com/en/download/)
 -   [Maven](https://maven.apache.org/download.cgi)
 
 ## Run
