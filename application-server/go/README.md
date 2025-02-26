@@ -1,6 +1,6 @@
-# Basic Go
+# OpenVidu Go
 
-Basic server application built for Go with Gin. It internally uses [livekit-server-sdk-go](https://pkg.go.dev/github.com/livekit/server-sdk-go).
+OpenVidu server application built for Go with Gin. It internally uses [livekit-server-sdk-go](https://pkg.go.dev/github.com/livekit/server-sdk-go).
 
 For further information, check the [tutorial documentation](https://livekit-tutorials.openvidu.io/tutorials/application-server/go/).
 
