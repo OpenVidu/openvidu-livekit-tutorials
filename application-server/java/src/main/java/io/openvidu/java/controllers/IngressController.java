@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -74,7 +75,8 @@ public class IngressController {
                     .createIngress("rtmp-ingress", roomName, participantIdentity, null, IngressInput.RTMP_INPUT)
                     .execute()
                     .body();
-            return ResponseEntity.ok(Map.of("ingress", convertToJson(ingress)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("ingress", convertToJson(ingress)));
         } catch (Exception e) {
             String errorMessage = "Error creating RTMP ingress";
             LOGGER.error(errorMessage, e);
@@ -104,7 +106,8 @@ public class IngressController {
                     .createIngress("whip-ingress", roomName, participantIdentity, null, IngressInput.WHIP_INPUT)
                     .execute()
                     .body();
-            return ResponseEntity.ok(Map.of("ingress", convertToJson(ingress)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("ingress", convertToJson(ingress)));
         } catch (Exception e) {
             String errorMessage = "Error creating WHIP ingress";
             LOGGER.error(errorMessage, e);
@@ -136,7 +139,8 @@ public class IngressController {
                             null, null, null, url)
                     .execute()
                     .body();
-            return ResponseEntity.ok(Map.of("ingress", convertToJson(ingress)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("ingress", convertToJson(ingress)));
         } catch (Exception e) {
             String errorMessage = "Error creating URL ingress";
             LOGGER.error(errorMessage, e);
@@ -187,8 +191,10 @@ public class IngressController {
         }
 
         try {
-            // Know bug: participantIdentity must be provided in order to not fail, but it is not used
-            IngressInfo ingress = ingressClient.updateIngress(ingressId, "updated-ingress", roomName, "Ingress-Participant")
+            // Know bug: participantIdentity must be provided in order to not fail,
+            // but it is not used
+            IngressInfo ingress = ingressClient
+                    .updateIngress(ingressId, "updated-ingress", roomName, "Ingress-Participant")
                     .execute()
                     .body();
             return ResponseEntity.ok(Map.of("ingress", convertToJson(ingress)));

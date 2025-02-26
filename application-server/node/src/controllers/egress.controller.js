@@ -33,7 +33,7 @@ egressController.post("/room-composite", async (req, res) => {
             layout: "grid"
         };
         const egress = await egressClient.startRoomCompositeEgress(roomName, outputs, options);
-        res.json({ egress });
+        res.status(201).json({ egress });
     } catch (error) {
         const errorMessage = "Error creating RoomComposite egress";
         console.error(errorMessage, error);
@@ -58,7 +58,7 @@ egressController.post("/stream", async (req, res) => {
             })
         };
         const egress = await egressClient.startRoomCompositeEgress(roomName, outputs);
-        res.json({ egress });
+        res.status(201).json({ egress });
     } catch (error) {
         const errorMessage = "Error creating RoomComposite egress";
         console.error(errorMessage, error);
@@ -86,7 +86,7 @@ egressController.post("/participant", async (req, res) => {
             screenShare: false
         };
         const egress = await egressClient.startParticipantEgress(roomName, participantIdentity, outputs, options);
-        res.json({ egress });
+        res.status(201).json({ egress });
     } catch (error) {
         const errorMessage = "Error creating Participant egress";
         console.error(errorMessage, error);
@@ -115,7 +115,7 @@ egressController.post("/track-composite", async (req, res) => {
             audioTrackId
         };
         const egress = await egressClient.startTrackCompositeEgress(roomName, outputs, options);
-        res.json({ egress });
+        res.status(201).json({ egress });
     } catch (error) {
         const errorMessage = "Error creating TrackComposite egress";
         console.error(errorMessage, error);
@@ -137,7 +137,7 @@ egressController.post("/track", async (req, res) => {
             filepath: "{room_name}-{room_id}-{publisher_identity}-{track_source}-{track_id}-{time}"
         });
         const egress = await egressClient.startTrackEgress(roomName, output, trackId);
-        res.json({ egress });
+        res.status(201).json({ egress });
     } catch (error) {
         const errorMessage = "Error creating Track egress";
         console.error(errorMessage, error);
@@ -162,7 +162,7 @@ egressController.post("/web", async (req, res) => {
             })
         };
         const egress = await egressClient.startWebEgress(url, outputs);
-        res.json({ egress });
+        res.status(201).json({ egress });
     } catch (error) {
         const errorMessage = "Error creating Web egress";
         console.error(errorMessage, error);

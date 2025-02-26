@@ -22,7 +22,7 @@ ingressController.post("/rtmp", async (req, res) => {
             participantIdentity
         };
         const ingress = await ingressClient.createIngress(IngressInput.RTMP_INPUT, ingressOptions);
-        res.json({ ingress });
+        res.status(201).json({ ingress });
     } catch (error) {
         const errorMessage = "Error creating RTMP ingress";
         console.error(errorMessage, error);
@@ -46,7 +46,7 @@ ingressController.post("/whip", async (req, res) => {
             participantIdentity
         };
         const ingress = await ingressClient.createIngress(IngressInput.WHIP_INPUT, ingressOptions);
-        res.json({ ingress });
+        res.status(201).json({ ingress });
     } catch (error) {
         const errorMessage = "Error creating WHIP ingress";
         console.error(errorMessage, error);
@@ -71,7 +71,7 @@ ingressController.post("/url", async (req, res) => {
             url
         };
         const ingress = await ingressClient.createIngress(IngressInput.URL_INPUT, ingressOptions);
-        res.json({ ingress });
+        res.status(201).json({ ingress });
     } catch (error) {
         const errorMessage = "Error creating URL ingress";
         console.error(errorMessage, error);

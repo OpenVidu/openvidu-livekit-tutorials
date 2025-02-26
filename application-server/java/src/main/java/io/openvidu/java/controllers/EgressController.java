@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -81,7 +82,8 @@ public class EgressController {
             EgressInfo egress = egressClient.startRoomCompositeEgress(roomName, output, "grid")
                     .execute()
                     .body();
-            return ResponseEntity.ok(Map.of("egress", convertToJson(egress)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("egress", convertToJson(egress)));
         } catch (Exception e) {
             String errorMessage = "Error creating RoomComposite egress";
             LOGGER.error(errorMessage, e);
@@ -114,7 +116,8 @@ public class EgressController {
             EgressInfo egress = egressClient.startRoomCompositeEgress(roomName, output, "grid")
                     .execute()
                     .body();
-            return ResponseEntity.ok(Map.of("egress", convertToJson(egress)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("egress", convertToJson(egress)));
         } catch (Exception e) {
             String errorMessage = "Error creating RoomComposite egress";
             LOGGER.error(errorMessage, e);
@@ -148,7 +151,8 @@ public class EgressController {
             EgressInfo egress = egressClient.startParticipantEgress(roomName, participantIdentity, outputs, false)
                     .execute()
                     .body();
-            return ResponseEntity.ok(Map.of("egress", convertToJson(egress)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("egress", convertToJson(egress)));
         } catch (Exception e) {
             String errorMessage = "Error creating Participant egress";
             LOGGER.error(errorMessage, e);
@@ -182,7 +186,8 @@ public class EgressController {
             EgressInfo egress = egressClient.startTrackCompositeEgress(roomName, output, audioTrackId, videoTrackId)
                     .execute()
                     .body();
-            return ResponseEntity.ok(Map.of("egress", convertToJson(egress)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("egress", convertToJson(egress)));
         } catch (Exception e) {
             String errorMessage = "Error creating TrackComposite egress";
             LOGGER.error(errorMessage, e);
@@ -214,7 +219,8 @@ public class EgressController {
             EgressInfo egress = egressClient.startTrackEgress(roomName, output, trackId)
                     .execute()
                     .body();
-            return ResponseEntity.ok(Map.of("egress", convertToJson(egress)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("egress", convertToJson(egress)));
         } catch (Exception e) {
             String errorMessage = "Error creating Track egress";
             LOGGER.error(errorMessage, e);
@@ -246,7 +252,8 @@ public class EgressController {
             EgressInfo egress = egressClient.startWebEgress(url, output)
                     .execute()
                     .body();
-            return ResponseEntity.ok(Map.of("egress", convertToJson(egress)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("egress", convertToJson(egress)));
         } catch (Exception e) {
             String errorMessage = "Error creating Web egress";
             LOGGER.error(errorMessage, e);
@@ -318,7 +325,7 @@ public class EgressController {
      * @return JSON object with the updated egress
      */
     @PostMapping("/{egressId}/streams")
-    public ResponseEntity<Map<String, Object>> updateEgressStream(@PathVariable String egressId,
+    public ResponseEntity<Map<String, Object>> updateEgressStreams(@PathVariable String egressId,
             @RequestBody Map<String, Object> params) {
         Object streamUrlsToAddObj = params.get("streamUrlsToAdd");
         Object streamUrlsToRemoveObj = params.get("streamUrlsToRemove");

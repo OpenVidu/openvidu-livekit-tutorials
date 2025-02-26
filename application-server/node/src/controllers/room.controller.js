@@ -20,7 +20,7 @@ roomController.post("/", async (req, res) => {
             name: roomName
         };
         const room = await roomClient.createRoom(roomOptions);
-        res.json({ room });
+        res.status(201).json({ room });
     } catch (error) {
         const errorMessage = "Error creating room";
         console.error(errorMessage, error);

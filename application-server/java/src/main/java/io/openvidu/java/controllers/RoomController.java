@@ -6,6 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -77,7 +78,8 @@ public class RoomController {
             Room room = roomClient.createRoom(roomName)
                     .execute()
                     .body();
-            return ResponseEntity.ok(Map.of("room", convertToJson(room)));
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(Map.of("room", convertToJson(room)));
         } catch (Exception e) {
             String errorMessage = "Error creating room";
             LOGGER.error(errorMessage, e);
