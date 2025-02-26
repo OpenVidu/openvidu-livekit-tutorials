@@ -13,8 +13,8 @@ This collection defines a set of variables that requests use in order to reduce 
 
 - `BASE_URL`: The base URL of the application server. By default, it is set to `http://localhost:6080`.
 - `ROOM_URL`: The base URL of all room-related endpoints. By default, it is set to `{{BASE_URL}}/rooms`.
-- `EGRESS_URL`: The base URL of all egress-related endpoints. By default, it is set to `{{BASE_URL}}/egress`.
-- `INGRESS_URL`: The base URL of all ingress-related endpoints. By default, it is set to `{{BASE_URL}}/ingress`.
+- `EGRESS_URL`: The base URL of all egress-related endpoints. By default, it is set to `{{BASE_URL}}/egresses`.
+- `INGRESS_URL`: The base URL of all ingress-related endpoints. By default, it is set to `{{BASE_URL}}/ingresses`.
 - `ROOM_NAME`: The name of the room. By default, it is set to `Test Room`.
 - `PARTICIPANT_IDENTITY`: The identity of the participant. By default, it is set to `Participant1`.
 - `TRACK_ID`: The ID of the track.
