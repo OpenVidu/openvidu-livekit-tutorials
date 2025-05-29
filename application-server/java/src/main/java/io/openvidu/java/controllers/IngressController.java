@@ -191,10 +191,8 @@ public class IngressController {
         }
 
         try {
-            // Know bug: participantIdentity must be provided in order to not fail,
-            // but it is not used
             IngressInfo ingress = ingressClient
-                    .updateIngress(ingressId, "updated-ingress", roomName, "Ingress-Participant")
+                    .updateIngress(ingressId, "updated-ingress", roomName)
                     .execute()
                     .body();
             return ResponseEntity.ok(Map.of("ingress", convertToJson(ingress)));
