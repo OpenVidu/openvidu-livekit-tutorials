@@ -1,0 +1,17 @@
+{
+    "name": "openvidu-recording-basic-node-azure",
+    "version": "1.0.0",
+    "description": "Simple video-call application with recording capabilities",
+    "main": "src/index.js",
+    "type": "module",
+    "scripts": {
+        "start": "NODE_TLS_REJECT_UNAUTHORIZED=0 node src/index.js"
+    },
+    "dependencies": {
+        "@azure/storage-blob": "12.27.0",
+        "cors": "2.8.5",
+        "dotenv": "16.4.7",
+        "express": "5.0.1",
+        "livekit-server-sdk": "^2.9.7"
+    }
+}
