@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>OpenVidu Recording</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon" />
+
+        <!-- Bootstrap -->
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+            integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+            crossorigin="anonymous"
+        />
+        <script
+            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+            crossorigin="anonymous"
+        ></script>
+
+        <!-- Font Awesome -->
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+            integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+        />
+
+        <link rel="stylesheet" href="styles.css" type="text/css" media="screen" />
+        <script src="https://cdn.jsdelivr.net/npm/livekit-client@2.5.9/dist/livekit-client.umd.js"></script>
+        <script src="app.js"></script>
+    </head>
+
+    <body>
+        <header>
+            <a href="/" title="Home"><h1>OpenVidu Recording</h1></a>
+            <div id="links">
+                <a
+                    href="https://github.com/OpenVidu/openvidu-livekit-tutorials/tree/master/advanced-features/openvidu-recording"
+                    title="GitHub Repository"
+                    target="_blank"
+                >
+                    <i class="fa-brands fa-github"></i>
+                </a>
+                <a
+                    href="https://livekit-tutorials.openvidu.io/tutorials/advanced-tutorials/openvidu-recording/"
+                    title="Documentation"
+                    target="_blank"
+                >
+                    <i class="fa-solid fa-book"></i>
+                </a>
+            </div>
+        </header>
+
+        <main>
+            <div id="recordings-all">
+                <div id="actions">
+                    <button id="refresh-button" title="Refresh" class="icon-button" onclick="listRecordings()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <form onsubmit="listRecordingsByRoom(); return false">
+                        <input id="room-name" type="text" placeholder="Room name" />
+                        <button title="Search" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <h2>Recordings</h2>
+                <div id="recording-list"></div>
+                <dialog id="recording-video-dialog">
+                    <video id="recording-video" autoplay controls></video>
+                    <button class="btn btn-secondary" id="close-recording-video-dialog" onclick="closeRecording()">
+                        Close
+                    </button>
+                </dialog>
+            </div>
+        </main>
+
+        <footer>
+            <p class="text">Made with love by <span>OpenVidu Team</span></p>
+            <a href="https://openvidu.io/" target="_blank">
+                <img id="openvidu-logo" src="images/openvidu_logo.png" alt="OpenVidu logo" />
+            </a>
+        </footer>
+    </body>
+</html>
