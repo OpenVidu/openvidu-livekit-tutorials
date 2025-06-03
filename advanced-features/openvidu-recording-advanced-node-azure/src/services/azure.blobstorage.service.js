@@ -81,7 +81,7 @@ export class AzureBlobService {
             downloadResponse = await blobClient.download();
         }
         if (!downloadResponse.readableStreamBody) {
-            throw new Error("No se pudo obtener el stream del blob");
+            throw new Error("Could not obtain the blob stream");
         }
         return downloadResponse.readableStreamBody;
     }
@@ -89,10 +89,10 @@ export class AzureBlobService {
     // Generates a valid SAS URL for 24 hours
     async getObjectUrl(key) {
         if (!AZURE_ACCOUNT_NAME || !AZURE_ACCOUNT_KEY) {
-            throw new Error("Credenciales de cuenta de Azure no están definidas para generar SAS");
+            throw new Error("Azure account credentials are not defined to generate SAS");
         }
         const blobClient = this.containerClient.getBlobClient(key);
-        const expiresOn = new Date(new Date().valueOf() + 24 * 60 * 60 * 1000); // 24 horas
+        const expiresOn = new Date(new Date().valueOf() + 24 * 60 * 60 * 1000); // 24 hours
         const sasPermissions = BlobSASPermissions.parse("r");
         const sasToken = generateBlobSASQueryParameters(
             {

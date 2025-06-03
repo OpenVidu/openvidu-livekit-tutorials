@@ -102,6 +102,7 @@ recordingController.get("/:recordingName", async (req, res) => {
 });
 
 recordingController.get("/:recordingName/url", async (req, res) => {
+    console.log("Getting recording URL...");
     const { recordingName } = req.params;
     const exists = await recordingService.existsRecording(recordingName);
 
