@@ -44,32 +44,32 @@ export class AzureBlobService {
         return AzureBlobService.instance;
     }
 
-    // Sube un objeto (JSON) al contenedor
+    // Uploads an object (JSON) to the container
     async uploadObject(key, body) {
         const blockBlobClient = this.containerClient.getBlockBlobClient(key);
         const data = JSON.stringify(body);
         await blockBlobClient.upload(data, Buffer.byteLength(data));
     }
 
-    // Comprueba si existe un blob
+    // Checks if a blob exists
     async exists(key) {
         const blobClient = this.containerClient.getBlobClient(key);
         return await blobClient.exists();
     }
 
-    // Obtiene las propiedades del blob (equivalente a headObject)
+    // Gets the blob properties (equivalent to headObject)
     async headObject(key) {
         const blobClient = this.containerClient.getBlobClient(key);
         return await blobClient.getProperties();
     }
 
-    // Devuelve el tamaño del blob en bytes
+    // Returns the blob size in bytes
     async getObjectSize(key) {
         const props = await this.headObject(key);
         return props.contentLength || 0;
     }
 
-    // Descarga el blob completo o un rango, devolviendo el stream
+    // Downloads the complete blob or a range, returning the stream
     async getObject(key, range) {
         const blobClient = this.containerClient.getBlobClient(key);
         let downloadResponse;
@@ -86,7 +86,7 @@ export class AzureBlobService {
         return downloadResponse.readableStreamBody;
     }
 
-    // Genera un URL SAS válido 24 horas
+    // Generates a valid SAS URL for 24 hours
     async getObjectUrl(key) {
         if (!AZURE_ACCOUNT_NAME || !AZURE_ACCOUNT_KEY) {
             throw new Error("Credenciales de cuenta de Azure no están definidas para generar SAS");
@@ -108,7 +108,7 @@ export class AzureBlobService {
         return `${blobClient.url}?${sasToken}`;
     }
 
-    // Obtiene el contenido JSON del blob
+    // Gets the JSON content of the blob
     async getObjectAsJson(key) {
         const exists = await this.exists(key);
         if (!exists) {
@@ -128,7 +128,7 @@ export class AzureBlobService {
         });
     }
 
-    // Lista blobs bajo un prefijo y filtra por expresión regular
+    // Lists blobs under a prefix and filters by regular expression
     async listObjects(prefix, regex) {
         const results = [];
         for await (const blob of this.containerClient.listBlobsFlat({ prefix })) {
@@ -139,7 +139,7 @@ export class AzureBlobService {
         return results;
     }
 
-    // Elimina un blob
+    // Deletes a blob
     async deleteObject(key) {
         const blobClient = this.containerClient.getBlobClient(key);
         await blobClient.delete();
