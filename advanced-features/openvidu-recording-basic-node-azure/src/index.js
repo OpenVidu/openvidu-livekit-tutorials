@@ -180,7 +180,7 @@ app.get("/recordings/:recordingName", async (req, res) => {
   }
 
   try {
-    // Get the recording file from S3
+    // Get the recording file from Azure Blob Storage
     const { stream, size, start, end } = await getRecordingStream(
       recordingName,
       range
@@ -212,7 +212,7 @@ app.delete("/recordings/:recordingName", async (req, res) => {
   }
 
   try {
-    // Delete the recording file from S3
+    // Delete the recording file from Azure Blob Storage
     await Promise.all([azureBlobService.deleteObject(recordingName)]);
     res.json({ message: "Recording deleted" });
   } catch (error) {
