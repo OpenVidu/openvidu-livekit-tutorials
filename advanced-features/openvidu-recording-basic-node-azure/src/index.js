@@ -10,7 +10,7 @@ import {
   EncodedFileType,
   WebhookReceiver,
 } from "livekit-server-sdk";
-import { AzureBlobService } from "./azure.blobstorage.js";
+import { AzureBlobService } from "./azure.blobstorage.service.js";
 
 // Configuration
 const SERVER_PORT = process.env.SERVER_PORT || 6080;
