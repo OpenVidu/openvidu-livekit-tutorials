@@ -59,8 +59,7 @@ async function joinRoom() {
 
   room.registerTextStreamHandler("lk.transcription", async (reader, participantInfo) => {
       const message = await reader.readAll();
-      const isFinal =
-        reader.info.attributes["lk.transcription_final"] === "true";
+      const isFinal = reader.info.attributes["lk.transcription_final"] === "true";
 
       if (isFinal) {
         const audioTrackId = reader.info.attributes["lk.transcribed_track_id"];
