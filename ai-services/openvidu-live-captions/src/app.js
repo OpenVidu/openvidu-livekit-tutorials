@@ -57,28 +57,30 @@ async function joinRoom() {
     }
   );
 
-  room.registerTextStreamHandler("lk.transcription", async (reader, participantInfo) => {
-      const message = await reader.readAll();
-      const isFinal = reader.info.attributes["lk.transcription_final"] === "true";
+room.registerTextStreamHandler("lk.transcription", async (reader, participantInfo) => {
+    const message = await reader.readAll();
+    const isFinal = reader.info.attributes["lk.transcription_final"] === "true";
+    const trackId = reader.info.attributes["lk.transcribed_track_id"];
 
-      if (isFinal) {
-        const audioTrackId = reader.info.attributes["lk.transcribed_track_id"];
-
-        // Due to a bug in LiveKit Server the participantInfo object may be empty.
-        // You can still get the participant owning the audio track like below:
-        const participant = [room.localParticipant]
-          .concat(Array.from(room.remoteParticipants.values()))
-          .find((p) => p.audioTrackPublications.has(audioTrackId));
-
-        const captionsTextarea = document.getElementById("captions");
-        const timestamp = new Date().toLocaleTimeString();
-        const participantIdentity =
-          participant == room.localParticipant ? "You" : participant.identity;
-        captionsTextarea.value += `[${timestamp}] ${participantIdentity}: ${message}\n`;
-        captionsTextarea.scrollTop = captionsTextarea.scrollHeight;
+    if (isFinal) {
+      // Due to a bug in LiveKit Server the participantInfo object may be empty.
+      // You can still get the participant owning the audio track like below:
+      let participant;
+      if (localParticipant.audioTrackPublications.has(trackId)) {
+        participant = room.localParticipant;
+      } else {
+        participant = room.remoteParticipants.values().find(p => p.audioTrackPublications.has(trackId));
       }
+
+      const captionsTextarea = document.getElementById("captions");
+      const timestamp = new Date().toLocaleTimeString();
+      const participantIdentity =
+        participant == room.localParticipant ? "You" : participant.identity;
+      captionsTextarea.value += `[${timestamp}] ${participantIdentity}: ${message}\n`;
+      captionsTextarea.scrollTop = captionsTextarea.scrollHeight;
     }
-  );
+  }
+);
 
   try {
     // Get the room name and participant name from the form
