@@ -66,7 +66,7 @@ room.registerTextStreamHandler("lk.transcription", async (reader, participantInf
       // Due to a bug in LiveKit Server the participantInfo object may be empty.
       // You can still get the participant owning the audio track like below:
       let participant;
-      if (localParticipant.audioTrackPublications.has(trackId)) {
+      if (room.localParticipant.audioTrackPublications.has(trackId)) {
         participant = room.localParticipant;
       } else {
         participant = room.remoteParticipants.values().find(p => p.audioTrackPublications.has(trackId));
@@ -100,7 +100,7 @@ room.registerTextStreamHandler("lk.transcription", async (reader, participantInf
 
     // Publish your camera and microphone
     await room.localParticipant.enableCameraAndMicrophone();
-    const localVideoTrack = this.room.localParticipant.videoTrackPublications
+    const localVideoTrack = room.localParticipant.videoTrackPublications
       .values()
       .next().value.track;
     addTrack(localVideoTrack, userName, true);
